@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Keuangan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Validator;
 
 class KeuanganController extends Controller
 {
@@ -21,8 +22,8 @@ class KeuanganController extends Controller
         }
 
         // Filter berdasarkan jenis
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
+        if ($request->filled('jenis_pemasukkan')) {
+            $query->where('jenis_pemasukkan', $request->jenis);
         }
 
         // Filter berdasarkan kategori
@@ -49,10 +50,30 @@ class KeuanganController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        //
-    }
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'jumlah'   => 'required|numeric',
+        'jenis'    => 'required|in:m,k',        // m=masuk, k=keluar
+        'tipe'     => 'nullable|in:k,u,a',      // hanya wajib kalau jenis = m
+        'catatan'  => 'required|string|max:255'
+    ]);
+
+    // mapping ke database
+    $data = [
+        'jumlah' => $validated['jumlah'],
+        'tipe' => $validated['jenis'], // simpan m/k ke kolom `tipe`
+        'jenis_pemasukkan' => $validated['tipe'] ?? null, // simpan k/u/a kalau ada
+        'catatan' => $validated['catatan'],
+    ];
+
+    Keuangan::create($data);
+
+    return redirect()->route('keuangan.index')
+        ->with('success', 'Data keuangan berhasil disimpan');
+}
+
+
 
     /**
      * Display the specified resource.
