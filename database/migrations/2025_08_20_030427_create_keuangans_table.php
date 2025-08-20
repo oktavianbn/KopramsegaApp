@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('keuangans', function (Blueprint $table) {
                 $table->id();
-            $table->decimal('jumlah');
+            $table->decimal('jumlah',15,2);
             $table->enum('tipe', ['m','k'])->default('m');
-            $table->enum('jenis_pemasukkan',['k','u','a'])->default('k');
+            $table->enum('jenis_pemasukkan',['k','u','a'])->default('k')->nullable();
             $table->string('catatan');
             $table->timestamps();
         });

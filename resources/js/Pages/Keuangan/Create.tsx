@@ -6,19 +6,19 @@ import { ArrowLeft, Save } from "lucide-react";
 
 interface FormData {
     tanggal: string;
-    keterangan: string;
-    jenis: "pemasukan" | "pengeluaran" | "";
+    jenis: "m" | "k" | "";
+    tipe: "k" | "u" | "a" | "";
     jumlah: string;
-    kategori: string;
+    catatan: string;
 }
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm<FormData>({
         tanggal: new Date().toISOString().split("T")[0],
-        keterangan: "",
         jenis: "",
+        tipe: "",
         jumlah: "",
-        kategori: "",
+        catatan: "",
     });
 
     const submit: FormEventHandler = (e) => {
@@ -59,31 +59,6 @@ export default function Create() {
                     <div className="bg-white rounded-lg shadow p-6">
                         <form onSubmit={submit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Tanggal */}
-                                <div>
-                                    <label
-                                        htmlFor="tanggal"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Tanggal{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="tanggal"
-                                        value={data.tanggal}
-                                        onChange={(e) =>
-                                            setData("tanggal", e.target.value)
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.tanggal && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.tanggal}
-                                        </p>
-                                    )}
-                                </div>
 
                                 {/* Jenis */}
                                 <div>
@@ -91,30 +66,22 @@ export default function Create() {
                                         htmlFor="jenis"
                                         className="block text-sm font-medium text-gray-700 mb-2"
                                     >
-                                        Jenis{" "}
-                                        <span className="text-red-500">*</span>
+                                        Jenis <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         id="jenis"
                                         value={data.jenis}
                                         onChange={(e) =>
-                                            setData(
-                                                "jenis",
-                                                e.target.value as
-                                                    | "pemasukan"
-                                                    | "pengeluaran"
-                                            )
+                                            setData("jenis", e.target.value as "m" | "k")
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                   focus:outline-none focus:ring-2 focus:ring-blue-500
+                   focus:border-transparent"
                                         required
                                     >
                                         <option value="">Pilih Jenis</option>
-                                        <option value="pemasukan">
-                                            Pemasukan
-                                        </option>
-                                        <option value="pengeluaran">
-                                            Pengeluaran
-                                        </option>
+                                        <option value="m">Pemasukan</option>
+                                        <option value="k">Pengeluaran</option>
                                     </select>
                                     {errors.jenis && (
                                         <p className="mt-1 text-sm text-red-600">
@@ -123,62 +90,39 @@ export default function Create() {
                                     )}
                                 </div>
 
-                                {/* Keterangan */}
-                                <div className="md:col-span-2">
-                                    <label
-                                        htmlFor="keterangan"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Keterangan{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="keterangan"
-                                        value={data.keterangan}
-                                        onChange={(e) =>
-                                            setData(
-                                                "keterangan",
-                                                e.target.value
-                                            )
-                                        }
-                                        placeholder="Masukkan keterangan..."
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.keterangan && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.keterangan}
-                                        </p>
-                                    )}
-                                </div>
+                                {/* Tipe - hanya muncul kalau jenis === "m" */}
+                                {data.jenis === "m" && (
+                                    <div>
+                                        <label
+                                            htmlFor="tipe"
+                                            className="block text-sm font-medium text-gray-700 mb-2"
+                                        >
+                                            Tipe <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            id="tipe"
+                                            value={data.tipe}
+                                            onChange={(e) =>
+                                                setData("tipe", e.target.value as "k" | "u" | "a")
+                                            }
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                       focus:outline-none focus:ring-2 focus:ring-blue-500
+                       focus:border-transparent"
+                                            required
+                                        >
+                                            <option value="">Pilih tipe</option>
+                                            <option value="k">Kas</option>
+                                            <option value="u">Usaha Dana</option>
+                                            <option value="a">Anggaran</option>
+                                        </select>
+                                        {errors.tipe && (
+                                            <p className="mt-1 text-sm text-red-600">
+                                                {errors.tipe}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
 
-                                {/* Kategori */}
-                                <div>
-                                    <label
-                                        htmlFor="kategori"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Kategori{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="kategori"
-                                        value={data.kategori}
-                                        onChange={(e) =>
-                                            setData("kategori", e.target.value)
-                                        }
-                                        placeholder="Contoh: Operasional, Simpanan, dll"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.kategori && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.kategori}
-                                        </p>
-                                    )}
-                                </div>
 
                                 {/* Jumlah */}
                                 <div>
@@ -209,7 +153,35 @@ export default function Create() {
                                     )}
                                 </div>
                             </div>
-
+                            {/* catatan */}
+                            <div className="md:col-span-2">
+                                <label
+                                    htmlFor="catatan"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
+                                >
+                                    Catatan{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="catatan"
+                                    value={data.catatan}
+                                    onChange={(e) =>
+                                        setData(
+                                            "catatan",
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="Masukkan catatan..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                />
+                                {errors.catatan && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.catatan}
+                                    </p>
+                                )}
+                            </div>
                             {/* Submit Buttons */}
                             <div className="flex items-center justify-end gap-4 pt-6 border-t">
                                 <Link

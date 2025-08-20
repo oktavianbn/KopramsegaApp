@@ -18,7 +18,7 @@ interface SimpleSidebarProps {
 }
 
 const menuItems = [
-    { icon: Home, label: "Dashboard", href: "/" },
+    { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: BarChart3, label: "Analytics", href: "/analytics" },
     { icon: DollarSign, label: "Keuangan", href: "/keuangan" },
     { icon: Users, label: "Users", href: "/users" },
