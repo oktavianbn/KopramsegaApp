@@ -2,17 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\keuangan;
+use App\Models\Keuangan;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class KeuanganController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view("");
+        $query = Keuangan::query();
+
+        // Filter berdasarkan pencarian
+        if ($request->filled('search')) {
+            $query->where('keterangan', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter berdasarkan jenis
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
+
+        // Filter berdasarkan kategori
+        if ($request->filled('kategori')) {
+            $query->where('kategori', 'like', '%' . $request->kategori . '%');
+        }
+
+        $keuangan = $query->orderBy('tanggal', 'desc')->paginate(10);
+
+        return Inertia::render('Keuangan/Index', [
+            'keuangan' => $keuangan,
+            'filters' => $request->only(['search', 'jenis', 'kategori'])
+        ]);
     }
 
     /**
@@ -20,7 +43,7 @@ class KeuanganController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Keuangan/Create');
     }
 
     /**
@@ -60,6 +83,9 @@ class KeuanganController extends Controller
      */
     public function destroy(Keuangan $keuangan)
     {
-        //
+        $keuangan->delete();
+
+        return redirect()->route('keuangan.index')
+            ->with('success', 'Data keuangan berhasil dihapus');
     }
 }
