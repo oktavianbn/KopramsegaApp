@@ -15,6 +15,7 @@ import {
     ChevronDown,
     LogOut,
     User,
+    TimerReset,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePage } from "@inertiajs/react";
@@ -30,6 +31,7 @@ const menuItems = [
     { icon: Users, label: "Pengguna", href: "/user" },
     { icon: Layers, label: "Inventory", href: "/inventory" },
     { icon: FolderClosed, label: "Arsip Surat", href: "/arsip-surat" },
+    { icon: TimerReset, label: "Rencana", href: "/rencana" },
     // { icon: BarChart3, label: "Analytics", href: "/analytics" },
     // { icon: FileText, label: "Reports", href: "/reports" },
     // { icon: Settings, label: "Settings", href: "/settings" },
