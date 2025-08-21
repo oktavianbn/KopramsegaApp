@@ -4,6 +4,7 @@ import { Plus, Edit, Trash2, Search, Filter } from "lucide-react";
 import { Sidebar } from "@/Components/Sidebar";
 
 import { Navbar } from "@/Components/Navbar";
+import AppLayout from "@/Layouts/AppLayout";
 interface ArsipSurat {
     id: number;
     judul_surat: string;
@@ -37,11 +38,7 @@ export default function Index({ arsipSurat, filters }: Props) {
     const [jenis, setJenis] = useState(filters.jenis || "");
 
     const handleSearch = () => {
-        router.get(
-            "/arsip-surat",
-            { search, jenis },
-            { preserveState: true }
-        );
+        router.get("/arsip-surat", { search, jenis }, { preserveState: true });
     };
 
     const formatDate = (dateString: string) => {
@@ -49,15 +46,17 @@ export default function Index({ arsipSurat, filters }: Props) {
     };
 
     return (
-        <>
-            <Navbar />
-            <Sidebar />
+        <AppLayout>
             <Head title="Arsip Surat" />
             <div className="p-6">
                 {/* Header */}
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Arsip Surat</h1>
-                    <p className="text-gray-600">Daftar surat masuk dan keluar</p>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                        Arsip Surat
+                    </h1>
+                    <p className="text-gray-600">
+                        Daftar surat masuk dan keluar
+                    </p>
                 </div>
 
                 {/* Actions & Filters */}
@@ -107,38 +106,90 @@ export default function Index({ arsipSurat, filters }: Props) {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Surat</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul Surat</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Surat</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        No.
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Tanggal Surat
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Jenis
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Judul Surat
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Nomor Surat
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Pengirim
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Penerima
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Keterangan
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Aksi
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {arsipSurat.data.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 text-sm text-gray-900">{(arsipSurat.current_page - 1) * arsipSurat.per_page + index + 1}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">{formatDate(item.tanggal_surat)}</td>
+                                    <tr
+                                        key={item.id}
+                                        className="hover:bg-gray-50"
+                                    >
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {(arsipSurat.current_page - 1) *
+                                                arsipSurat.per_page +
+                                                index +
+                                                1}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {formatDate(item.tanggal_surat)}
+                                        </td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.jenis === "m" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}`}>
-                                                {item.jenis === "m" ? "Masuk" : "Keluar"}
+                                            <span
+                                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                    item.jenis === "m"
+                                                        ? "bg-green-100 text-green-800"
+                                                        : "bg-blue-100 text-blue-800"
+                                                }`}
+                                            >
+                                                {item.jenis === "m"
+                                                    ? "Masuk"
+                                                    : "Keluar"}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm">{item.judul_surat}</td>
-                                        <td className="px-6 py-4 text-sm">{item.nomor_surat}</td>
-                                        <td className="px-6 py-4 text-sm">{item.pengirim || "-"}</td>
-                                        <td className="px-6 py-4 text-sm">{item.penerima || "-"}</td>
-                                        <td className="px-6 py-4 text-sm">{item.keterangan}</td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {item.judul_surat}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {item.nomor_surat}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {item.pengirim || "-"}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {item.penerima || "-"}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {item.keterangan}
+                                        </td>
                                         <td className="px-6 py-4 text-sm">
                                             <div className="flex items-center gap-2">
-                                                <Link href={`/arsip-surat/${item.id}/edit`} className="text-blue-600 hover:text-blue-900">
+                                                <Link
+                                                    href={`/arsip-surat/${item.id}/edit`}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                >
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
-                                                <Link href={`/arsip-surat/${item.id}`} className="text-gray-600 hover:text-gray-900">
+                                                <Link
+                                                    href={`/arsip-surat/${item.id}`}
+                                                    className="text-gray-600 hover:text-gray-900"
+                                                >
                                                     <Search className="h-4 w-4" />
                                                 </Link>
                                                 <button className="text-red-600 hover:text-red-900">
@@ -159,15 +210,20 @@ export default function Index({ arsipSurat, filters }: Props) {
                                 <div className="flex-1 flex justify-between sm:hidden">
                                     {arsipSurat.current_page > 1 && (
                                         <Link
-                                            href={`/arsip-surat?page=${arsipSurat.current_page - 1}`}
+                                            href={`/arsip-surat?page=${
+                                                arsipSurat.current_page - 1
+                                            }`}
                                             className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                         >
                                             Previous
                                         </Link>
                                     )}
-                                    {arsipSurat.current_page < arsipSurat.last_page && (
+                                    {arsipSurat.current_page <
+                                        arsipSurat.last_page && (
                                         <Link
-                                            href={`/arsip-surat?page=${arsipSurat.current_page + 1}`}
+                                            href={`/arsip-surat?page=${
+                                                arsipSurat.current_page + 1
+                                            }`}
                                             className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                         >
                                             Next
@@ -178,21 +234,43 @@ export default function Index({ arsipSurat, filters }: Props) {
                                     <div>
                                         <p className="text-sm text-gray-700">
                                             Showing{" "}
-                                            <span className="font-medium">{(arsipSurat.current_page - 1) * arsipSurat.per_page + 1}</span>{" "}
+                                            <span className="font-medium">
+                                                {(arsipSurat.current_page - 1) *
+                                                    arsipSurat.per_page +
+                                                    1}
+                                            </span>{" "}
                                             to{" "}
-                                            <span className="font-medium">{Math.min(arsipSurat.current_page * arsipSurat.per_page, arsipSurat.total)}</span>{" "}
+                                            <span className="font-medium">
+                                                {Math.min(
+                                                    arsipSurat.current_page *
+                                                        arsipSurat.per_page,
+                                                    arsipSurat.total
+                                                )}
+                                            </span>{" "}
                                             of{" "}
-                                            <span className="font-medium">{arsipSurat.total}</span>{" "}
+                                            <span className="font-medium">
+                                                {arsipSurat.total}
+                                            </span>{" "}
                                             results
                                         </p>
                                     </div>
                                     <div>
                                         <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                                            {Array.from({ length: arsipSurat.last_page }, (_, i) => i + 1).map((page) => (
+                                            {Array.from(
+                                                {
+                                                    length: arsipSurat.last_page,
+                                                },
+                                                (_, i) => i + 1
+                                            ).map((page) => (
                                                 <Link
                                                     key={page}
                                                     href={`/arsip-surat?page=${page}`}
-                                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${page === arsipSurat.current_page ? "z-10 bg-blue-50 border-blue-500 text-blue-600" : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"}`}
+                                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                                        page ===
+                                                        arsipSurat.current_page
+                                                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                                                    }`}
                                                 >
                                                     {page}
                                                 </Link>
@@ -205,6 +283,6 @@ export default function Index({ arsipSurat, filters }: Props) {
                     )}
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 }
