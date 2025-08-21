@@ -42,7 +42,7 @@ class ArsipSuratController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('ArsipSurat/Create');
     }
 
     /**
@@ -82,6 +82,7 @@ class ArsipSuratController extends Controller
      */
     public function destroy(ArsipSurat $arsipSurat)
     {
-        //
+        $arsipSurat->delete();
+        return redirect()->route('arsip-surat.index')->with('success', 'Surat berhasil dihapus');
     }
 }
