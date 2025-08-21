@@ -11,6 +11,7 @@ import {
     X,
     DollarSign,
     Layers,
+    FolderClosed,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ const menuItems = [
     { icon: DollarSign, label: "Keuangan", href: "/keuangan" },
     { icon: Users, label: "Pengguna", href: "/user" },
     { icon: Layers, label: "Inventory", href: "/inventory" },
+    { icon: FolderClosed, label: "Arsip Surat", href: "/arsip-surat" },
     // { icon: BarChart3, label: "Analytics", href: "/analytics" },
 
     // { icon: FileText, label: "Reports", href: "/reports" },

@@ -10,20 +10,20 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('inventories', function (Blueprint $table) {
-            $table->id();
-            $table->string('nama_barang');
-            $table->integer('jumlah')->default(0);
-            $table->enum('jenis', ['a', 'b', '']);
-            $table->timestamps();
-        });
+        // Schema::create('inventories', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('nama_barang');
+        //     $table->integer('jumlah')->default(0);
+        //     $table->enum('jenis', ['a', 'b', '']);
+        //     $table->timestamps();
+        // });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('inventories');
-    }
+    // /**
+    //  * Reverse the migrations.
+    //  */
+    // public function down(): void
+    // {
+    //     Schema::dropIfExists('inventories');
+    // }
 };
