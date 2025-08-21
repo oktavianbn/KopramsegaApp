@@ -86,7 +86,7 @@ export function Sidebar({ className }: SimpleSidebarProps) {
                 </div>
 
                 {/* Navigation - Flex grow to push user section to bottom */}
-                <nav className="p-4">
+                <nav className="p-4 flex-1">
                     <ul className="space-y-1">
                         {menuItems.map((item, index) => (
                             <li key={index}>
@@ -105,7 +105,7 @@ export function Sidebar({ className }: SimpleSidebarProps) {
                 </nav>
 
                 {/* User Account Section - At bottom */}
-                <div className="p-4 border-t border-blue-500/20">
+                <div className="p-4 flex border-t border-blue-500/20">
                     <Dropdown>
                         <Dropdown.Trigger>
                             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-blue-500/30 text-blue-50 hover:text-white group">
@@ -124,8 +124,11 @@ export function Sidebar({ className }: SimpleSidebarProps) {
                             </button>
                         </Dropdown.Trigger>
 
-                        <Dropdown.Content>
-                            <Dropdown.Link href={route("profile.edit")}>
+                        <Dropdown.Content direction="up" align="right">
+                            <Dropdown.Link
+                                href={route("profile.edit")}
+                                className="flex items-center w-full"
+                            >
                                 <User className="h-4 w-4 mr-2" />
                                 Profile
                             </Dropdown.Link>
@@ -133,6 +136,7 @@ export function Sidebar({ className }: SimpleSidebarProps) {
                                 href={route("logout")}
                                 method="post"
                                 as="button"
+                                className="flex items-center w-full bg-red-200 hover:bg-red-600 hover:text-white text-red-800"
                             >
                                 <LogOut className="h-4 w-4 mr-2" />
                                 Log Out

@@ -1,5 +1,5 @@
-import { Transition } from '@headlessui/react';
-import { InertiaLinkProps, Link } from '@inertiajs/react';
+import { Transition } from "@headlessui/react";
+import { InertiaLinkProps, Link } from "@inertiajs/react";
 import {
     createContext,
     Dispatch,
@@ -7,7 +7,7 @@ import {
     SetStateAction,
     useContext,
     useState,
-} from 'react';
+} from "react";
 
 const DropDownContext = createContext<{
     open: boolean;
@@ -51,29 +51,44 @@ const Trigger = ({ children }: PropsWithChildren) => {
 };
 
 const Content = ({
-    align = 'right',
-    width = '48',
-    contentClasses = 'py-1 bg-white dark:bg-gray-700',
+    align = "right",
+    width = "48",
+    contentClasses = "py-1 bg-white dark:bg-gray-700",
+    direction = "down",
     children,
 }: PropsWithChildren<{
-    align?: 'left' | 'right';
-    width?: '48';
+    align?: "left" | "right";
+    width?: "48";
     contentClasses?: string;
+    direction?: "up" | "down";
 }>) => {
     const { open, setOpen } = useContext(DropDownContext);
 
-    let alignmentClasses = 'origin-top';
+    let alignmentClasses = "";
+    let positionClasses = "";
 
-    if (align === 'left') {
-        alignmentClasses = 'ltr:origin-top-left rtl:origin-top-right start-0';
-    } else if (align === 'right') {
-        alignmentClasses = 'ltr:origin-top-right rtl:origin-top-left end-0';
+    // Handle alignment
+    if (align === "left") {
+        alignmentClasses = "ltr:origin-top-left rtl:origin-top-right start-0";
+    } else if (align === "right") {
+        alignmentClasses = "ltr:origin-top-right rtl:origin-top-left end-0";
     }
 
-    let widthClasses = '';
+    // Handle direction
+    if (direction === "up") {
+        alignmentClasses = alignmentClasses.replace(
+            "origin-top",
+            "origin-bottom"
+        );
+        positionClasses = "bottom-full mb-2";
+    } else {
+        positionClasses = "top-full mt-2";
+    }
 
-    if (width === '48') {
-        widthClasses = 'w-48';
+    let widthClasses = "";
+
+    if (width === "48") {
+        widthClasses = "w-48";
     }
 
     return (
@@ -88,7 +103,7 @@ const Content = ({
                 leaveTo="opacity-0 scale-95"
             >
                 <div
-                    className={`absolute z-50 mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
+                    className={`absolute z-50 rounded-md shadow-lg ${alignmentClasses} ${widthClasses} ${positionClasses}`}
                     onClick={() => setOpen(false)}
                 >
                     <div
@@ -106,7 +121,7 @@ const Content = ({
 };
 
 const DropdownLink = ({
-    className = '',
+    className = "",
     children,
     ...props
 }: InertiaLinkProps) => {
@@ -114,7 +129,7 @@ const DropdownLink = ({
         <Link
             {...props}
             className={
-                'block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800 dark:focus:bg-gray-800 ' +
+                "block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800 dark:focus:bg-gray-800 " +
                 className
             }
         >
