@@ -6,11 +6,10 @@ import { ArrowLeft, Save } from "lucide-react";
 
 interface Keuangan {
     id: number;
-    tanggal: string;
-    keterangan: string;
-    jenis: "pemasukan" | "pengeluaran";
-    jumlah: number;
-    kategori: string;
+    jenis_pemasukkan: "k" | "u" | "a"|"";
+    tipe: "m" | "k" | "";
+    jumlah: string;
+    catatan: string;
 }
 
 interface Props {
@@ -20,19 +19,28 @@ interface Props {
 interface FormData {
     tanggal: string;
     keterangan: string;
-    jenis: "pemasukan" | "pengeluaran";
+    jenis_pemasukkan: "pemasukan" | "pengeluaran";
     jumlah: string;
-    kategori: string;
+    catatan: string;
 }
 
 export default function Edit({ keuangan }: Props) {
-    const { data, setData, put, processing, errors } = useForm<FormData>({
-        tanggal: keuangan.tanggal,
-        keterangan: keuangan.keterangan,
-        jenis: keuangan.jenis,
-        jumlah: keuangan.jumlah.toString(),
-        kategori: keuangan.kategori,
+    const { data, setData, put, processing, errors } = useForm<Keuangan>({
+        id: keuangan.id,
+        jenis_pemasukkan: keuangan.jenis_pemasukkan,
+        tipe: keuangan.tipe,
+        jumlah: keuangan.jumlah,
+        catatan: keuangan.catatan,
     });
+
+    // Handler untuk reset jenis_pemasukkan saat tipe diubah
+    const handleTipeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setData({
+            ...data,
+            tipe: e.target.value as "m" | "k",
+            jenis_pemasukkan: ""
+        });
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -69,154 +77,88 @@ export default function Edit({ keuangan }: Props) {
 
                     {/* Form */}
                     <div className="bg-white rounded-lg shadow p-6">
+
                         <form onSubmit={submit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Tanggal */}
+                                {/* Tipe (m/k) */}
                                 <div>
-                                    <label
-                                        htmlFor="tanggal"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Tanggal{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="tanggal"
-                                        value={data.tanggal}
-                                        onChange={(e) =>
-                                            setData("tanggal", e.target.value)
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.tanggal && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.tanggal}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Jenis */}
-                                <div>
-                                    <label
-                                        htmlFor="jenis"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Jenis{" "}
-                                        <span className="text-red-500">*</span>
+                                    <label htmlFor="tipe" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Tipe <span className="text-red-500">*</span>
                                     </label>
                                     <select
-                                        id="jenis"
-                                        value={data.jenis}
-                                        onChange={(e) =>
-                                            setData(
-                                                "jenis",
-                                                e.target.value as
-                                                    | "pemasukan"
-                                                    | "pengeluaran"
-                                            )
-                                        }
+                                        id="tipe"
+                                        value={data.tipe}
+                                        onChange={handleTipeChange}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         required
                                     >
-                                        <option value="pemasukan">
-                                            Pemasukan
-                                        </option>
-                                        <option value="pengeluaran">
-                                            Pengeluaran
-                                        </option>
+                                        <option value="" disabled>Pilih Tipe</option>
+                                        <option value="m">Pemasukan</option>
+                                        <option value="k">Pengeluaran</option>
                                     </select>
-                                    {errors.jenis && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.jenis}
-                                        </p>
+                                    {errors.tipe && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.tipe}</p>
                                     )}
                                 </div>
 
-                                {/* Keterangan */}
-                                <div className="md:col-span-2">
-                                    <label
-                                        htmlFor="keterangan"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Keterangan{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="keterangan"
-                                        value={data.keterangan}
-                                        onChange={(e) =>
-                                            setData(
-                                                "keterangan",
-                                                e.target.value
-                                            )
-                                        }
-                                        placeholder="Masukkan keterangan..."
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.keterangan && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.keterangan}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Kategori */}
-                                <div>
-                                    <label
-                                        htmlFor="kategori"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Kategori{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="kategori"
-                                        value={data.kategori}
-                                        onChange={(e) =>
-                                            setData("kategori", e.target.value)
-                                        }
-                                        placeholder="Contoh: Operasional, Simpanan, dll"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.kategori && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.kategori}
-                                        </p>
-                                    )}
-                                </div>
+                                {/* jenis_pemasukkan (k/u/a) → hanya muncul kalau tipe === "m" */}
+                                {data.tipe === "m" && (
+                                    <div>
+                                        <label htmlFor="jenis_pemasukkan" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Jenis Pemasukkan <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            id="jenis_pemasukkan"
+                                            value={data.jenis_pemasukkan}
+                                            onChange={(e) => setData("jenis_pemasukkan", e.target.value as "k" | "u" | "a")}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
+                                        >
+                                            <option value="" disabled>Pilih Jenis</option>
+                                            <option value="k">Kas</option>
+                                            <option value="u">Usaha Dana</option>
+                                            <option value="a">Anggaran</option>
+                                        </select>
+                                        {errors.jenis_pemasukkan && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.jenis_pemasukkan}</p>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Jumlah */}
                                 <div>
-                                    <label
-                                        htmlFor="jumlah"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Jumlah (Rp){" "}
-                                        <span className="text-red-500">*</span>
+                                    <label htmlFor="jumlah" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Jumlah (Rp) <span className="text-red-500">*</span>
                                     </label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         id="jumlah"
                                         value={data.jumlah}
-                                        onChange={(e) =>
-                                            setData("jumlah", e.target.value)
-                                        }
+                                        onChange={(e) => setData("jumlah", e.target.value)}
                                         placeholder="0"
-                                        min="0"
-                                        step="0.01"
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         required
                                     />
                                     {errors.jumlah && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.jumlah}
-                                        </p>
+                                        <p className="mt-1 text-sm text-red-600">{errors.jumlah}</p>
+                                    )}
+                                </div>
+
+                                {/* Catatan */}
+                                <div className={`${data.tipe === "m" ? "" : "col-span-2"}`}>
+                                    <label htmlFor="catatan" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Catatan
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="catatan"
+                                        value={data.catatan}
+                                        onChange={(e) => setData("catatan", e.target.value)}
+                                        placeholder="Masukkan catatan..."
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                    {errors.catatan && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.catatan}</p>
                                     )}
                                 </div>
                             </div>

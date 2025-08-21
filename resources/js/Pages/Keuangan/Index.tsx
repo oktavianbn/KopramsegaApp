@@ -5,11 +5,10 @@ import AppLayout from "@/Layouts/AppLayout";
 
 interface Keuangan {
     id: number;
-    tanggal: string;
-    keterangan: string;
-    jenis: "pemasukan" | "pengeluaran";
+    catatan: string;
+    jenis_pemasukkan: "k" | "u" | "a" | "";
+    tipe: "m" | "k" | "";
     jumlah: number;
-    kategori: string;
     created_at: string;
     updated_at: string;
 }
@@ -24,20 +23,22 @@ interface Props {
     };
     filters: {
         search?: string;
-        jenis?: string;
+        jenis_pemasukkan?: string;
+        tipe?: string;
         kategori?: string;
     };
 }
 
 export default function Index({ keuangan, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "");
-    const [jenis, setJenis] = useState(filters.jenis || "");
+    const [tipe, setTipe] = useState(filters.tipe || "");
+    const [jenis_pemasukkan, setJenis_pemasukkan] = useState(filters.jenis_pemasukkan || "");
     const [kategori, setKategori] = useState(filters.kategori || "");
 
     const handleSearch = () => {
         router.get(
             "/keuangan",
-            { search, jenis, kategori },
+            { search, tipe, jenis_pemasukkan, kategori },
             { preserveState: true }
         );
     };
@@ -58,7 +59,6 @@ export default function Index({ keuangan, filters }: Props) {
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString("id-ID");
     };
-
     return (
         <AppLayout>
             <Head title="Keuangan" />
@@ -77,12 +77,12 @@ export default function Index({ keuangan, filters }: Props) {
                 {/* Actions & Filters */}
                 <div className="bg-white rounded-lg shadow p-6 mb-6">
                     <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-                        <div className="flex flex-col md:flex-row gap-4 flex-1">
-                            <div className="relative">
+                        <div className="flex flex-col overflow-x-auto md:flex-row gap-4 flex-1">
+                            <div className="relative m-1">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Cari keterangan..."
+                                    placeholder="Cari catatan..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -90,22 +90,26 @@ export default function Index({ keuangan, filters }: Props) {
                             </div>
 
                             <select
-                                value={jenis}
-                                onChange={(e) => setJenis(e.target.value)}
-                                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={tipe}
+                                onChange={(e) => setTipe(e.target.value)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none m-1 focus:ring-2 focus:ring-blue-500"
                             >
-                                <option value="">Semua Jenis</option>
-                                <option value="pemasukan">Pemasukan</option>
-                                <option value="pengeluaran">Pengeluaran</option>
+                                <option value="">Semua Tipe</option>
+                                <option value="m">Pemasukan</option>
+                                <option value="k">Pengeluaran</option>
+                            </select>
+                            <select
+                                value={jenis_pemasukkan}
+                                onChange={(e) => setJenis_pemasukkan(e.target.value)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none   m-1 focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Semua Jenis Pemasukkan</option>
+                                <option value="k">Kas</option>
+                                <option value="u">Usaha Dana</option>
+                                <option value="a">Anggaran</option>
                             </select>
 
-                            <input
-                                type="text"
-                                placeholder="Kategori..."
-                                value={kategori}
-                                onChange={(e) => setKategori(e.target.value)}
-                                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                        </div>
 
                             <button
                                 onClick={handleSearch}
@@ -114,7 +118,6 @@ export default function Index({ keuangan, filters }: Props) {
                                 <Filter className="h-4 w-4" />
                                 Filter
                             </button>
-                        </div>
 
                         <Link
                             href="/keuangan/create"
@@ -133,19 +136,22 @@ export default function Index({ keuangan, filters }: Props) {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Tanggal
+                                        No.
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Keterangan
+                                        Dibuat Pada
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Jenis
+                                        Tipe
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Kategori
+                                        Jenis_pemasukkan
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Jumlah
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Catatan
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Aksi
@@ -153,56 +159,46 @@ export default function Index({ keuangan, filters }: Props) {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {keuangan.data.map((item) => (
-                                    <tr
-                                        key={item.id}
-                                        className="hover:bg-gray-50"
-                                    >
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {formatDate(item.tanggal)}
+                                {keuangan.data.map((item, index) => (
+                                    <tr key={item.id} className="hover:bg-gray-50">
+                                        {/* No. */}
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {(keuangan.current_page - 1) * keuangan.per_page + index + 1}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.keterangan}
+                                        {/* Dibuat pada */}
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {formatDate(item.created_at)}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                    item.jenis === "pemasukan"
-                                                        ? "bg-green-100 text-green-800"
-                                                        : "bg-red-100 text-red-800"
-                                                }`}
-                                            >
-                                                {item.jenis}
+                                        {/* Tipe */}
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.tipe === "m"
+                                                ? "bg-green-100 text-green-800"
+                                                : "bg-red-100 text-red-800"
+                                                }`}>
+                                                {item.tipe === "m" ? "Pemasukan" : "Pengeluaran"}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {item.kategori}
+                                        {/* Jenis_pemasukkan */}
+                                        <td className="px-6 py-4 text-sm">
+                                            {item.jenis_pemasukkan === "a" ? "Anggaran" : item.jenis_pemasukkan === "k" ? "Kas" : item.jenis_pemasukkan === "u" ? "Usaha Dana" : "-"}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <span
-                                                className={
-                                                    item.jenis === "pemasukan"
-                                                        ? "text-green-600"
-                                                        : "text-red-600"
-                                                }
-                                            >
-                                                {formatCurrency(item.jumlah)}
+                                        {/* Jumlah */}
+                                        <td className="px-6 py-4 text-sm font-medium">
+                                            <span className={item.tipe === "m" ? "text-green-600" : "text-red-600"}>
+                                                {item.tipe === "m" ?"":"-"}{formatCurrency(item.jumlah)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {/* Catatan */}
+                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                            {item.catatan}
+                                        </td>
+                                        {/* Aksi */}
+                                        <td className="px-6 py-4 text-sm">
                                             <div className="flex items-center gap-2">
-                                                <Link
-                                                    href={`/keuangan/${item.id}/edit`}
-                                                    className="text-blue-600 hover:text-blue-900"
-                                                >
+                                                <Link href={`/keuangan/${item.id}/edit`} className="text-blue-600 hover:text-blue-900">
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
-                                                <button
-                                                    onClick={() =>
-                                                        handleDelete(item.id)
-                                                    }
-                                                    className="text-red-600 hover:text-red-900"
-                                                >
+                                                <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-900">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </div>
@@ -210,6 +206,7 @@ export default function Index({ keuangan, filters }: Props) {
                                     </tr>
                                 ))}
                             </tbody>
+
                         </table>
                     </div>
 
@@ -220,9 +217,8 @@ export default function Index({ keuangan, filters }: Props) {
                                 <div className="flex-1 flex justify-between sm:hidden">
                                     {keuangan.current_page > 1 && (
                                         <Link
-                                            href={`/keuangan?page=${
-                                                keuangan.current_page - 1
-                                            }`}
+                                            href={`/keuangan?page=${keuangan.current_page - 1
+                                                }`}
                                             className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                         >
                                             Previous
@@ -230,15 +226,14 @@ export default function Index({ keuangan, filters }: Props) {
                                     )}
                                     {keuangan.current_page <
                                         keuangan.last_page && (
-                                        <Link
-                                            href={`/keuangan?page=${
-                                                keuangan.current_page + 1
-                                            }`}
-                                            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                                        >
-                                            Next
-                                        </Link>
-                                    )}
+                                            <Link
+                                                href={`/keuangan?page=${keuangan.current_page + 1
+                                                    }`}
+                                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                            >
+                                                Next
+                                            </Link>
+                                        )}
                                 </div>
                                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                                     <div>
@@ -253,7 +248,7 @@ export default function Index({ keuangan, filters }: Props) {
                                             <span className="font-medium">
                                                 {Math.min(
                                                     keuangan.current_page *
-                                                        keuangan.per_page,
+                                                    keuangan.per_page,
                                                     keuangan.total
                                                 )}
                                             </span>{" "}
@@ -275,12 +270,11 @@ export default function Index({ keuangan, filters }: Props) {
                                                 <Link
                                                     key={page}
                                                     href={`/keuangan?page=${page}`}
-                                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                                                        page ===
+                                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${page ===
                                                         keuangan.current_page
-                                                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                                                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                                                    }`}
+                                                        ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                                                        }`}
                                                 >
                                                     {page}
                                                 </Link>
