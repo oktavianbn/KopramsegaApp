@@ -10,6 +10,7 @@ import {
     Menu,
     X,
     DollarSign,
+    Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,11 +20,13 @@ interface SimpleSidebarProps {
 
 const menuItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" },
-    { icon: BarChart3, label: "Analytics", href: "/analytics" },
     { icon: DollarSign, label: "Keuangan", href: "/keuangan" },
-    { icon: Users, label: "Users", href: "/users" },
-    { icon: FileText, label: "Reports", href: "/reports" },
-    { icon: Settings, label: "Settings", href: "/settings" },
+    { icon: Users, label: "Pengguna", href: "/user" },
+    { icon: Layers, label: "Inventory", href: "/inventory" },
+    // { icon: BarChart3, label: "Analytics", href: "/analytics" },
+
+    // { icon: FileText, label: "Reports", href: "/reports" },
+    // { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 export function Sidebar({ className }: SimpleSidebarProps) {
