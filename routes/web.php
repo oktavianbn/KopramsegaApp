@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArsipSuratController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -21,8 +22,11 @@ Route::get('/dashboard', function () {
 
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::resource('keuangan', KeuanganController::class)->middleware(['auth', 'verified']);
-Route::resource('user', UserController::class);
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('arsip-surat', ArsipSuratController::class);
+    Route::resource('keuangan', KeuanganController::class);
+    Route::resource('user', UserController::class);
+});
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

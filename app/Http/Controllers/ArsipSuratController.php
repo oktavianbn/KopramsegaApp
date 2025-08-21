@@ -4,15 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\ArsipSurat;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ArsipSuratController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = ArsipSurat::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('judul_surat', 'like', "%$search%")
+                  ->orWhere('nomor_surat', 'like', "%$search%")
+                  ->orWhere('pengirim', 'like', "%$search%")
+                  ->orWhere('penerima', 'like', "%$search%")
+                  ->orWhere('keterangan', 'like', "%$search%");
+            });
+        }
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->input('jenis'));
+        }
+
+        $arsipSurat = $query->orderByDesc('tanggal_surat')->paginate(10)->withQueryString();
+
+        return Inertia::render('ArsipSurat/Index', [
+            'arsipSurat' => $arsipSurat,
+            'filters' => $request->only(['search', 'jenis'])
+        ]);
     }
 
     /**
