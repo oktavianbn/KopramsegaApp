@@ -18,24 +18,24 @@ class KeuanganController extends Controller
 
         // Filter berdasarkan pencarian
         if ($request->filled('search')) {
-            $query->where('keterangan', 'like', '%' . $request->search . '%');
+            $query->where('catatan', 'like', '%' . $request->search . '%');
         }
 
-        // Filter berdasarkan jenis
+        // Filter berdasarkan tipe
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        // Filter berdasarkan jenis_pemasukkan
         if ($request->filled('jenis_pemasukkan')) {
-            $query->where('jenis_pemasukkan', $request->jenis);
+            $query->where('jenis_pemasukkan', $request->jenis_pemasukkan);
         }
 
-        // Filter berdasarkan kategori
-        if ($request->filled('kategori')) {
-            $query->where('kategori', 'like', '%' . $request->kategori . '%');
-        }
-
-        $keuangan = $query->orderBy('tanggal', 'desc')->paginate(10);
+        $keuangan = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return Inertia::render('Keuangan/Index', [
             'keuangan' => $keuangan,
-            'filters' => $request->only(['search', 'jenis', 'kategori'])
+            'filters' => $request->only(['search', 'tipe', 'jenis', 'kategori'])
         ]);
     }
 
@@ -50,30 +50,24 @@ class KeuanganController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'jumlah'   => 'required|numeric',
-        'jenis'    => 'required|in:m,k',        // m=masuk, k=keluar
-        'tipe'     => 'nullable|in:k,u,a',      // hanya wajib kalau jenis = m
-        'catatan'  => 'required|string|max:255'
-    ]);
-
-    // mapping ke database
-    $data = [
-        'jumlah' => $validated['jumlah'],
-        'tipe' => $validated['jenis'], // simpan m/k ke kolom `tipe`
-        'jenis_pemasukkan' => $validated['tipe'] ?? null, // simpan k/u/a kalau ada
-        'catatan' => $validated['catatan'],
-    ];
-
-    Keuangan::create($data);
-
-    return redirect()->route('keuangan.index')
-        ->with('success', 'Data keuangan berhasil disimpan');
-}
-
-
+    public function store(Request $request)
+    {
+        // hilangkan semua titik di input jumlah
+        $request->merge([
+            'jumlah' => str_replace('.', '', $request->jumlah),
+        ]);
+        // dump($request);
+        $validated = $request->validate([
+            'jumlah'   => 'required|numeric',
+            'tipe'    => 'required|in:m,k',
+            'jenis_pemasukkan' => 'nullable|in:k,u,a',
+            'catatan'  => 'nullable|string|max:255'
+        ]);
+        // dd($validated);
+        Keuangan::create($validated);
+        return redirect()->route('keuangan.index')
+            ->with('success', 'Data keuangan berhasil disimpan');
+    }
 
     /**
      * Display the specified resource.
@@ -88,16 +82,41 @@ public function store(Request $request)
      */
     public function edit(Keuangan $keuangan)
     {
-        //
+        // Ubah ke integer dulu biar .00 hilang
+        $jumlah = (int) $keuangan->jumlah;
+
+        // Format dengan ribuan pakai titik
+        $keuangan->jumlah = number_format($jumlah, 0, ',', '.');
+        return Inertia::render('Keuangan/Edit', [
+            'keuangan' => $keuangan
+        ]);
     }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Keuangan $keuangan)
+    public function update(Request $request, $id)
     {
-        //
+        // hilangkan titik di input jumlah
+        $request->merge([
+            'jumlah' => str_replace('.', '', $request->jumlah),
+        ]);
+
+        $validated = $request->validate([
+            'jumlah'   => 'required|numeric',
+            'tipe'     => 'required|in:m,k',
+            'jenis_pemasukkan' => 'nullable|in:k,u,a',
+            'catatan'  => 'nullable|string|max:255',
+        ]);
+
+        $keuangan = Keuangan::findOrFail($id);
+        $keuangan->update($validated);
+
+        return redirect()->route('keuangan.index')
+            ->with('success', 'Data keuangan berhasil diupdate');
     }
+
 
     /**
      * Remove the specified resource from storage.

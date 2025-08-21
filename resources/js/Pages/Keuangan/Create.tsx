@@ -5,21 +5,29 @@ import { Sidebar } from "@/Components/Sidebar";
 import { ArrowLeft, Save } from "lucide-react";
 
 interface FormData {
-    tanggal: string;
-    jenis: "m" | "k" | "";
-    tipe: "k" | "u" | "a" | "";
+    jenis_pemasukkan: "k" | "u" | "a" | "";
+    tipe: "m" | "k" | "";
     jumlah: string;
     catatan: string;
 }
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm<FormData>({
-        tanggal: new Date().toISOString().split("T")[0],
-        jenis: "",
+        jenis_pemasukkan: "",
         tipe: "",
         jumlah: "",
         catatan: "",
     });
+
+    // Handler untuk reset jenis_pemasukkan saat tipe diubah
+    const handleTipeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setData({
+            ...data,
+            tipe: e.target.value as "m" | "k",
+            jenis_pemasukkan: ""
+        });
+    };
+
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -60,69 +68,67 @@ export default function Create() {
                         <form onSubmit={submit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                                {/* Jenis */}
+                                {/* Tipe (m/k) */}
                                 <div>
                                     <label
-                                        htmlFor="jenis"
+                                        htmlFor="tipe"
                                         className="block text-sm font-medium text-gray-700 mb-2"
                                     >
-                                        Jenis <span className="text-red-500">*</span>
+                                        Tipe <span className="text-red-500">*</span>
                                     </label>
                                     <select
-                                        id="jenis"
-                                        value={data.jenis}
-                                        onChange={(e) =>
-                                            setData("jenis", e.target.value as "m" | "k")
-                                        }
+                                        id="tipe"
+                                        value={data.tipe}
+                                        onChange={handleTipeChange}
+
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                   focus:outline-none focus:ring-2 focus:ring-blue-500
-                   focus:border-transparent"
+                                        focus:outline-none focus:ring-2 focus:ring-blue-500
+                                        focus:border-transparent"
                                         required
                                     >
-                                        <option value="">Pilih Jenis</option>
+                                        <option value="" disabled>Pilih Tipe</option>
                                         <option value="m">Pemasukan</option>
                                         <option value="k">Pengeluaran</option>
                                     </select>
-                                    {errors.jenis && (
+                                    {errors.tipe && (
                                         <p className="mt-1 text-sm text-red-600">
-                                            {errors.jenis}
+                                            {errors.tipe}
                                         </p>
                                     )}
                                 </div>
 
-                                {/* Tipe - hanya muncul kalau jenis === "m" */}
-                                {data.jenis === "m" && (
+                                {/* jenis_pemasukkan (k/u/a) → hanya muncul kalau jenis_pemasukkan === "m" */}
+                                {data.tipe === "m" && (
                                     <div>
                                         <label
-                                            htmlFor="tipe"
+                                            htmlFor="jenis_pemasukkan"
                                             className="block text-sm font-medium text-gray-700 mb-2"
                                         >
-                                            Tipe <span className="text-red-500">*</span>
+                                            Jenis Pemasukkan <span className="text-red-500">*</span>
                                         </label>
                                         <select
-                                            id="tipe"
-                                            value={data.tipe}
+                                            id="jenis_pemasukkan"
+                                            value={data.jenis_pemasukkan}
                                             onChange={(e) =>
-                                                setData("tipe", e.target.value as "k" | "u" | "a")
+                                                setData("jenis_pemasukkan", e.target.value as "k" | "u" | "a")
                                             }
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                       focus:outline-none focus:ring-2 focus:ring-blue-500
-                       focus:border-transparent"
+                                            focus:outline-none focus:ring-2 focus:ring-blue-500
+                                            focus:border-transparent"
                                             required
                                         >
-                                            <option value="">Pilih tipe</option>
+                                            <option value="" disabled>Pilih Jenis Pemasukkan</option>
                                             <option value="k">Kas</option>
                                             <option value="u">Usaha Dana</option>
                                             <option value="a">Anggaran</option>
                                         </select>
-                                        {errors.tipe && (
+                                        {errors.jenis_pemasukkan && (
                                             <p className="mt-1 text-sm text-red-600">
-                                                {errors.tipe}
+                                                {errors.jenis_pemasukkan}
                                             </p>
                                         )}
                                     </div>
                                 )}
-
 
                                 {/* Jumlah */}
                                 <div>
@@ -130,20 +136,19 @@ export default function Create() {
                                         htmlFor="jumlah"
                                         className="block text-sm font-medium text-gray-700 mb-2"
                                     >
-                                        Jumlah (Rp){" "}
-                                        <span className="text-red-500">*</span>
+                                        Jumlah (Rp) <span className="text-red-500">*</span>
                                     </label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         id="jumlah"
                                         value={data.jumlah}
                                         onChange={(e) =>
                                             setData("jumlah", e.target.value)
                                         }
                                         placeholder="0"
-                                        min="0"
-                                        step="0.01"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                                        focus:outline-none focus:ring-2 focus:ring-blue-500
+                                        focus:border-transparent"
                                         required
                                     />
                                     {errors.jumlah && (
@@ -152,37 +157,36 @@ export default function Create() {
                                         </p>
                                     )}
                                 </div>
+
+                                {/* Catatan */}
+                                <div className={`${data.tipe === "m" ? "" : "col-span-2"}`}>
+                                    <label
+                                        htmlFor="catatan"
+                                        className="block text-sm font-medium text-gray-700 mb-2"
+                                    >
+                                        Catatan
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="catatan"
+                                        value={data.catatan}
+                                        onChange={(e) =>
+                                            setData("catatan", e.target.value)
+                                        }
+                                        placeholder="Masukkan catatan..."
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                                        focus:outline-none focus:ring-2 focus:ring-blue-500
+                                        focus:border-transparent"
+                                    />
+                                    {errors.catatan && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {errors.catatan}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                            {/* catatan */}
-                            <div className="md:col-span-2">
-                                <label
-                                    htmlFor="catatan"
-                                    className="block text-sm font-medium text-gray-700 mb-2"
-                                >
-                                    Catatan{" "}
-                                    <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    id="catatan"
-                                    value={data.catatan}
-                                    onChange={(e) =>
-                                        setData(
-                                            "catatan",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder="Masukkan catatan..."
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    required
-                                />
-                                {errors.catatan && (
-                                    <p className="mt-1 text-sm text-red-600">
-                                        {errors.catatan}
-                                    </p>
-                                )}
-                            </div>
-                            {/* Submit Buttons */}
+
+                            {/* Submit */}
                             <div className="flex items-center justify-end gap-4 pt-6 border-t">
                                 <Link
                                     href="/keuangan"

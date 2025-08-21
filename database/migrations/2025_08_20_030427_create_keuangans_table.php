@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('keuangans', function (Blueprint $table) {
-                $table->id();
-            $table->decimal('jumlah',15,2);
+            $table->id();
+            $table->decimal('jumlah',15);
             $table->enum('tipe', ['m','k'])->default('m');
-            $table->enum('jenis_pemasukkan',['k','u','a'])->default('k')->nullable();
-            $table->string('catatan');
+            $table->enum('jenis_pemasukkan',['k','u','a',null])->default(null)->nullable();
+            $table->string('catatan')->nullable();
             $table->timestamps();
         });
     }
