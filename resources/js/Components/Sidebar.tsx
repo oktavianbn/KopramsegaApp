@@ -35,6 +35,14 @@ const menuItems = [
     // { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
+// Helper function to truncate text
+const truncateText = (text: string, maxLength: number = 15): string => {
+    if (text.length <= maxLength) {
+        return text;
+    }
+    return text.substring(0, maxLength) + "...";
+};
+
 export function Sidebar({ className }: SimpleSidebarProps) {
     const user = usePage().props.auth.user;
     const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -113,11 +121,17 @@ export function Sidebar({ className }: SimpleSidebarProps) {
                                     <User className="h-4 w-4" />
                                 </div>
                                 <div className="flex-1 text-left">
-                                    <div className="font-medium text-sm truncate">
-                                        {user.name}
+                                    <div
+                                        className="font-medium text-sm"
+                                        title={user.name}
+                                    >
+                                        {truncateText(user.name, 15)}
                                     </div>
-                                    <div className="text-xs text-blue-200 truncate">
-                                        {user.email}
+                                    <div
+                                        className="text-xs text-blue-200"
+                                        title={user.email}
+                                    >
+                                        {truncateText(user.email, 15)}
                                     </div>
                                 </div>
                                 <ChevronDown className="h-4 w-4 text-blue-200" />
