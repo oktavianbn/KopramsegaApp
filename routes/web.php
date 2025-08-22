@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RencanaController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -26,6 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('arsip-surat', ArsipSuratController::class);
     Route::resource('keuangan', KeuanganController::class);
     Route::resource('user', UserController::class);
+    Route::resource('rencana', RencanaController::class);
+    Route::patch('rencana/{rencana}/status', [RencanaController::class, 'updateStatus'])->name('rencana.updateStatus');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
