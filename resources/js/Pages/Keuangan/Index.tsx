@@ -206,9 +206,6 @@ export default function Index({ keuangan, filters }: Props) {
                                             No.
                                         </th>
                                         <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Dibuat Pada
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                                             Tipe
                                         </th>
                                         <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
@@ -248,11 +245,6 @@ export default function Index({ keuangan, filters }: Props) {
                                                         keuangan.per_page +
                                                         index +
                                                         1}
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-sm text-gray-900">
-                                                    {formatDate(
-                                                        item.created_at
-                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 font-medium text-sm">
                                                     <span

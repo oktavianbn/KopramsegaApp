@@ -2,12 +2,12 @@
 
 use App\Http\Controllers\ArsipSuratController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RencanaController;
+use App\Http\Controllers\DokumentasiController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('user', UserController::class);
     Route::resource('rencana', RencanaController::class);
     Route::patch('rencana/{rencana}/status', [RencanaController::class, 'updateStatus'])->name('rencana.updateStatus');
+    Route::resource('dokumentasi', DokumentasiController::class);
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
