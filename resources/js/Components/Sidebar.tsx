@@ -23,6 +23,8 @@ import Dropdown from "./Dropdown";
 
 interface SimpleSidebarProps {
     className?: string;
+    isMobileOpen?: boolean;
+    onMobileClose?: () => void;
 }
 
 const menuItems = [
@@ -45,25 +47,20 @@ const truncateText = (text: string, maxLength: number = 15): string => {
     return text.substring(0, maxLength) + "...";
 };
 
-export function Sidebar({ className }: SimpleSidebarProps) {
+export function Sidebar({
+    className,
+    isMobileOpen = false,
+    onMobileClose,
+}: SimpleSidebarProps) {
     const user = usePage().props.auth.user;
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     return (
         <>
-            {/* Mobile Menu Button */}
-            <button
-                className="fixed top-4 left-4 z-50 md:hidden p-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
-                onClick={() => setIsMobileOpen(!isMobileOpen)}
-            >
-                <Menu className="h-5 w-5" />
-            </button>
-
             {/* Mobile Overlay */}
             {isMobileOpen && (
                 <div
                     className="fixed inset-0 bg-black/50 z-40 md:hidden"
-                    onClick={() => setIsMobileOpen(false)}
+                    onClick={onMobileClose}
                 />
             )}
 
@@ -89,7 +86,7 @@ export function Sidebar({ className }: SimpleSidebarProps) {
 
                     <button
                         className="md:hidden p-1 hover:bg-blue-500/30 rounded"
-                        onClick={() => setIsMobileOpen(false)}
+                        onClick={onMobileClose}
                     >
                         <X className="h-5 w-5" />
                     </button>

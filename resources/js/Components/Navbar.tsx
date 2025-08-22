@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Bell, User, ChevronDown, Link } from "lucide-react";
+import { Search, Bell, User, ChevronDown, Link, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePage } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
@@ -9,9 +9,10 @@ import Dropdown from "./Dropdown";
 
 interface NavbarProps {
     className?: string;
+    onMenuToggle?: () => void;
 }
 
-export function Navbar({ className }: NavbarProps) {
+export function Navbar({ className, onMenuToggle }: NavbarProps) {
     const user = usePage().props.auth.user;
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -19,25 +20,29 @@ export function Navbar({ className }: NavbarProps) {
     return (
         <nav
             className={cn(
-                "fixed top-0 right-0 left-0 md:left-64 z-30 bg-white border-b border-gray-200 shadow-sm",
+                "fixed top-0 md:hidden flex right-0 left-0 md:left-64 z-30 bg-blue-600 shadow-sm",
                 className
             )}
         >
-            <div className="flex items-center justify-between px-6 py-4">
-                {/* Left side - Search */}
-                <div className="flex-1 max-w-md">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-sm"
+            <div className="flex items-center justify-between px-6 py-4 w-full">
+                {/* Left side - Hamburger and Logo */}
+                <div className="flex items-center gap-4">
+                    {/* Mobile Menu Button */}
+                    <button
+                        className="md:hidden p-2 text-white hover:bg-blue-700 rounded-lg transition-colors"
+                        onClick={onMenuToggle}
+                    >
+                        <Menu className="h-5 w-5" />
+                    </button>
+
+                    <div className="logo">
+                        <img
+                            src="/simako.svg"
+                            className="w-32 -mt-2"
+                            alt="logo"
                         />
                     </div>
                 </div>
-
                 {/* Right side - Notifications and User */}
                 <div className="flex items-center gap-4">
                     {/* Notifications */}
