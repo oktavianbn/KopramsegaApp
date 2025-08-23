@@ -16,6 +16,7 @@ import {
     LogOut,
     User,
     TimerReset,
+    SwitchCamera,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePage } from "@inertiajs/react";
@@ -23,6 +24,8 @@ import Dropdown from "./Dropdown";
 
 interface SimpleSidebarProps {
     className?: string;
+    isMobileOpen?: boolean;
+    onMobileClose?: () => void;
 }
 
 const menuItems = [
@@ -32,6 +35,7 @@ const menuItems = [
     { icon: Layers, label: "Inventory", href: "/inventory" },
     { icon: FolderClosed, label: "Arsip Surat", href: "/arsip-surat" },
     { icon: TimerReset, label: "Rencana", href: "/rencana" },
+    { icon: SwitchCamera, label: "Dokumentasi", href: "/dokumentasi" },
     // { icon: BarChart3, label: "Analytics", href: "/analytics" },
     // { icon: FileText, label: "Reports", href: "/reports" },
     // { icon: Settings, label: "Settings", href: "/settings" },
@@ -45,25 +49,39 @@ const truncateText = (text: string, maxLength: number = 15): string => {
     return text.substring(0, maxLength) + "...";
 };
 
-export function Sidebar({ className }: SimpleSidebarProps) {
+// Helper function to check if a route is active
+const isActiveRoute = (href: string, currentUrl: string): boolean => {
+    // Remove trailing slash and normalize URLs
+    const normalizedHref = href.replace(/\/$/, "") || "/";
+    const normalizedCurrentUrl = currentUrl.replace(/\/$/, "") || "/";
+
+    // For exact match on dashboard
+    if (normalizedHref === "/dashboard") {
+        return (
+            normalizedCurrentUrl === "/dashboard" ||
+            normalizedCurrentUrl === "/"
+        );
+    }
+
+    // For other routes, check if current URL starts with the href
+    return normalizedCurrentUrl.startsWith(normalizedHref);
+};
+
+export function Sidebar({
+    className,
+    isMobileOpen = false,
+    onMobileClose,
+}: SimpleSidebarProps) {
     const user = usePage().props.auth.user;
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const { url } = usePage(); // Get current URL from Inertia page
 
     return (
         <>
-            {/* Mobile Menu Button */}
-            <button
-                className="fixed top-4 left-4 z-50 md:hidden p-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
-                onClick={() => setIsMobileOpen(!isMobileOpen)}
-            >
-                <Menu className="h-5 w-5" />
-            </button>
-
             {/* Mobile Overlay */}
             {isMobileOpen && (
                 <div
                     className="fixed inset-0 bg-black/50 z-40 md:hidden"
-                    onClick={() => setIsMobileOpen(false)}
+                    onClick={onMobileClose}
                 />
             )}
 
@@ -89,7 +107,7 @@ export function Sidebar({ className }: SimpleSidebarProps) {
 
                     <button
                         className="md:hidden p-1 hover:bg-blue-500/30 rounded"
-                        onClick={() => setIsMobileOpen(false)}
+                        onClick={onMobileClose}
                     >
                         <X className="h-5 w-5" />
                     </button>
@@ -98,19 +116,33 @@ export function Sidebar({ className }: SimpleSidebarProps) {
                 {/* Navigation - Flex grow to push user section to bottom */}
                 <nav className="p-4 flex-1">
                     <ul className="space-y-1">
-                        {menuItems.map((item, index) => (
-                            <li key={index}>
-                                <a
-                                    href={item.href}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-blue-500/30 text-blue-50 hover:text-white group"
-                                >
-                                    <item.icon className="h-5 w-5" />
-                                    <span className="font-medium">
-                                        {item.label}
-                                    </span>
-                                </a>
-                            </li>
-                        ))}
+                        {menuItems.map((item, index) => {
+                            const isActive = isActiveRoute(item.href, url);
+                            return (
+                                <li key={index}>
+                                    <a
+                                        href={item.href}
+                                        onClick={(e) => {
+                                            if (isActive) {
+                                                e.preventDefault();
+                                                return false;
+                                            }
+                                        }}
+                                        className={cn(
+                                            "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group",
+                                            isActive
+                                                ? "bg-white text-blue-600 cursor-default"
+                                                : "text-blue-50 hover:text-white hover:bg-blue-500/30 cursor-pointer"
+                                        )}
+                                    >
+                                        <item.icon className="h-5 w-5" />
+                                        <span className="font-medium">
+                                            {item.label}
+                                        </span>
+                                    </a>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </nav>
 
