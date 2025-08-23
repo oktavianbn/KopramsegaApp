@@ -1,14 +1,21 @@
-import { useState, useEffect } from "react";
-import { Head, Link, router } from "@inertiajs/react";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
+"use client";
+
+import { ModalDetailKeuangan } from "@/Components/ModalDetailKeuangan";
 import AppLayout from "@/Layouts/AppLayout";
+import { Link, router, Head } from "@inertiajs/react";
+import {
+    Plus, Filter, Search, X, SortAsc, SortDesc, ChevronDown,
+    FileText, Edit, Trash2, ChevronLeft, ChevronRight,
+    Download, DollarSign
+} from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
 interface Keuangan {
     id: number;
-    catatan: string;
-    jenis_pemasukkan: "k" | "u" | "a" | "";
-    tipe: "m" | "k" | "";
     jumlah: number;
+    tipe: "m" | "k";
+    jenis_pemasukkan?: "k" | "u" | "a" | null;
+    catatan?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -20,374 +27,488 @@ interface Props {
         last_page: number;
         per_page: number;
         total: number;
+        from: number;
+        to: number;
     };
     filters: {
         search?: string;
-        jenis_pemasukkan?: string;
-        tipe?: string;
-        kategori?: string;
+        sort_by?: string;
+        sort_direction?: "asc" | "desc";
+        filter?: string;
     };
 }
 
 export default function Index({ keuangan, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "");
-    const [activeTab, setActiveTab] = useState(filters.tipe || "");
-    const [jenis_pemasukkan, setJenis_pemasukkan] = useState(
-        filters.jenis_pemasukkan || ""
-    );
-    const [kategori, setKategori] = useState(filters.kategori || "");
+    const [sortBy, setSortBy] = useState(filters.sort_by || "created_at");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">(filters.sort_direction || "desc");
+    const [perPage, setPerPage] = useState(keuangan.per_page || 10);
+    const [activeFilter, setActiveFilter] = useState<string | null>(filters.filter || null);
+    const [showSortDropdown, setShowSortDropdown] = useState(false);
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedData, setSelectedData] = useState<Keuangan | null>(null);
 
-    // Debounce search effect
+    const sortDropdownRef = useRef<HTMLDivElement>(null);
+    const filterDropdownRef = useRef<HTMLDivElement>(null);
+    const downloadDropdownRef = useRef<HTMLDivElement>(null);
+
+    const downloadOptions = [
+        { label: "Excel", href: "/export/excel" },
+        { label: "CSV", href: "/export/excel?format=csv" },
+        { label: "PDF", href: "/export/pdf" },
+        { label: "Word", href: "/export/word" },
+    ];
+
+    /** 🔹 utilitas untuk request dengan parameter konsisten */
+    const updateQuery = (extra: Record<string, any> = {}) => {
+        router.get(
+            "/keuangan",
+            {
+                search,
+                sort_by: sortBy,
+                sort_direction: sortDirection,
+                perPage,
+                filter: activeFilter || undefined,  // 🔹 selalu kirim filter
+                ...extra,
+            },
+            { preserveState: true }
+        );
+    };
+
+
+    // live search debounce
     useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            router.get(
-                "/keuangan",
-                {
-                    search,
-                    tipe: activeTab,
-                    jenis_pemasukkan,
-                    kategori,
-                    page: 1, // Reset ke halaman pertama saat search
-                },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                }
-            );
-        }, 500); // Delay 500ms
+        const timeoutId = setTimeout(() => {
+            if (search !== filters.search) updateQuery();
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [search]);
 
-        return () => clearTimeout(delayDebounceFn);
-    }, [search]); // Hanya trigger saat search berubah
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+                setShowSortDropdown(false);
+            }
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+                setShowFilterDropdown(false);
+            }
+            if (downloadDropdownRef.current && !downloadDropdownRef.current.contains(event.target as Node)) {
+                setShowDownloadDropdown(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
-    // Tab handler
-    const handleTab = (tabTipe: string) => {
-        setActiveTab(tabTipe);
-        router.get(
-            "/keuangan",
-            { search, tipe: tabTipe, jenis_pemasukkan, kategori },
-            { preserveState: true }
-        );
+    /** 🔹 tab & filter */
+    const handleTab = (tab: string | null) => {
+        setActiveFilter(tab);
+        updateQuery({ filter: tab || undefined, page: 1 });
     };
 
-    // Live search handler - sekarang tidak diperlukan karena sudah realtime
-    const handleSearch = () => {
-        router.get(
-            "/keuangan",
-            { search, tipe: activeTab, jenis_pemasukkan, kategori },
-            { preserveState: true }
-        );
+    /** 🔹 sorting */
+    const handleSort = (field: string) => {
+        const newDirection = sortBy === field && sortDirection === "asc" ? "desc" : "asc";
+        setSortBy(field);
+        setSortDirection(newDirection);
+        updateQuery({ sort_by: field, sort_direction: newDirection });
+        setShowSortDropdown(false);
     };
 
-    // Search on enter - tetap dipertahankan untuk UX yang lebih baik
-    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            handleSearch();
-        }
+    /** 🔹 perPage */
+    const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = parseInt(e.target.value);
+        setPerPage(value);
+        updateQuery({ perPage: value, page: 1 });
     };
 
-    const handleDelete = (id: number) => {
-        if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-            router.delete(`/keuangan/${id}`);
-        }
-    };
+    /** 🔹 CRUD handlers */
+    const handleEdit = (id: number) => router.visit(`/keuangan/${id}/edit`);
+    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus data ini?") && router.delete(`/keuangan/${id}`);
+    const handleShow = (item: Keuangan) => { setSelectedData(item); setShowModal(true); };
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
-        }).format(amount);
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("id-ID");
+    /** 🔹 utils */
+    const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString("id-ID");
+    const clearFilters = () => {
+        setSearch("");
+        setSortBy("created_at");
+        setSortDirection("desc");
+        setActiveFilter(null);
+        updateQuery({});
     };
 
     return (
         <AppLayout>
             <Head title="Keuangan" />
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="min-h-screen bg-gray-50 p-6 overflow-hidden">
                 <div className="mx-auto">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
-                                Keuangan
-                            </h1>
-                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                Manajemen Keuangan
-                            </h2>
+                    <div className="grid gap-2 lg:flex items-center justify-between mb-6">
+                        <div className="flex gap-6 items-center">
+                            <div className="p-2 h-max bg-green-100 rounded-lg flex justify-center items-center">
+                                <DollarSign className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Keuangan</h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Keuangan / Daftar</h2>
+                            </div>
                         </div>
-                        <Link
-                            href="/keuangan/create"
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-gray-800 transition-colors"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Tambah Data
-                        </Link>
+                        <div className="flex items-center gap-3">
+                            {/* Dropdown Download */}
+                            <div className="relative inline-block text-left" ref={downloadDropdownRef}>
+                                <button
+                                    onClick={() => setShowDownloadDropdown(!showDownloadDropdown)}
+                                    className="inline-flex justify-center items-center px-4 py-2 bg-white text-black rounded-lg border border-black hover:bg-gray-200 text-left"
+                                >
+                                    <Download className="mr-2 h-5 w-5" />
+                                    Download Data
+                                    <ChevronDown className="ml-2 h-4 w-4" />
+                                </button>
+
+                                {showDownloadDropdown && (
+                                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50">
+                                        {downloadOptions.map((opt) => (
+                                            <Link
+                                                key={opt.label}
+                                                href={opt.href}
+                                                method="get"
+                                                as="button"
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                onClick={() => setShowDownloadDropdown(false)}
+                                            >
+                                                <FileText className="h-4 w-4" />
+                                                {opt.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <Link
+                                href="/keuangan/create"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <Plus className="h-4 w-4" />
+                                Tambah Data
+                            </Link>
+                        </div>
                     </div>
-                    {/* Tabs */}
-                    <div className="flex gap-4 mb-6 border-b">
-                        <button
-                            onClick={() => handleTab("")}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === ""
-                                    ? "border-blue-500 text-blue-600"
-                                    : "border-transparent text-gray-500 hover:text-gray-700"
+                </div>
+                <div className="flex gap-4 mb-6 border-b">
+                    <button
+                        onClick={() => handleTab("")}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
                             }`}
-                        >
-                            Semua
-                        </button>
-                        <button
-                            onClick={() => handleTab("m")}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === "m"
-                                    ? "border-blue-500 text-blue-600"
-                                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    >
+                        Seluruh Transaksi{" "}
+                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 ro unded-full">{keuangan.total}</span>
+                    </button>
+                    <button
+                        onClick={() => handleTab("m")}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "m" ? "border-green-500 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"
                             }`}
-                        >
-                            Pemasukan
-                        </button>
-                        <button
-                            onClick={() => handleTab("k")}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === "k"
-                                    ? "border-blue-500 text-blue-600"
-                                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    >
+                        Pemasukkan{" "}
+                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
+                            {keuangan.data.filter((d) => d.tipe === "m").length}
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => handleTab("k")}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "k" ? "border-red-500 text-red-600" : "border-transparent text-gray-500 hover:text-gray-700"
                             }`}
-                        >
-                            Pengeluaran
-                        </button>
+                    >
+                        Pengeluaran{" "}
+                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
+                            {keuangan.data.filter((d) => d.tipe === "k").length}
+                        </span>
+                    </button>
+                </div>
+
+
+                {/* Filter Status */}
+                {(search || activeFilter) && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
+                                <Filter className="h-4 w-4" />
+                                <span>Filter aktif:</span>
+                                {search && (
+                                    <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
+                                        <Search className="h-3 w-3" />
+                                        Cari: "{search}"
+                                    </span>
+                                )}
+                                {activeFilter && (
+                                    <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
+                                        {activeFilter === "m" ? "Pemasukkan" : activeFilter === "k" ? "Pengeluaran" : activeFilter === "i" ? "Kas" : activeFilter === "u" ? "Usaha Dana" : "Anggaran"}
+                                    </span>
+                                )}
+                            </div>
+                            <button
+                                onClick={clearFilters}
+                                className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                <X className="h-3 w-3" />
+                                Clear All
+                            </button>
+                        </div>
                     </div>
-                    {/* Pencarian dan Filter */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                        <div className="relative">
+                )}
+
+
+                {/* Search & Sort */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 grid gap-2 lg:flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1 w-full">
+                        <div className="relative ">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Cari catatan keuangan..."
+                                placeholder="Cari berdasarkan jumlah atau catatan"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                onKeyDown={handleSearchKeyDown}
-                                className="pl-10 pr-4 py-2 md:w-80 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                onKeyPress={(e) => {
+                                    if (e.key === "Enter") {
+                                        // handleSort();
+                                    }
+                                }}
+                                className="pl-10 pr-6 py-2 border md:w-80 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
+
                         </div>
-                        <select
-                            value={jenis_pemasukkan}
-                            onChange={(e) => {
-                                setJenis_pemasukkan(e.target.value);
-                                router.get(
-                                    "/keuangan",
-                                    {
-                                        search,
-                                        tipe: activeTab,
-                                        jenis_pemasukkan: e.target.value,
-                                        kategori,
-                                    },
-                                    { preserveState: true }
-                                );
-                            }}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    </div>
+                    <div className="flex gap-2">
+                        {/* Filter Dropdown */}
+                        <div className="relative"
+                            ref={filterDropdownRef}
                         >
-                            <option value="">Semua Jenis Pemasukkan</option>
-                            <option value="k">Kas</option>
-                            <option value="u">Usaha Dana</option>
-                            <option value="a">Anggaran</option>
-                        </select>
+                            <button
+                                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showFilterDropdown
+                                    ? "border-blue-500 bg-blue-50 text-blue-600"
+                                    : "border-gray-300 bg-white hover:bg-gray-50"
+                                    }`}
+                            >
+                                Filter
+                                <ChevronDown
+                                    className={`h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""
+                                        }`}
+                                />
+                            </button>
+                            {showFilterDropdown && (
+                                <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                                    <div className="p-2 flex flex-col">
+                                        <span className="px-3 py-1 text-xs font-semibold text-gray-500">Tipe</span>
+                                        <button
+                                            onClick={() => handleTab("m")}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "m" ? "bg-blue-50 text-blue-600 font-medium" : ""
+                                                }`}
+                                        >
+                                            Pemasukkan
+                                        </button>
+                                        <button
+                                            onClick={() => handleTab("k")}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "k" ? "bg-blue-50 text-blue-600 font-medium" : ""
+                                                }`}
+                                        >
+                                            Pengeluaran
+                                        </button>
+
+                                        <span className="px-3 py-1 mt-2 text-xs font-semibold text-gray-500">
+                                            Jenis Pemasukkan
+                                        </span>
+                                        <button
+                                            onClick={() => handleTab("i")}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "i" ? "bg-blue-50 text-blue-600 font-medium" : ""
+                                                }`}
+                                        >
+                                            Kas
+                                        </button>
+                                        <button
+                                            onClick={() => handleTab("u")}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "u" ? "bg-blue-50 text-blue-600 font-medium" : ""
+                                                }`}
+                                        >
+                                            Usaha Dana
+                                        </button>
+                                        <button
+                                            onClick={() => handleTab("a")}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "a" ? "bg-blue-50 text-blue-600 font-medium" : ""
+                                                }`}
+                                        >
+                                            Anggaran
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="relative" ref={sortDropdownRef}>
+                            <button
+                                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showSortDropdown
+                                    ? "border-blue-500 bg-blue-50 text-blue-600"
+                                    : "border-gray-300 bg-white hover:bg-gray-50"
+                                    }`}
+                            >
+                                Urutkan
+                                {sortDirection === "asc" ? (
+                                    <SortAsc className="h-4 w-4" />
+                                ) : (
+                                    <SortDesc className="h-4 w-4" />
+                                )}
+                                <ChevronDown
+                                    className={`h-4 w-4 transition-transform ${showSortDropdown ? "rotate-180" : ""
+                                        }`}
+                                />
+                            </button>
+                            {showSortDropdown && (
+                                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                                    <div className="p-2">
+                                        <button
+                                            onClick={() => handleSort("jumlah")}
+                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "jumlah" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
+                                                }`}
+                                        >
+                                            <span>Nominal</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleSort("created_at")}
+                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "created_at" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
+                                                }`}
+                                        >
+                                            <span>Dibuat Pada</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Table */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">No.</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nominal Uang</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tipe</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis Pemasukkan</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Catatan</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dibuat Pada</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200 text-center">
+                                {keuangan.data.map((item: Keuangan, idx) => (
+                                    <tr key={item.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 text-sm text-gray-900 ">
+                                            {(keuangan.current_page - 1) * keuangan.per_page + idx + 1}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-900 w-max ">
+                                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 2 })
+                                                .format(item.jumlah)}
+                                        </td>
+
+                                        <td className={`px-6 py-4 text-sm font-medium ${item.tipe === "m" ? "text-green-600" : "text-red-600"}`}>
+                                            {item.tipe === "m" ? "Pemasukkan" : "Pengeluaran"}
+                                        </td>
+                                        <td className={`px-6 py-4 text-sm font-medium ${item.jenis_pemasukkan === "k" ? " text-blue-600" : item.jenis_pemasukkan === "u" ? " text-gray-600" : item.jenis_pemasukkan === "a" ? " text-yellow-600" : " text-neutral-600"}`}>
+                                            {item.jenis_pemasukkan === "k" ? "Kas" : item.jenis_pemasukkan === "u" ? "Usaha Dana" : item.jenis_pemasukkan === "a" ? "Anggaran" : "-"}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] truncate">
+                                            {item.catatan || "-"}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                            {formatDate(item.created_at)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm flex justify-center gap-2">
+                                            <button
+                                                onClick={() => handleShow(item)}
+                                                className="text-gray-600 hover:text-blue-600"
+                                                title="Lihat Detail"
+                                            >
+                                                <FileText className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleEdit(item.id)}
+                                                className="text-blue-600 hover:text-blue-900"
+                                                title="Edit"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="text-red-600 hover:text-red-900"
+                                                title="Hapus"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
-                    {/* ...existing code... */}
-                    {/* Table dan komponen lainnya tetap sama */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            No.
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Tipe
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Jenis Pemasukkan
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Jumlah
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Catatan
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Aksi
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200 text-center">
-                                    {keuangan.data.length === 0 ? (
-                                        <tr>
-                                            <td
-                                                colSpan={7}
-                                                className="px-6 py-4 text-gray-500"
-                                            >
-                                                Tidak ada data keuangan
-                                                ditemukan.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        keuangan.data.map((item, index) => (
-                                            <tr
-                                                key={item.id}
-                                                className="hover:bg-gray-50"
-                                            >
-                                                <td className="px-6 py-4 font-medium text-sm text-gray-900">
-                                                    {(keuangan.current_page -
-                                                        1) *
-                                                        keuangan.per_page +
-                                                        index +
-                                                        1}
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-sm">
-                                                    <span
-                                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                            item.tipe === "m"
-                                                                ? "bg-green-100 text-green-800"
-                                                                : "bg-red-100 text-red-800"
-                                                        }`}
-                                                    >
-                                                        {item.tipe === "m"
-                                                            ? "Pemasukan"
-                                                            : "Pengeluaran"}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-sm">
-                                                    {item.jenis_pemasukkan ===
-                                                    "a"
-                                                        ? "Anggaran"
-                                                        : item.jenis_pemasukkan ===
-                                                          "k"
-                                                        ? "Kas"
-                                                        : item.jenis_pemasukkan ===
-                                                          "u"
-                                                        ? "Usaha Dana"
-                                                        : "-"}
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-sm">
-                                                    <span
-                                                        className={
-                                                            item.tipe === "m"
-                                                                ? "text-green-600"
-                                                                : "text-red-600"
-                                                        }
-                                                    >
-                                                        {item.tipe === "m"
-                                                            ? ""
-                                                            : "-"}
-                                                        {formatCurrency(
-                                                            item.jumlah
-                                                        )}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-sm text-gray-500">
-                                                    {item.catatan}
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-sm flex items-center justify-center gap-2">
-                                                    <Link
-                                                        href={`/keuangan/${item.id}/edit`}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() =>
-                                                            handleDelete(
-                                                                item.id
-                                                            )
-                                                        }
-                                                        className="text-red-600 hover:text-red-900"
-                                                        title="Hapus"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                    {/* Pagination */}
+                    <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <select
+                                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                value={perPage}
+                                onChange={handlePerPageChange}
+                            >
+                                <option value={10}>10 data per halaman</option>
+                                <option value={20}>20 data per halaman</option>
+                                <option value={50}>50 data per halaman</option>
+                            </select>
                         </div>
-
-                        {/* Pagination */}
-                        {keuangan.last_page > 1 && (
-                            <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                                <span className="text-sm text-gray-700">
-                                    {(keuangan.current_page - 1) *
-                                        keuangan.per_page +
-                                        1}
-                                    -
-                                    {(keuangan.current_page - 1) *
-                                        keuangan.per_page +
-                                        keuangan.data.length}{" "}
-                                    dari {keuangan.total}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                        disabled={keuangan.current_page === 1}
-                                        onClick={() =>
-                                            router.get(
-                                                "/keuangan",
-                                                {
-                                                    search,
-                                                    tipe: activeTab,
-                                                    jenis_pemasukkan,
-                                                    kategori,
-                                                    page:
-                                                        keuangan.current_page -
-                                                        1,
-                                                },
-                                                { preserveState: true }
-                                            )
-                                        }
-                                    >
-                                        <span className="sr-only">
-                                            Sebelumnya
-                                        </span>
-                                        &#8592;
-                                    </button>
-                                    <button
-                                        className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                        disabled={
-                                            keuangan.current_page ===
-                                            keuangan.last_page
-                                        }
-                                        onClick={() =>
-                                            router.get(
-                                                "/keuangan",
-                                                {
-                                                    search,
-                                                    tipe: activeTab,
-                                                    jenis_pemasukkan,
-                                                    kategori,
-                                                    page:
-                                                        keuangan.current_page +
-                                                        1,
-                                                },
-                                                { preserveState: true }
-                                            )
-                                        }
-                                    >
-                                        <span className="sr-only">
-                                            Berikutnya
-                                        </span>
-                                        &#8594;
-                                    </button>
-                                </div>
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm text-gray-700 whitespace-nowrap">
+                                {keuangan.from}-{keuangan.to} dari {keuangan.total}
+                            </span>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                                    disabled={keuangan.current_page === 1}
+                                    onClick={() =>
+                                        router.get(
+                                            "/keuangan",
+                                            { search, sort_by: sortBy, sort_direction: sortDirection, page: keuangan.current_page - 1, perPage },
+                                            { preserveState: true }
+                                        )
+                                    }
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                <button
+                                    className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                                    disabled={keuangan.current_page === keuangan.last_page}
+                                    onClick={() =>
+                                        router.get(
+                                            "/keuangan",
+                                            { search, sort_by: sortBy, sort_direction: sortDirection, page: keuangan.current_page + 1, perPage },
+                                            { preserveState: true }
+                                        )
+                                    }
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>
+            {/* Modal Show Data */}
+            {showModal && selectedData && (
+                <ModalDetailKeuangan
+                    isOpen={showModal}
+                    onClose={() => setShowModal(false)}
+                    data={selectedData}
+                />)}
         </AppLayout>
     );
 }

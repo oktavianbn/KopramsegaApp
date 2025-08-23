@@ -52,32 +52,56 @@ export default function Edit({ keuangan }: Props) {
         <AppLayout>
             <Head title="Edit Data Keuangan" />
 
-            <div className="min-h-screen bg-gray-50 p-6">
-                <div className="mx-auto">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700">
-                                Keuangan
-                            </h1>
-                            <h2 className="text-base font-medium text-gray-700">
-                                Edit Data Keuangan
-                            </h2>
-                        </div>
-                        <Link
-                            href="/keuangan"
-                            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <ArrowLeft className="h-5 w-5" />
-                        </Link>
-                    </div>
 
-                    {/* Form */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <form onSubmit={submit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Tipe (m/k) */}
-                                <div>
+            <div className="p-6">
+                {/* Header */}
+                <div className="grid gap-2 md:flex items-center justify-between mb-6">
+                    <div className="flex gap-6 items-center">
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Keuangan</h1>
+                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Keuangan / Edit Data</h2>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex gap-4 mb-6 border-b">
+
+                </div>
+
+                {/* Form */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <form onSubmit={submit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Tipe (m/k) */}
+                            <div className="max-md:col-span-2">
+                                <label
+                                    htmlFor="tipe"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
+                                >
+                                    Tipe <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    id="tipe"
+                                    value={data.tipe}
+                                    onChange={handleTipeChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                >
+                                    <option value="" disabled>
+                                        Pilih Tipe
+                                    </option>
+                                    <option value="m">Pemasukan</option>
+                                    <option value="k">Pengeluaran</option>
+                                </select>
+                                {errors.tipe && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.tipe}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* jenis_pemasukkan (k/u/a) → hanya muncul kalau tipe === "m" */}
+                            {data.tipe === "m" && (
+                                <div className="max-md:col-span-2">
                                     <label
                                         htmlFor="tipe"
                                         className="block text-sm font-medium text-gray-700 mb-2"
@@ -86,9 +110,17 @@ export default function Edit({ keuangan }: Props) {
                                         <span className="text-red-500">*</span>
                                     </label>
                                     <select
-                                        id="tipe"
-                                        value={data.tipe}
-                                        onChange={handleTipeChange}
+                                        id="jenis_pemasukkan"
+                                        value={data.jenis_pemasukkan}
+                                        onChange={(e) =>
+                                            setData(
+                                                "jenis_pemasukkan",
+                                                e.target.value as
+                                                | "k"
+                                                | "u"
+                                                | "a"
+                                            )
+                                        }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         required
                                     >
@@ -104,83 +136,41 @@ export default function Edit({ keuangan }: Props) {
                                         </p>
                                     )}
                                 </div>
-
-                                {/* jenis_pemasukkan (k/u/a) → hanya muncul kalau tipe === "m" */}
-                                {data.tipe === "m" && (
-                                    <div>
-                                        <label
-                                            htmlFor="jenis_pemasukkan"
-                                            className="block text-sm font-medium text-gray-700 mb-2"
-                                        >
-                                            Jenis Pemasukkan{" "}
-                                            <span className="text-red-500">
-                                                *
-                                            </span>
-                                        </label>
-                                        <select
-                                            id="jenis_pemasukkan"
-                                            value={data.jenis_pemasukkan}
-                                            onChange={(e) =>
-                                                setData(
-                                                    "jenis_pemasukkan",
-                                                    e.target.value as
-                                                        | "k"
-                                                        | "u"
-                                                        | "a"
-                                                )
-                                            }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            required
-                                        >
-                                            <option value="" disabled>
-                                                Pilih Jenis
-                                            </option>
-                                            <option value="k">Kas</option>
-                                            <option value="u">
-                                                Usaha Dana
-                                            </option>
-                                            <option value="a">Anggaran</option>
-                                        </select>
-                                        {errors.jenis_pemasukkan && (
-                                            <p className="mt-1 text-sm text-red-600">
-                                                {errors.jenis_pemasukkan}
-                                            </p>
-                                        )}
-                                    </div>
+                            {/* Jumlah */}
+                            <div className="max-md:col-span-2">
+                                <label
+                                    htmlFor="jumlah"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
+                                >
+                                    Jumlah (Rp){" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="jumlah"
+                                    value={data.jumlah}
+                                    onChange={(e) =>
+                                        setData("jumlah", e.target.value)
+                                    }
+                                    placeholder="0"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                />
+                                {errors.jumlah && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.jumlah}
+                                    </p>
                                 )}
 
-                                {/* Jumlah */}
-                                <div>
-                                    <label
-                                        htmlFor="jumlah"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Jumlah (Rp){" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="jumlah"
-                                        value={data.jumlah}
-                                        onChange={(e) =>
-                                            setData("jumlah", e.target.value)
-                                        }
-                                        placeholder="0"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.jumlah && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.jumlah}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Catatan */}
-                                <div
-                                    className={`${
-                                        data.tipe === "m" ? "" : "col-span-2"
+                            {/* Catatan */}
+                            <div
+                                className={`max-md:col-span-2
+                                    ${data.tipe === "m" ? "" : "col-span-2"
                                     }`}
+                            >
+                                <label
+                                    htmlFor="catatan"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
                                 >
                                     <label
                                         htmlFor="catatan"

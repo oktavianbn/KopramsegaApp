@@ -16,26 +16,49 @@ class KeuanganController extends Controller
     {
         $query = Keuangan::query();
 
-        // Filter berdasarkan pencarian
-        if ($request->filled('search')) {
-            $query->where('catatan', 'like', '%' . $request->search . '%');
+        $perPage = $request->input('perPage', 10);
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $search = $request->input('search');
+        $filter = $request->input('filter');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('catatan', 'like', "%$search%")
+                    ->orWhere('jumlah', 'like', "%$search%");
+            });
         }
 
-        // Filter berdasarkan tipe
-        if ($request->filled('tipe')) {
-            $query->where('tipe', $request->tipe);
+        if ($filter) {
+            if (in_array($filter, ['m', 'k'])) {
+                $query->where('tipe', $filter);
+            } elseif (in_array($filter, ['i', 'u', 'a'])) {
+                // mapping 'i' -> 'k'
+                $mapped = $filter === 'i' ? 'k' : $filter;
+                $query->where('jenis_pemasukkan', $mapped);
+            }
         }
 
-        // Filter berdasarkan jenis_pemasukkan
-        if ($request->filled('jenis_pemasukkan')) {
-            $query->where('jenis_pemasukkan', $request->jenis_pemasukkan);
+
+        // 🔹 validasi kolom untuk urutkan
+        $allowedSorts = ['jumlah', 'created_at'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
         }
 
-        $keuangan = $query->orderBy('created_at', 'desc')->paginate(10);
+        $keuangan = $query->orderBy($sortBy, $sortDirection)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return Inertia::render('Keuangan/Index', [
             'keuangan' => $keuangan,
-            'filters' => $request->only(['search', 'tipe', 'jenis', 'kategori'])
+            'filters' => [
+                'search' => $search ?? '',
+                'sort_by' => $sortBy ?? 'created_at',
+                'sort_direction' => $sortDirection ?? 'desc',
+                'perPage' => $perPage ?? 10,
+                'filter' => $filter ?? null,
+            ]
         ]);
     }
 
