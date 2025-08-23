@@ -54,23 +54,21 @@ export default function Edit({ keuangan }: Props) {
 
             <div className="p-6">
                 {/* Header */}
-                <div className="mb-6">
-                    <div className="flex items-center gap-4 mb-4">
+                <div className="grid gap-2 md:flex items-center justify-between mb-6">
+                    <div className="flex gap-6 items-center">
                         <Link
                             href="/keuangan"
-                            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <ArrowLeft className="h-5 w-5" />
+                            className="p-2 h-max bg-gray-100 rounded-lg flex justify-center items-center">
+                            <ArrowLeft className="h-5 w-5 text-gray-600" />
                         </Link>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Edit Data Keuangan
-                            </h1>
-                            <p className="text-gray-600">
-                                Ubah data pemasukan atau pengeluaran
-                            </p>
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Keuangan</h1>
+                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Keuangan / Edit Data</h2>
                         </div>
                     </div>
+                </div>
+                <div className="flex gap-4 mb-6 border-b">
+
                 </div>
 
                 {/* Form */}
@@ -78,7 +76,7 @@ export default function Edit({ keuangan }: Props) {
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Tipe (m/k) */}
-                            <div>
+                            <div className="max-md:col-span-2">
                                 <label
                                     htmlFor="tipe"
                                     className="block text-sm font-medium text-gray-700 mb-2"
@@ -107,7 +105,7 @@ export default function Edit({ keuangan }: Props) {
 
                             {/* jenis_pemasukkan (k/u/a) → hanya muncul kalau tipe === "m" */}
                             {data.tipe === "m" && (
-                                <div>
+                                <div className="max-md:col-span-2">
                                     <label
                                         htmlFor="jenis_pemasukkan"
                                         className="block text-sm font-medium text-gray-700 mb-2"
@@ -122,9 +120,9 @@ export default function Edit({ keuangan }: Props) {
                                             setData(
                                                 "jenis_pemasukkan",
                                                 e.target.value as
-                                                    | "k"
-                                                    | "u"
-                                                    | "a"
+                                                | "k"
+                                                | "u"
+                                                | "a"
                                             )
                                         }
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -146,7 +144,7 @@ export default function Edit({ keuangan }: Props) {
                             )}
 
                             {/* Jumlah */}
-                            <div>
+                            <div className="max-md:col-span-2">
                                 <label
                                     htmlFor="jumlah"
                                     className="block text-sm font-medium text-gray-700 mb-2"
@@ -174,9 +172,9 @@ export default function Edit({ keuangan }: Props) {
 
                             {/* Catatan */}
                             <div
-                                className={`${
-                                    data.tipe === "m" ? "" : "col-span-2"
-                                }`}
+                                className={`max-md:col-span-2
+                                    ${data.tipe === "m" ? "" : "col-span-2"
+                                    }`}
                             >
                                 <label
                                     htmlFor="catatan"
