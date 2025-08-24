@@ -39,7 +39,6 @@ class KeuanganController extends Controller
             }
         }
 
-
         // 🔹 validasi kolom untuk urutkan
         $allowedSorts = ['jumlah', 'created_at'];
         if (!in_array($sortBy, $allowedSorts)) {
