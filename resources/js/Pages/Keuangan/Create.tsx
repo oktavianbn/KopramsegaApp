@@ -1,9 +1,7 @@
-import { useState, FormEventHandler } from "react";
-import { Head, Link, useForm } from "@inertiajs/react";
-import { Navbar } from "@/Components/Navbar";
-import { Sidebar } from "@/Components/Sidebar";
-import { ArrowLeft, Save } from "lucide-react";
 import AppLayout from "@/Layouts/AppLayout";
+import { Head, Link, useForm } from "@inertiajs/react";
+import { ArrowLeft, Save } from "lucide-react";
+import { FormEventHandler } from "react";
 
 interface FormData {
     jenis_pemasukkan: "k" | "u" | "a" | "";
@@ -38,11 +36,15 @@ export default function Create() {
         <AppLayout>
             <Head title="Tambah Data Keuangan" />
 
-
             <div className="p-6">
                 {/* Header */}
                 <div className="grid gap-2 md:flex items-center justify-between mb-6">
                     <div className="flex gap-6 items-center">
+                        <Link
+                            href="/keuangan"
+                            className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center">
+                            <ArrowLeft className="h-5 w-5 text-gray-500" />
+                        </Link>
                         <div className="flex flex-col gap-2">
                             <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Keuangan</h1>
                             <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Keuangan / Tambah Data</h2>
@@ -91,10 +93,10 @@ export default function Create() {
                             {data.tipe === "m" && (
                                 <div className="max-md:col-span-2">
                                     <label
-                                        htmlFor="tipe"
+                                        htmlFor="jenis_pemasukkan"
                                         className="block text-sm font-medium text-gray-700 mb-2"
                                     >
-                                        Tipe{" "}
+                                        Jenis Pemasukkan{" "}
                                         <span className="text-red-500">*</span>
                                     </label>
                                     <select
@@ -117,15 +119,16 @@ export default function Create() {
                                         <option value="" disabled>
                                             Pilih Tipe
                                         </option>
-                                        <option value="m">Pemasukan</option>
-                                        <option value="k">Pengeluaran</option>
+                                        <option value="k">Kas</option>
+                                        <option value="u">Usaha Dana</option>
+                                        <option value="a">Anggaran</option>
                                     </select>
                                     {errors.tipe && (
                                         <p className="mt-1 text-sm text-red-600">
                                             {errors.tipe}
                                         </p>
                                     )}
-                                </div>
+                                </div>)}
 
 
                             {/* Jumlah */}
@@ -148,14 +151,14 @@ export default function Create() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg
                                         focus:outline-none focus:ring-2 focus:ring-blue-500
                                         focus:border-transparent"
-                                        required
-                                    />
-                                    {errors.jumlah && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.jumlah}
-                                        </p>
-                                    )}
-                                </div>
+                                    required
+                                />
+                                {errors.jumlah && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.jumlah}
+                                    </p>
+                                )}
+                            </div>
                             {/* Catatan */}
                             <div
                                 className={`max-md:col-span-2 ${data.tipe === "m" ? "" : "col-span-2"
@@ -165,51 +168,46 @@ export default function Create() {
                                     htmlFor="catatan"
                                     className="block text-sm font-medium text-gray-700 mb-2"
                                 >
-                                    <label
-                                        htmlFor="catatan"
-                                        className="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Catatan
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="catatan"
-                                        value={data.catatan}
-                                        onChange={(e) =>
-                                            setData("catatan", e.target.value)
-                                        }
-                                        placeholder="Masukkan catatan..."
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                                    Catatan
+                                </label>
+                                <input
+                                    type="text"
+                                    id="catatan"
+                                    value={data.catatan}
+                                    onChange={(e) =>
+                                        setData("catatan", e.target.value)
+                                    }
+                                    placeholder="Masukkan catatan..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg
                                         focus:outline-none focus:ring-2 focus:ring-blue-500
                                         focus:border-transparent"
-                                    />
-                                    {errors.catatan && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.catatan}
-                                        </p>
-                                    )}
-                                </div>
+                                />
+                                {errors.catatan && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.catatan}
+                                    </p>
+                                )}
                             </div>
+                        </div>
 
-                            {/* Submit */}
-                            <div className="flex items-center justify-end gap-4 pt-6 border-t">
-                                <Link
-                                    href="/keuangan"
-                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                                >
-                                    Batal
-                                </Link>
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-                                >
-                                    <Save className="h-4 w-4" />
-                                    {processing ? "Menyimpan..." : "Simpan"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        {/* Submit */}
+                        <div className="flex items-center justify-end gap-4 pt-6 border-t">
+                            <Link
+                                href="/keuangan"
+                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                Batal
+                            </Link>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                            >
+                                <Save className="h-4 w-4" />
+                                {processing ? "Menyimpan..." : "Simpan"}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </AppLayout>

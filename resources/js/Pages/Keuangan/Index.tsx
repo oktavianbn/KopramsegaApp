@@ -2,13 +2,22 @@
 
 import { ModalDetailKeuangan } from "@/Components/ModalDetailKeuangan";
 import AppLayout from "@/Layouts/AppLayout";
-import { Link, router, Head } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import {
-    Plus, Filter, Search, X, SortAsc, SortDesc, ChevronDown,
-    FileText, Edit, Trash2, ChevronLeft, ChevronRight,
-    Download, DollarSign
+    ChevronDown,
+    ChevronLeft, ChevronRight,
+    DollarSign,
+    Download,
+    Edit,
+    FileText,
+    Filter,
+    Plus,
+    Search,
+    SortAsc, SortDesc,
+    Trash2,
+    X
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Keuangan {
     id: number;
@@ -398,7 +407,7 @@ export default function Index({ keuangan, filters }: Props) {
                                     <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis Pemasukkan</th>
                                     <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Catatan</th>
                                     <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dibuat Pada</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center"></th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200 text-center">
@@ -407,7 +416,8 @@ export default function Index({ keuangan, filters }: Props) {
                                         <td className="px-6 py-4 text-sm text-gray-900 ">
                                             {(keuangan.current_page - 1) * keuangan.per_page + idx + 1}
                                         </td>
-                                        <td className="px-6 py-4 text-sm font-medium text-gray-900 w-max ">
+                                        <td className={`px-6 py-4 text-sm font-medium flex ${item.tipe==="m"?"text-green-600":"text-red-600"}`}>
+                                            {item.tipe==="m"?"":"- "}
                                             {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 2 })
                                                 .format(item.jumlah)}
                                         </td>
