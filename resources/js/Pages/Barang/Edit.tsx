@@ -35,7 +35,7 @@ interface Props {
 }
 
 export default function Edit({ barang }: Props) {
-    const { data, setData, patch, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         nama: barang.nama || "",
         deskripsi: barang.deskripsi || "",
         foto: null as File | null,
@@ -50,7 +50,7 @@ export default function Edit({ barang }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        patch(route("barang.update", barang.id), {
+        post(route("barang.update", barang.id), {
             forceFormData: true,
         });
     };
