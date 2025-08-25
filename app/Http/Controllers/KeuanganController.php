@@ -136,7 +136,7 @@ class KeuanganController extends Controller
         $keuangan->update($validated);
 
         return redirect()->route('keuangan.index')
-            ->with('success', 'Data keuangan berhasil diupdate');
+            ->with('success', 'Data Keuangan berhasil diupdate');
     }
 
 

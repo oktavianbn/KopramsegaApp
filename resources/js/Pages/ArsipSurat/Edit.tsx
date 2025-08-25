@@ -4,6 +4,7 @@ import { ArrowLeft, Save, FileText, Hash, Shuffle, User, Users, Calendar, Sticky
 import AppLayout from "@/Layouts/AppLayout";
 
 interface ArsipSurat {
+    id: number;
     judul_surat: string;
     nomor_surat: string;
     jenis: "m" | "k" | "";
@@ -13,17 +14,36 @@ interface ArsipSurat {
     keterangan: string;
     file_path?: File | null;
 }
-export default function Create() {
-    const { data, setData, post, processing, errors, reset } = useForm<ArsipSurat>({
-        judul_surat: "",
-        nomor_surat: "",
-        jenis: "",
-        pengirim: "",
-        penerima: "",
-        tanggal_surat: "",
-        keterangan: "",
-        file_path: null,
+
+interface Props {
+    arsipSurat: ArsipSurat;
+}
+
+export default function Edit({ arsipSurat }: Props) {
+    const { data, setData, processing, errors, put } = useForm<ArsipSurat>({
+        id: arsipSurat.id,
+        judul_surat: arsipSurat.judul_surat,
+        nomor_surat: arsipSurat.nomor_surat,
+        jenis: arsipSurat.jenis,
+        pengirim: arsipSurat.pengirim,
+        penerima: arsipSurat.penerima,
+        tanggal_surat: arsipSurat.tanggal_surat,
+        keterangan: arsipSurat.keterangan,
+        file_path: arsipSurat.file_path,
     });
+
+    console.table({
+        id: arsipSurat.id,
+        judul_surat: arsipSurat.judul_surat,
+        nomor_surat: arsipSurat.nomor_surat,
+        jenis: arsipSurat.jenis,
+        pengirim: arsipSurat.pengirim,
+        penerima: arsipSurat.penerima,
+        tanggal_surat: arsipSurat.tanggal_surat,
+        keterangan: arsipSurat.keterangan,
+        file_path: arsipSurat.file_path,
+    });
+
 
     // nomor_surat format (hanya untuk keluar)
     const [part1, setPart1] = useState("");
@@ -47,23 +67,27 @@ export default function Create() {
         } else if (data.jenis === "m") {
             setData("penerima", "Dewan Ambalan Sambernyawa Dewi Sartika");
             // reset nomor surat split jadi kosong, supaya tidak ada jejak
-            setPart1("");
-            setPart2("");
-            setPart4("");
-            setPart5("");
-            setData("pengirim", "");
-            setData("nomor_surat", "");
+            const parts = arsipSurat.nomor_surat.split(/[./]/);
+            // hasil: ["01", "001", "KPSG", "III", "2025"]
+
+            if (parts.length === 5) {
+                setPart1(parts[0] || "");
+                setPart2(parts[1] || "");
+                setPart3(parts[2] || "KPSG");
+                setPart4(parts[3] || "");
+                setPart5(parts[4] || "");
+            }
         }
-    }, [data.jenis, part1, part2, part3, part4, part5]);
+    }, [data.jenis]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post("/arsip-surat", { forceFormData: true });
+        put(`/arsip-surat/${arsipSurat.id}`);
     };
 
     return (
         <AppLayout>
-            <Head title="Tambah Arsip Surat" />
+            <Head title="Edit Arsip Surat" />
 
             <div className="p-6">
                 {/* Header */}
@@ -299,3 +323,4 @@ export default function Create() {
         </AppLayout>
     );
 }
+
