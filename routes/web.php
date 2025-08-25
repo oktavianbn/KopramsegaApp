@@ -8,6 +8,7 @@ use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RencanaController;
 use App\Http\Controllers\DokumentasiController;
+use App\Http\Controllers\BarangController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -26,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('rencana', RencanaController::class);
     Route::patch('rencana/{rencana}/status', [RencanaController::class, 'updateStatus'])->name('rencana.updateStatus');
     Route::resource('dokumentasi', DokumentasiController::class);
+    Route::resource('barang', BarangController::class);
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
