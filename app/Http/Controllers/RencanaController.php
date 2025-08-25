@@ -56,9 +56,10 @@ class RencanaController extends Controller
             'filters' => $request->only(['search', 'status', 'role_id', 'sort_by', 'sort_direction']),
             'roles' => Role::all(),
         ]);
-    }    /**
-         * Show the form for creating a new resource.
-         */
+    }
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         return Inertia::render('Rencana/Create', [
@@ -98,15 +99,31 @@ class RencanaController extends Controller
      */
     public function edit(Rencana $rencana)
     {
-        //
+        return Inertia::render('Rencana/Edit', [
+            'rencana' => $rencana
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Rencana $rencana)
+    public function update(Request $request, Rencana $rencana,$id)
     {
-        //
+        $rencana = Rencana::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama_rencana' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+            'status' => 'required|in:belum_dimulai,sedang_dilaksanakan,selesai',
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        $rencana->update($validated);
+
+        return redirect()->route('rencana.index')
+            ->with('success', 'Data rencana surat berhasil diupdate');
     }
 
     /**
