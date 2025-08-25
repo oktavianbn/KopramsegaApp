@@ -34,17 +34,21 @@ export default function Create({ roles }: Props) {
             <div className="min-h-screen bg-gray-50 p-6">
                 <div className="mx-auto">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-4">
-                            <div className="flex flex-col gap-1">
-                                <h1 className="text-2xl font-bold text-gray-700">
-                                    Tambah Rencana
-                                </h1>
-                                <h2 className="text-base font-medium text-gray-700">
-                                    Rencana / Tambah
-                                </h2>
+                    <div className="grid gap-2 md:flex items-center justify-between mb-6">
+                        <div className="flex gap-6 items-center">
+                            <Link
+                                href="/rencana"
+                                className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center">
+                                <ArrowLeft className="h-5 w-5 text-gray-500" />
+                            </Link>
+                            <div className="flex flex-col gap-2">
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Rencana</h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Rencana / Tambah Data</h2>
                             </div>
                         </div>
+                    </div>
+                    <div className="flex gap-4 mb-6 border-b">
+
                     </div>
 
                     {/* Form */}
@@ -67,11 +71,10 @@ export default function Create({ roles }: Props) {
                                     onChange={(e) =>
                                         setData("nama_rencana", e.target.value)
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        errors.nama_rencana
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.nama_rencana
                                             ? "border-red-500"
                                             : "border-gray-300"
-                                    }`}
+                                        }`}
                                     placeholder="Masukkan nama rencana"
                                 />
                                 {errors.nama_rencana && (
@@ -97,11 +100,10 @@ export default function Create({ roles }: Props) {
                                         setData("deskripsi", e.target.value)
                                     }
                                     rows={4}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        errors.deskripsi
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.deskripsi
                                             ? "border-red-500"
                                             : "border-gray-300"
-                                    }`}
+                                        }`}
                                     placeholder="Masukkan deskripsi rencana (opsional)"
                                 />
                                 {errors.deskripsi && (
@@ -133,11 +135,10 @@ export default function Create({ roles }: Props) {
                                                 e.target.value
                                             )
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                            errors.tanggal_mulai
+                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.tanggal_mulai
                                                 ? "border-red-500"
                                                 : "border-gray-300"
-                                        }`}
+                                            }`}
                                     />
                                     {errors.tanggal_mulai && (
                                         <p className="mt-1 text-sm text-red-600">
@@ -166,11 +167,10 @@ export default function Create({ roles }: Props) {
                                             )
                                         }
                                         min={data.tanggal_mulai}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                            errors.tanggal_selesai
+                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.tanggal_selesai
                                                 ? "border-red-500"
                                                 : "border-gray-300"
-                                        }`}
+                                            }`}
                                     />
                                     {errors.tanggal_selesai && (
                                         <p className="mt-1 text-sm text-red-600">
@@ -201,11 +201,10 @@ export default function Create({ roles }: Props) {
                                         onChange={(e) =>
                                             setData("status", e.target.value)
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                            errors.status
+                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.status
                                                 ? "border-red-500"
                                                 : "border-gray-300"
-                                        }`}
+                                            }`}
                                     >
                                         <option value="belum_dimulai">
                                             Belum Dimulai
@@ -238,11 +237,10 @@ export default function Create({ roles }: Props) {
                                         onChange={(e) =>
                                             setData("role_id", e.target.value)
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                            errors.role_id
+                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.role_id
                                                 ? "border-red-500"
                                                 : "border-gray-300"
-                                        }`}
+                                            }`}
                                     >
                                         <option value="">Pilih Role</option>
                                         {roles.map((role) => (
