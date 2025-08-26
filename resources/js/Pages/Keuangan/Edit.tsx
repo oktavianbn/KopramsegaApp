@@ -15,14 +15,6 @@ interface Props {
     keuangan: Keuangan;
 }
 
-interface FormData {
-    tanggal: string;
-    keterangan: string;
-    jenis_pemasukkan: "pemasukan" | "pengeluaran";
-    jumlah: string;
-    catatan: string;
-}
-
 export default function Edit({ keuangan }: Props) {
     const { data, setData, put, processing, errors } = useForm<Keuangan>({
         id: keuangan.id,

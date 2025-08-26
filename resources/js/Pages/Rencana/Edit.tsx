@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Head, Link, router, useForm } from "@inertiajs/react";
+import { Head, Link, useForm } from "@inertiajs/react";
 import { ArrowLeft, Save, Calendar, FileText, User, Clock } from "lucide-react";
 import AppLayout from "@/Layouts/AppLayout";
 
@@ -9,7 +8,7 @@ interface Role {
 }
 
 interface Props {
-    rencana: Rencana,
+    rencana: Rencana;
     roles: Role[];
 }
 
@@ -23,24 +22,25 @@ interface Rencana {
     role_id: number;
 }
 
-export default function Create({rencana,roles}:Props) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        nama_rencana: "",
-        deskripsi: "",
-        tanggal_mulai: "",
-        tanggal_selesai: "",
-        status: "belum_dimulai",
-        role_id: "",
+export default function Edit({ rencana, roles }: Props) {
+    const { data, setData, put, processing, errors } = useForm<Rencana>({
+        id: rencana.id,
+        nama_rencana: rencana.nama_rencana,
+        deskripsi: rencana.deskripsi,
+        tanggal_mulai: rencana.tanggal_mulai,
+        tanggal_selesai: rencana.tanggal_selesai,
+        status: rencana.status,
+        role_id: rencana.role_id,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route("rencana.store"));
+        put(route("rencana.update", rencana.id)); // pakai update
     };
 
     return (
         <AppLayout>
-            <Head title="Tambah Rencana" />
+            <Head title="Edit Rencana" />
 
             <div className="min-h-screen bg-gray-50 p-6">
                 <div className="mx-auto">
@@ -49,18 +49,21 @@ export default function Create({rencana,roles}:Props) {
                         <div className="flex gap-6 items-center">
                             <Link
                                 href="/rencana"
-                                className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center">
+                                className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center"
+                            >
                                 <ArrowLeft className="h-5 w-5 text-gray-500" />
                             </Link>
                             <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Rencana</h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Rencana / Tambah Data</h2>
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
+                                    Rencana
+                                </h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
+                                    Rencana / Edit Data
+                                </h2>
                             </div>
                         </div>
                     </div>
-                    <div className="flex gap-4 mb-6 border-b">
-
-                    </div>
+                    <div className="flex gap-4 mb-6 border-b"></div>
 
                     {/* Form */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -82,10 +85,11 @@ export default function Create({rencana,roles}:Props) {
                                     onChange={(e) =>
                                         setData("nama_rencana", e.target.value)
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.nama_rencana
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                        }`}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                        errors.nama_rencana
+                                            ? "border-red-500"
+                                            : "border-gray-300"
+                                    }`}
                                     placeholder="Masukkan nama rencana"
                                 />
                                 {errors.nama_rencana && (
@@ -106,15 +110,16 @@ export default function Create({rencana,roles}:Props) {
                                 </label>
                                 <textarea
                                     id="deskripsi"
-                                    value={data.deskripsi}
+                                    value={data.deskripsi ?? ""}
                                     onChange={(e) =>
                                         setData("deskripsi", e.target.value)
                                     }
                                     rows={4}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.deskripsi
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                        }`}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                        errors.deskripsi
+                                            ? "border-red-500"
+                                            : "border-gray-300"
+                                    }`}
                                     placeholder="Masukkan deskripsi rencana (opsional)"
                                 />
                                 {errors.deskripsi && (
@@ -146,10 +151,11 @@ export default function Create({rencana,roles}:Props) {
                                                 e.target.value
                                             )
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.tanggal_mulai
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                            }`}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                            errors.tanggal_mulai
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
                                     />
                                     {errors.tanggal_mulai && (
                                         <p className="mt-1 text-sm text-red-600">
@@ -170,7 +176,7 @@ export default function Create({rencana,roles}:Props) {
                                     <input
                                         type="date"
                                         id="tanggal_selesai"
-                                        value={data.tanggal_selesai}
+                                        value={data.tanggal_selesai ?? ""}
                                         onChange={(e) =>
                                             setData(
                                                 "tanggal_selesai",
@@ -178,10 +184,11 @@ export default function Create({rencana,roles}:Props) {
                                             )
                                         }
                                         min={data.tanggal_mulai}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.tanggal_selesai
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                            }`}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                            errors.tanggal_selesai
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
                                     />
                                     {errors.tanggal_selesai && (
                                         <p className="mt-1 text-sm text-red-600">
@@ -203,19 +210,23 @@ export default function Create({rencana,roles}:Props) {
                                         className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
                                     >
                                         <Clock className="h-4 w-4" />
-                                        Status Awal
+                                        Status
                                         <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         id="status"
                                         value={data.status}
                                         onChange={(e) =>
-                                            setData("status", e.target.value)
+                                            setData(
+                                                "status",
+                                                e.target.value as Rencana["status"]
+                                            )
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.status
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                            }`}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                            errors.status
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
                                     >
                                         <option value="belum_dimulai">
                                             Belum Dimulai
@@ -246,19 +257,17 @@ export default function Create({rencana,roles}:Props) {
                                         id="role_id"
                                         value={data.role_id}
                                         onChange={(e) =>
-                                            setData("role_id", e.target.value)
+                                            setData("role_id", Number(e.target.value))
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.role_id
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                            }`}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                            errors.role_id
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
                                     >
-                                        <option value="">Pilih Role</option>
+                                        <option value="" disabled>Pilih Role</option>
                                         {roles.map((role) => (
-                                            <option
-                                                key={role.id}
-                                                value={role.id}
-                                            >
+                                            <option key={role.id} value={role.id}>
                                                 {role.name}
                                             </option>
                                         ))}
@@ -287,7 +296,7 @@ export default function Create({rencana,roles}:Props) {
                                     <Save className="h-4 w-4" />
                                     {processing
                                         ? "Menyimpan..."
-                                        : "Simpan Rencana"}
+                                        : "Update Rencana"}
                                 </button>
                             </div>
                         </form>

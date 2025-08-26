@@ -62,105 +62,17 @@ interface Props {
     roles: Role[]
 }
 
-const dummyRoles: Role[] = [
-    { id: 1, name: "Ketua" },
-    { id: 2, name: "Sekretaris" },
-    { id: 3, name: "Bendahara" },
-]
-
-const dummyRencanas: Rencana[] = [
-    {
-        id: 1,
-        nama_rencana: "Rapat Bulanan",
-        deskripsi: "Rapat rutin bulanan untuk evaluasi",
-        tanggal_mulai: "2025-09-01",
-        tanggal_selesai: "2025-09-01",
-        status: "sedang_dilaksanakan",
-        role_id: 1,
-        role: dummyRoles[0],
-        created_at: "2025-08-20",
-        updated_at: "2025-08-20",
-    },
-    {
-        id: 2,
-        nama_rencana: "Lomba Kebersihan",
-        deskripsi: "Kegiatan lomba kebersihan antar kelas",
-        tanggal_mulai: "2025-09-05",
-        tanggal_selesai: "2025-09-10",
-        status: "belum_dimulai",
-        role_id: 2,
-        role: dummyRoles[1],
-        created_at: "2025-08-22",
-        updated_at: "2025-08-22",
-    },
-    {
-        id: 3,
-        nama_rencana: "Pelatihan Leadership",
-        deskripsi: "Pelatihan untuk calon pengurus",
-        tanggal_mulai: "2025-08-15",
-        tanggal_selesai: "2025-08-17",
-        status: "selesai",
-        role_id: 3,
-        role: dummyRoles[2],
-        created_at: "2025-08-10",
-        updated_at: "2025-08-18",
-    },
-    {
-        id: 4,
-        nama_rencana: "Pelatihan Leadership",
-        deskripsi: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Ea amet enim facere consectetur eos consequatur?",
-        tanggal_mulai: "2025-08-15",
-        tanggal_selesai: "2025-08-17",
-        status: "selesai",
-        role_id: 1,
-        role: dummyRoles[2],
-        created_at: "2025-08-10",
-        updated_at: "2025-08-18",
-    },
-]
-
-// bungkus biar mirip response Inertia
-const dummyPagination = {
-    data: dummyRencanas,
-    current_page: 1,
-    last_page: 1,
-    per_page: 10,
-    total: dummyRencanas.length,
-    from: 1,
-    to: dummyRencanas.length,
-}
-
-export default function Index() {
-    // Pakai dummy langsung
-    const rencanas = dummyPagination
-    const roles = dummyRoles
-    const filters = {
-        search: "",
-        status: "",
-        sort_by: "created_at",
-        sort_direction: "desc" as "asc" | "desc",
-        role_id: "",
-    }
-
-    const [search, setSearch] = useState(filters.search)
-    const [status, setStatus] = useState(filters.status)
-    const [sortBy, setSortBy] = useState(filters.sort_by)
-    const [sortDirection, setSortDirection] = useState(filters.sort_direction)
-    const [roleFilter, setRoleFilter] = useState(filters.role_id)
+export default function Index({ rencanas, filters, roles }: Props) {
+    const [search, setSearch] = useState(filters.search || "")
+    const [status, setStatus] = useState(filters.status || "")
+    const [sortBy, setSortBy] = useState(filters.sort_by || "created_at")
+    const [sortDirection, setSortDirection] = useState(filters.sort_direction || "desc")
+    const [roleFilter, setRoleFilter] = useState(filters.role_id || "")
     const [showFilterDropdown, setShowFilterDropdown] = useState(false)
     const [showSortDropdown, setShowSortDropdown] = useState(false)
-    const [activeTab, setActiveTab] = useState(filters.status)
-
-    // export default function Index({ rencanas, filters, roles }: Props) {
-    //   const [search, setSearch] = useState(filters.search || "")
-    //   const [status, setStatus] = useState(filters.status || "")
-    //   const [sortBy, setSortBy] = useState(filters.sort_by || "created_at")
-    //   const [sortDirection, setSortDirection] = useState(filters.sort_direction || "desc")
-    //   const [roleFilter, setRoleFilter] = useState(filters.role_id || "")
-    //   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
-    //   const [showSortDropdown, setShowSortDropdown] = useState(false)
-    //   // Tab: "" = semua, "belum_dimulai" = belum dimulai, "sedang_dilaksanakan" = berlangsung, "selesai" = selesai
-    //   const [activeTab, setActiveTab] = useState(filters.status || "")
+    const [perPage, setPerPage] = useState(rencanas.per_page || 10);
+    // Tab: "" = semua, "belum_dimulai" = belum dimulai, "sedang_dilaksanakan" = berlangsung, "selesai" = selesai
+    const [activeTab, setActiveTab] = useState(filters.status || "")
     const [showModal, setShowModal] = useState(false);
     const [selectedData, setSelectedData] = useState<Rencana | null>(null);
     const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
@@ -169,7 +81,7 @@ export default function Index() {
     const filterDropdownRef = useRef<HTMLDivElement>(null)
     const sortDropdownRef = useRef<HTMLDivElement>(null)
 
-        const downloadOptions = [
+    const downloadOptions = [
         { label: "Excel", href: "/export/excel" },
         { label: "CSV", href: "/export/excel?format=csv" },
         { label: "PDF", href: "/export/pdf" },
@@ -205,6 +117,13 @@ export default function Index() {
         document.addEventListener("mousedown", handleClickOutside)
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
+
+        /** 🔹 perPage */
+    const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = parseInt(e.target.value);
+        setPerPage(value);
+        updateQuery({ perPage: value, page: 1 });
+    };
 
     // Filter handler
     const handleFilter = () => {
@@ -480,14 +399,9 @@ export default function Index() {
                                     type="text"
                                     placeholder="Cari rencana berdasarkan nama atau deskripsi"
                                     value={search}
-                                    // onChange={(e) => {
-                                    //     setSearch(e.target.value);
-                                    //     // pakai debounce
-                                    //     if (debounceTimeout) clearTimeout(debounceTimeout);
-                                    //     debounceTimeout = setTimeout(() => {
-                                    //         handleFilter();
-                                    //     }, 500);
-                                    // }}
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                    }}
                                     className="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                             </div>
@@ -645,18 +559,18 @@ export default function Index() {
                     </div>
 
 
-                {/* Cards Grid - Replaced table with card layout */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl::grid-cols-4 gap-6 ">
-                    {rencanas.data.map((item: Rencana, idx) => (
-                        <div
-                            key={item.id}
-                            className="relative overflow-hidden bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-                        >
-                            {/* Ribbon Status */}
-                            <div className="absolute -top-1 -left-2">
-                                <span
-                                    style={{ clipPath: "polygon(0 0, 100% 0, 80% 100%, 0 100%)" }}
-                                    className={`
+                    {/* Cards Grid - Replaced table with card layout */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 ">
+                        {rencanas.data.map((item: Rencana, idx) => (
+                            <div
+                                key={item.id}
+                                className="relative overflow-hidden bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                            >
+                                {/* Ribbon Status */}
+                                <div className="absolute -top-1 -left-2">
+                                    <span
+                                        style={{ clipPath: "polygon(0 0, 100% 0, 80% 100%, 0 100%)" }}
+                                        className={`
       relative inline-block pl-8 pr-14 py-1 text-xs font-semibold text-white
       ${item.status === "belum_dimulai" ? "bg-gray-500" : ""}
       ${item.status === "sedang_dilaksanakan" ? "bg-blue-500" : ""}
@@ -664,158 +578,166 @@ export default function Index() {
       after:content-[''] after:absolute after:top-0 after:right-0 after:w-2 after:h-full
       after:bg-inherit;
     `}
-                                >
-                                    {item.status === "belum_dimulai"
-                                        ? "Belum Dimulai"
-                                        : item.status === "sedang_dilaksanakan"
-                                            ? "Berlangsung"
-                                            : "Selesai"}
-                                </span>
-                            </div>
-
-
-                            {/* Card Header */}
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-500">
-                                        #{(rencanas.current_page - 1) * rencanas.per_page + idx + 1}
+                                    >
+                                        {item.status === "belum_dimulai"
+                                            ? "Belum Dimulai"
+                                            : item.status === "sedang_dilaksanakan"
+                                                ? "Berlangsung"
+                                                : "Selesai"}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => handleShow(item)}
-                                        className="text-gray-600 hover:text-gray-900 p-1 hover:bg-gray-50 rounded"
-                                    >
-                                        <FileText className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleEdit(item.id)}
-                                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(item.id)}
-                                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
+
+
+                                {/* Card Header */}
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-500">
+                                            #{(rencanas.current_page - 1) * rencanas.per_page + idx + 1}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => handleShow(item)}
+                                            className="text-gray-600 hover:text-gray-900 p-1 hover:bg-gray-50 rounded"
+                                        >
+                                            <FileText className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleEdit(item.id)}
+                                            className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(item.id)}
+                                            className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Judul */}
-                            <h3 className="mb-2 text-lg font-semibold text-gray-900">{item.nama_rencana}</h3>
+                                {/* Judul */}
+                                <h3 className="mb-2 text-lg font-semibold text-gray-900">{item.nama_rencana}</h3>
 
-                            {/* Description */}
-                            {item.deskripsi && <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.deskripsi}</p>}
+                                {/* Description */}
+                                {item.deskripsi && <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.deskripsi}</p>}
 
-                            {/* Dates */}
-                            <div className="space-y-2 mb-4">
-                                <div className="flex items-center gap-2 text-sm">
-                                    <Calendar className="h-4 w-4 text-gray-400" />
-                                    <span className="text-gray-600">Mulai:</span>
-                                    <span className="font-medium text-gray-900">{formatDate(item.tanggal_mulai)}</span>
-                                </div>
-                                {item.tanggal_selesai && (
+                                {/* Dates */}
+                                <div className="space-y-2 mb-4">
                                     <div className="flex items-center gap-2 text-sm">
                                         <Calendar className="h-4 w-4 text-gray-400" />
-                                        <span className="text-gray-600">Selesai:</span>
-                                        <span className="font-medium text-gray-900">{formatDate(item.tanggal_selesai)}</span>
+                                        <span className="text-gray-600">Mulai:</span>
+                                        <span className="font-medium text-gray-900">{formatDate(item.tanggal_mulai)}</span>
                                     </div>
+                                    {item.tanggal_selesai && (
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Calendar className="h-4 w-4 text-gray-400" />
+                                            <span className="text-gray-600">Selesai:</span>
+                                            <span className="font-medium text-gray-900">{formatDate(item.tanggal_selesai)}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Role */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600">Koordinator:</span>
+                                        <span className="text-sm font-medium text-gray-900">{item.role.name}</span>
+                                    </div>
+                                </div>
+
+                                {/* Card Footer */}
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-gray-500">Dibuat: {formatDate(item.created_at)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                    </div>
+
+                    {/* Empty State */}
+                    {rencanas.data.length === 0 && (
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <Calendar className="h-8 w-8 text-gray-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada rencana ditemukan</h3>
+                                    <p className="text-gray-500">
+                                        {search || roleFilter || activeTab
+                                            ? "Coba ubah filter atau kata kunci pencarian"
+                                            : "Mulai dengan membuat rencana pertama Anda"}
+                                    </p>
+                                </div>
+                                {!search && !roleFilter && !activeTab && (
+                                    <Link
+                                        href="/rencana/create"
+                                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        Tambah Rencana
+                                    </Link>
                                 )}
                             </div>
+                        </div>
+                    )}
 
-                            {/* Role */}
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Koordinator:</span>
-                                    <span className="text-sm font-medium text-gray-900">{item.role.name}</span>
+                    {/* Pagination - Moved pagination outside of table container */}
+                    {rencanas.data.length > 0 && (
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3 mt-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <select
+                                        className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                        value={perPage}
+                                        onChange={handlePerPageChange}
+                                    >
+                                        <option value={8}>8 data per halaman</option>
+                                        <option value={16}>20 data per halaman</option>
+                                        <option value={40}>50 data per halaman</option>
+                                    </select>
                                 </div>
-                            </div>
-
-                            {/* Card Footer */}
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs text-gray-500">Dibuat: {formatDate(item.created_at)}</span>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-sm text-gray-700">
+                                        {rencanas.from}-{rencanas.to} dari {rencanas.total}
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                        <Link
+                                            href={`/rencana?page=${rencanas.current_page - 1
+                                                }&search=${search}&status=${status}&sort_by=${sortBy}&sort_direction=${sortDirection}&role_id=${roleFilter}`}
+                                            className={`p-2 rounded hover:bg-gray-100 ${rencanas.current_page === 1 ? "opacity-50 pointer-events-none" : ""
+                                                }`}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Link>
+                                        <Link
+                                            href={`/rencana?page=${rencanas.current_page + 1
+                                                }&search=${search}&status=${status}&sort_by=${sortBy}&sort_direction=${sortDirection}&role_id=${roleFilter}`}
+                                            className={`p-2 rounded hover:bg-gray-100 ${rencanas.current_page === rencanas.last_page ? "opacity-50 pointer-events-none" : ""
+                                                }`}
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    ))}
-
+                    )}
                 </div>
-
-                {/* Empty State */}
-                {rencanas.data.length === 0 && (
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                                <Calendar className="h-8 w-8 text-gray-400" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada rencana ditemukan</h3>
-                                <p className="text-gray-500">
-                                    {search || roleFilter || activeTab
-                                        ? "Coba ubah filter atau kata kunci pencarian"
-                                        : "Mulai dengan membuat rencana pertama Anda"}
-                                </p>
-                            </div>
-                            {!search && !roleFilter && !activeTab && (
-                                <Link
-                                    href="/rencana/create"
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Tambah Rencana
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Pagination - Moved pagination outside of table container */}
-                {rencanas.data.length > 0 && (
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3 mt-6">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-700">{rencanas.per_page} per halaman</span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-700">
-                                    {rencanas.from}-{rencanas.to} dari {rencanas.total}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                    <Link
-                                        href={`/rencana?page=${rencanas.current_page - 1
-                                            }&search=${search}&status=${status}&sort_by=${sortBy}&sort_direction=${sortDirection}&role_id=${roleFilter}`}
-                                        className={`p-2 rounded hover:bg-gray-100 ${rencanas.current_page === 1 ? "opacity-50 pointer-events-none" : ""
-                                            }`}
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                    </Link>
-                                    <Link
-                                        href={`/rencana?page=${rencanas.current_page + 1
-                                            }&search=${search}&status=${status}&sort_by=${sortBy}&sort_direction=${sortDirection}&role_id=${roleFilter}`}
-                                        className={`p-2 rounded hover:bg-gray-100 ${rencanas.current_page === rencanas.last_page ? "opacity-50 pointer-events-none" : ""
-                                            }`}
-                                    >
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
-        </div>
-            {/* Modal Show Data */ }
-    {
-        showModal && selectedData && (
-            <ModalDetailRencana
-                isOpen={showModal}
-                onClose={() => setShowModal(false)}
-                data={selectedData}
-            />)
-    }
+            {/* Modal Show Data */}
+            {
+                showModal && selectedData && (
+                    <ModalDetailRencana
+                        isOpen={showModal}
+                        onClose={() => setShowModal(false)}
+                        data={selectedData}
+                    />)
+            }
         </AppLayout >
     )
 }
