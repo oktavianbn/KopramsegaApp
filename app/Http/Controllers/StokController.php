@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Inventory;
+use App\Models\Stok;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
-class InventoryController extends Controller
+class StokController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $stoks = Stok::with(['barang', 'spesifikasi']);
+        return Inertia::render('Stok/Index', [
+            'stoks' => $stoks->get(),
+        ]);
     }
 
     /**
@@ -34,7 +38,7 @@ class InventoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Inventory $inventory)
+    public function show(Stok $stok)
     {
         //
     }
@@ -42,7 +46,7 @@ class InventoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Inventory $inventory)
+    public function edit(Stok $stok)
     {
         //
     }
@@ -50,7 +54,7 @@ class InventoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Inventory $inventory)
+    public function update(Request $request, Stok $stok)
     {
         //
     }
@@ -58,7 +62,7 @@ class InventoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Inventory $inventory)
+    public function destroy(Stok $stok)
     {
         //
     }

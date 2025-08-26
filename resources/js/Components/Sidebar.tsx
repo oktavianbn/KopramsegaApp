@@ -17,6 +17,9 @@ import {
     User,
     TimerReset,
     SwitchCamera,
+    Package,
+    Warehouse,
+    UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePage } from "@inertiajs/react";
@@ -32,7 +35,16 @@ const menuItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: DollarSign, label: "Keuangan", href: "/keuangan" },
     { icon: Users, label: "Pengguna", href: "/user" },
-    { icon: Layers, label: "Inventory", href: "/inventory" },
+    {
+        icon: Layers,
+        label: "Inventory",
+        group: true,
+        children: [
+            { icon: Package, label: "Barang", href: "/barang" },
+            { icon: Warehouse, label: "Stok", href: "/stok" },
+            { icon: UserCheck, label: "Peminjaman", href: "/peminjaman" },
+        ],
+    },
     { icon: FolderClosed, label: "Arsip Surat", href: "/arsip-surat" },
     { icon: TimerReset, label: "Rencana", href: "/rencana" },
     { icon: SwitchCamera, label: "Dokumentasi", href: "/dokumentasi" },
@@ -117,7 +129,91 @@ export function Sidebar({
                 <nav className="p-4 flex-1">
                     <ul className="space-y-1">
                         {menuItems.map((item, index) => {
-                            const isActive = isActiveRoute(item.href, url);
+                            if (item.group && item.children) {
+                                // Inventory group with dropdown
+                                const isGroupActive = item.children.some(
+                                    (child) => isActiveRoute(child.href, url)
+                                );
+                                const [open, setOpen] = useState(false);
+                                return (
+                                    <li key={index} className="">
+                                        <button
+                                            type="button"
+                                            className={cn(
+                                                "flex items-center gap-3 px-4 py-3 rounded-lg w-full transition-colors group",
+                                                isGroupActive
+                                                    ? "bg-white text-blue-600"
+                                                    : "text-blue-50 hover:text-white hover:bg-blue-500/30"
+                                            )}
+                                            onClick={() => setOpen((v) => !v)}
+                                        >
+                                            <item.icon className="h-5 w-5" />
+                                            <span className="font-medium flex-1 text-left">
+                                                {item.label}
+                                            </span>
+                                            <ChevronDown
+                                                className={cn(
+                                                    "h-4 w-4 transition-transform",
+                                                    open ? "rotate-180" : ""
+                                                )}
+                                            />
+                                        </button>
+                                        {/* Dropdown submenu */}
+                                        {(open || isGroupActive) && (
+                                            <ul className="ml-8 mt-1 space-y-1">
+                                                {item.children.map(
+                                                    (child, cidx) => {
+                                                        const isActive =
+                                                            isActiveRoute(
+                                                                child.href,
+                                                                url
+                                                            );
+                                                        return (
+                                                            <li key={cidx}>
+                                                                <a
+                                                                    href={
+                                                                        child.href
+                                                                    }
+                                                                    onClick={(
+                                                                        e
+                                                                    ) => {
+                                                                        if (
+                                                                            isActive
+                                                                        ) {
+                                                                            e.preventDefault();
+                                                                            return false;
+                                                                        }
+                                                                    }}
+                                                                    className={cn(
+                                                                        "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm",
+                                                                        isActive
+                                                                            ? "bg-white text-blue-600 cursor-default"
+                                                                            : "text-blue-100 hover:text-white hover:bg-blue-500/30 cursor-pointer"
+                                                                    )}
+                                                                >
+                                                                    {child.icon && (
+                                                                        <child.icon className="h-4 w-4" />
+                                                                    )}
+                                                                    <span>
+                                                                        {
+                                                                            child.label
+                                                                        }
+                                                                    </span>
+                                                                </a>
+                                                            </li>
+                                                        );
+                                                    }
+                                                )}
+                                            </ul>
+                                        )}
+                                    </li>
+                                );
+                            }
+                            // Normal menu item
+                            const isActive = isActiveRoute(
+                                item.href ?? "",
+                                url
+                            );
                             return (
                                 <li key={index}>
                                     <a

@@ -5,7 +5,8 @@ import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import {
     ChevronDown,
-    ChevronLeft, ChevronRight,
+    ChevronLeft,
+    ChevronRight,
     DollarSign,
     Download,
     Edit,
@@ -13,9 +14,10 @@ import {
     Filter,
     Plus,
     Search,
-    SortAsc, SortDesc,
+    SortAsc,
+    SortDesc,
     Trash2,
-    X
+    X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -50,9 +52,13 @@ interface Props {
 export default function Index({ keuangan, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "");
     const [sortBy, setSortBy] = useState(filters.sort_by || "created_at");
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc">(filters.sort_direction || "desc");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
+        filters.sort_direction || "desc"
+    );
     const [perPage, setPerPage] = useState(keuangan.per_page || 10);
-    const [activeFilter, setActiveFilter] = useState<string | null>(filters.filter || null);
+    const [activeFilter, setActiveFilter] = useState<string | null>(
+        filters.filter || null
+    );
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
@@ -79,13 +85,12 @@ export default function Index({ keuangan, filters }: Props) {
                 sort_by: sortBy,
                 sort_direction: sortDirection,
                 perPage,
-                filter: activeFilter || undefined,  // 🔹 selalu kirim filter
+                filter: activeFilter || undefined, // 🔹 selalu kirim filter
                 ...extra,
             },
             { preserveState: true }
         );
     };
-
 
     // live search debounce
     useEffect(() => {
@@ -97,18 +102,28 @@ export default function Index({ keuangan, filters }: Props) {
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+            if (
+                sortDropdownRef.current &&
+                !sortDropdownRef.current.contains(event.target as Node)
+            ) {
                 setShowSortDropdown(false);
             }
-            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+            if (
+                filterDropdownRef.current &&
+                !filterDropdownRef.current.contains(event.target as Node)
+            ) {
                 setShowFilterDropdown(false);
             }
-            if (downloadDropdownRef.current && !downloadDropdownRef.current.contains(event.target as Node)) {
+            if (
+                downloadDropdownRef.current &&
+                !downloadDropdownRef.current.contains(event.target as Node)
+            ) {
                 setShowDownloadDropdown(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     /** 🔹 tab & filter */
@@ -119,7 +134,8 @@ export default function Index({ keuangan, filters }: Props) {
 
     /** 🔹 sorting */
     const handleSort = (field: string) => {
-        const newDirection = sortBy === field && sortDirection === "asc" ? "desc" : "asc";
+        const newDirection =
+            sortBy === field && sortDirection === "asc" ? "desc" : "asc";
         setSortBy(field);
         setSortDirection(newDirection);
         updateQuery({ sort_by: field, sort_direction: newDirection });
@@ -135,11 +151,17 @@ export default function Index({ keuangan, filters }: Props) {
 
     /** 🔹 CRUD handlers */
     const handleEdit = (id: number) => router.visit(`/keuangan/${id}/edit`);
-    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus data ini?") && router.delete(`/keuangan/${id}`);
-    const handleShow = (item: Keuangan) => { setSelectedData(item); setShowModal(true); };
+    const handleDelete = (id: number) =>
+        confirm("Apakah Anda yakin ingin menghapus data ini?") &&
+        router.delete(`/keuangan/${id}`);
+    const handleShow = (item: Keuangan) => {
+        setSelectedData(item);
+        setShowModal(true);
+    };
 
     /** 🔹 utils */
-    const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString("id-ID");
+    const formatDate = (dateString: string) =>
+        new Date(dateString).toLocaleDateString("id-ID");
     const clearFilters = () => {
         setSearch("");
         setSortBy("created_at");
@@ -156,19 +178,27 @@ export default function Index({ keuangan, filters }: Props) {
                     {/* Header */}
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
-                            <div className="p-2 h-max bg-green-100 rounded-lg flex justify-center items-center">
-                                <DollarSign className="h-5 w-5 text-green-600" />
-                            </div>
                             <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Keuangan</h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Keuangan / Daftar</h2>
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
+                                    Keuangan
+                                </h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
+                                    Keuangan / Daftar
+                                </h2>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
                             {/* Dropdown Download */}
-                            <div className="relative inline-block text-left" ref={downloadDropdownRef}>
+                            <div
+                                className="relative inline-block text-left"
+                                ref={downloadDropdownRef}
+                            >
                                 <button
-                                    onClick={() => setShowDownloadDropdown(!showDownloadDropdown)}
+                                    onClick={() =>
+                                        setShowDownloadDropdown(
+                                            !showDownloadDropdown
+                                        )
+                                    }
                                     className="inline-flex justify-center items-center px-4 py-2 bg-white text-black rounded-lg border border-black hover:bg-gray-200 text-left"
                                 >
                                     <Download className="mr-2 h-5 w-5" />
@@ -185,7 +215,11 @@ export default function Index({ keuangan, filters }: Props) {
                                                 method="get"
                                                 as="button"
                                                 className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                                                onClick={() => setShowDownloadDropdown(false)}
+                                                onClick={() =>
+                                                    setShowDownloadDropdown(
+                                                        false
+                                                    )
+                                                }
                                             >
                                                 <FileText className="h-4 w-4" />
                                                 {opt.label}
@@ -196,7 +230,8 @@ export default function Index({ keuangan, filters }: Props) {
                             </div>
                             <Link
                                 href="/keuangan/create"
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
                                 <Plus className="h-4 w-4" />
                                 Tambah Data
                             </Link>
@@ -206,16 +241,24 @@ export default function Index({ keuangan, filters }: Props) {
                 <div className="flex gap-4 mb-6 border-b">
                     <button
                         onClick={() => handleTab("")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeFilter === ""
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                        }`}
                     >
                         Seluruh Transaksi{" "}
-                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 ro unded-full">{keuangan.total}</span>
+                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 ro unded-full">
+                            {keuangan.total}
+                        </span>
                     </button>
                     <button
                         onClick={() => handleTab("m")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "m" ? "border-green-500 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeFilter === "m"
+                                ? "border-green-500 text-green-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                        }`}
                     >
                         Pemasukkan{" "}
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
@@ -224,8 +267,11 @@ export default function Index({ keuangan, filters }: Props) {
                     </button>
                     <button
                         onClick={() => handleTab("k")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "k" ? "border-red-500 text-red-600" : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeFilter === "k"
+                                ? "border-red-500 text-red-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                        }`}
                     >
                         Pengeluaran{" "}
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
@@ -233,7 +279,6 @@ export default function Index({ keuangan, filters }: Props) {
                         </span>
                     </button>
                 </div>
-
 
                 {/* Filter Status */}
                 {(search || activeFilter) && (
@@ -250,7 +295,15 @@ export default function Index({ keuangan, filters }: Props) {
                                 )}
                                 {activeFilter && (
                                     <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                                        {activeFilter === "m" ? "Pemasukkan" : activeFilter === "k" ? "Pengeluaran" : activeFilter === "i" ? "Kas" : activeFilter === "u" ? "Usaha Dana" : "Anggaran"}
+                                        {activeFilter === "m"
+                                            ? "Pemasukkan"
+                                            : activeFilter === "k"
+                                            ? "Pengeluaran"
+                                            : activeFilter === "i"
+                                            ? "Kas"
+                                            : activeFilter === "u"
+                                            ? "Usaha Dana"
+                                            : "Anggaran"}
                                     </span>
                                 )}
                             </div>
@@ -264,7 +317,6 @@ export default function Index({ keuangan, filters }: Props) {
                         </div>
                     </div>
                 )}
-
 
                 {/* Search & Sort */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 grid gap-2 lg:flex items-center justify-between">
@@ -283,42 +335,51 @@ export default function Index({ keuangan, filters }: Props) {
                                 }}
                                 className="pl-10 pr-6 py-2 border md:w-80 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
-
                         </div>
                     </div>
                     <div className="flex gap-2">
                         {/* Filter Dropdown */}
-                        <div className="relative"
-                            ref={filterDropdownRef}
-                        >
+                        <div className="relative" ref={filterDropdownRef}>
                             <button
-                                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showFilterDropdown
-                                    ? "border-blue-500 bg-blue-50 text-blue-600"
-                                    : "border-gray-300 bg-white hover:bg-gray-50"
-                                    }`}
+                                onClick={() =>
+                                    setShowFilterDropdown(!showFilterDropdown)
+                                }
+                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
+                                    showFilterDropdown
+                                        ? "border-blue-500 bg-blue-50 text-blue-600"
+                                        : "border-gray-300 bg-white hover:bg-gray-50"
+                                }`}
                             >
                                 Filter
                                 <ChevronDown
-                                    className={`h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""
-                                        }`}
+                                    className={`h-4 w-4 transition-transform ${
+                                        showFilterDropdown ? "rotate-180" : ""
+                                    }`}
                                 />
                             </button>
                             {showFilterDropdown && (
                                 <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                                     <div className="p-2 flex flex-col">
-                                        <span className="px-3 py-1 text-xs font-semibold text-gray-500">Tipe</span>
+                                        <span className="px-3 py-1 text-xs font-semibold text-gray-500">
+                                            Tipe
+                                        </span>
                                         <button
                                             onClick={() => handleTab("m")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "m" ? "bg-blue-50 text-blue-600 font-medium" : ""
-                                                }`}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
+                                                activeFilter === "m"
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : ""
+                                            }`}
                                         >
                                             Pemasukkan
                                         </button>
                                         <button
                                             onClick={() => handleTab("k")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "k" ? "bg-blue-50 text-blue-600 font-medium" : ""
-                                                }`}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
+                                                activeFilter === "k"
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : ""
+                                            }`}
                                         >
                                             Pengeluaran
                                         </button>
@@ -328,22 +389,31 @@ export default function Index({ keuangan, filters }: Props) {
                                         </span>
                                         <button
                                             onClick={() => handleTab("i")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "i" ? "bg-blue-50 text-blue-600 font-medium" : ""
-                                                }`}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
+                                                activeFilter === "i"
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : ""
+                                            }`}
                                         >
                                             Kas
                                         </button>
                                         <button
                                             onClick={() => handleTab("u")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "u" ? "bg-blue-50 text-blue-600 font-medium" : ""
-                                                }`}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
+                                                activeFilter === "u"
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : ""
+                                            }`}
                                         >
                                             Usaha Dana
                                         </button>
                                         <button
                                             onClick={() => handleTab("a")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "a" ? "bg-blue-50 text-blue-600 font-medium" : ""
-                                                }`}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
+                                                activeFilter === "a"
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : ""
+                                            }`}
                                         >
                                             Anggaran
                                         </button>
@@ -353,11 +423,14 @@ export default function Index({ keuangan, filters }: Props) {
                         </div>
                         <div className="relative" ref={sortDropdownRef}>
                             <button
-                                onClick={() => setShowSortDropdown(!showSortDropdown)}
-                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showSortDropdown
-                                    ? "border-blue-500 bg-blue-50 text-blue-600"
-                                    : "border-gray-300 bg-white hover:bg-gray-50"
-                                    }`}
+                                onClick={() =>
+                                    setShowSortDropdown(!showSortDropdown)
+                                }
+                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
+                                    showSortDropdown
+                                        ? "border-blue-500 bg-blue-50 text-blue-600"
+                                        : "border-gray-300 bg-white hover:bg-gray-50"
+                                }`}
                             >
                                 Urutkan
                                 {sortDirection === "asc" ? (
@@ -366,8 +439,9 @@ export default function Index({ keuangan, filters }: Props) {
                                     <SortDesc className="h-4 w-4" />
                                 )}
                                 <ChevronDown
-                                    className={`h-4 w-4 transition-transform ${showSortDropdown ? "rotate-180" : ""
-                                        }`}
+                                    className={`h-4 w-4 transition-transform ${
+                                        showSortDropdown ? "rotate-180" : ""
+                                    }`}
                                 />
                             </button>
                             {showSortDropdown && (
@@ -375,21 +449,28 @@ export default function Index({ keuangan, filters }: Props) {
                                     <div className="p-2">
                                         <button
                                             onClick={() => handleSort("jumlah")}
-                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "jumlah" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
-                                                }`}
+                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
+                                                sortBy === "jumlah"
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : "text-gray-700"
+                                            }`}
                                         >
                                             <span>Nominal</span>
                                         </button>
                                         <button
-                                            onClick={() => handleSort("created_at")}
-                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "created_at" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
-                                                }`}
+                                            onClick={() =>
+                                                handleSort("created_at")
+                                            }
+                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
+                                                sortBy === "created_at"
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : "text-gray-700"
+                                            }`}
                                         >
                                             <span>Dibuat Pada</span>
                                         </button>
                                     </div>
                                 </div>
-
                             )}
                         </div>
                     </div>
@@ -401,32 +482,87 @@ export default function Index({ keuangan, filters }: Props) {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">No.</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nominal Uang</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis Pemasukkan</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Catatan</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Dibuat Pada</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        No.
+                                    </th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        Nominal Uang
+                                    </th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        Tipe
+                                    </th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        Jenis Pemasukkan
+                                    </th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        Catatan
+                                    </th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        Dibuat Pada
+                                    </th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        Aksi
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200 text-center">
                                 {keuangan.data.map((item: Keuangan, idx) => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
+                                    <tr
+                                        key={item.id}
+                                        className="hover:bg-gray-50"
+                                    >
                                         <td className="px-6 py-4 text-sm text-gray-900 ">
-                                            {(keuangan.current_page - 1) * keuangan.per_page + idx + 1}
+                                            {(keuangan.current_page - 1) *
+                                                keuangan.per_page +
+                                                idx +
+                                                1}
                                         </td>
-                                        <td className={`px-6 py-4 text-sm font-medium flex ${item.tipe==="m"?"text-green-600":"text-red-600"}`}>
-                                            {item.tipe==="m"?"":"- "}
-                                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 2 })
-                                                .format(item.jumlah)}
+                                        <td
+                                            className={`px-6 py-4 text-sm font-medium flex ${
+                                                item.tipe === "m"
+                                                    ? "text-green-600"
+                                                    : "text-red-600"
+                                            }`}
+                                        >
+                                            {item.tipe === "m" ? "" : "- "}
+                                            {new Intl.NumberFormat("id-ID", {
+                                                style: "currency",
+                                                currency: "IDR",
+                                                minimumFractionDigits: 2,
+                                            }).format(item.jumlah)}
                                         </td>
 
-                                        <td className={`px-6 py-4 text-sm font-medium ${item.tipe === "m" ? "text-green-600" : "text-red-600"}`}>
-                                            {item.tipe === "m" ? "Pemasukkan" : "Pengeluaran"}
+                                        <td
+                                            className={`px-6 py-4 text-sm font-medium ${
+                                                item.tipe === "m"
+                                                    ? "text-green-600"
+                                                    : "text-red-600"
+                                            }`}
+                                        >
+                                            {item.tipe === "m"
+                                                ? "Pemasukkan"
+                                                : "Pengeluaran"}
                                         </td>
-                                        <td className={`px-6 py-4 text-sm font-medium ${item.jenis_pemasukkan === "k" ? " text-blue-600" : item.jenis_pemasukkan === "u" ? " text-gray-600" : item.jenis_pemasukkan === "a" ? " text-yellow-600" : " text-neutral-600"}`}>
-                                            {item.jenis_pemasukkan === "k" ? "Kas" : item.jenis_pemasukkan === "u" ? "Usaha Dana" : item.jenis_pemasukkan === "a" ? "Anggaran" : "-"}
+                                        <td
+                                            className={`px-6 py-4 text-sm font-medium ${
+                                                item.jenis_pemasukkan === "k"
+                                                    ? " text-blue-600"
+                                                    : item.jenis_pemasukkan ===
+                                                      "u"
+                                                    ? " text-gray-600"
+                                                    : item.jenis_pemasukkan ===
+                                                      "a"
+                                                    ? " text-yellow-600"
+                                                    : " text-neutral-600"
+                                            }`}
+                                        >
+                                            {item.jenis_pemasukkan === "k"
+                                                ? "Kas"
+                                                : item.jenis_pemasukkan === "u"
+                                                ? "Usaha Dana"
+                                                : item.jenis_pemasukkan === "a"
+                                                ? "Anggaran"
+                                                : "-"}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] truncate">
                                             {item.catatan || "-"}
@@ -443,14 +579,18 @@ export default function Index({ keuangan, filters }: Props) {
                                                 <FileText className="h-4 w-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleEdit(item.id)}
+                                                onClick={() =>
+                                                    handleEdit(item.id)
+                                                }
                                                 className="text-blue-600 hover:text-blue-900"
                                                 title="Edit"
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(item.id)}
+                                                onClick={() =>
+                                                    handleDelete(item.id)
+                                                }
                                                 className="text-red-600 hover:text-red-900"
                                                 title="Hapus"
                                             >
@@ -478,7 +618,8 @@ export default function Index({ keuangan, filters }: Props) {
                         </div>
                         <div className="flex items-center gap-4">
                             <span className="text-sm text-gray-700 whitespace-nowrap">
-                                {keuangan.from}-{keuangan.to} dari {keuangan.total}
+                                {keuangan.from}-{keuangan.to} dari{" "}
+                                {keuangan.total}
                             </span>
                             <div className="flex items-center gap-1">
                                 <button
@@ -487,7 +628,13 @@ export default function Index({ keuangan, filters }: Props) {
                                     onClick={() =>
                                         router.get(
                                             "/keuangan",
-                                            { search, sort_by: sortBy, sort_direction: sortDirection, page: keuangan.current_page - 1, perPage },
+                                            {
+                                                search,
+                                                sort_by: sortBy,
+                                                sort_direction: sortDirection,
+                                                page: keuangan.current_page - 1,
+                                                perPage,
+                                            },
                                             { preserveState: true }
                                         )
                                     }
@@ -496,11 +643,20 @@ export default function Index({ keuangan, filters }: Props) {
                                 </button>
                                 <button
                                     className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                    disabled={keuangan.current_page === keuangan.last_page}
+                                    disabled={
+                                        keuangan.current_page ===
+                                        keuangan.last_page
+                                    }
                                     onClick={() =>
                                         router.get(
                                             "/keuangan",
-                                            { search, sort_by: sortBy, sort_direction: sortDirection, page: keuangan.current_page + 1, perPage },
+                                            {
+                                                search,
+                                                sort_by: sortBy,
+                                                sort_direction: sortDirection,
+                                                page: keuangan.current_page + 1,
+                                                perPage,
+                                            },
                                             { preserveState: true }
                                         )
                                     }
@@ -518,7 +674,8 @@ export default function Index({ keuangan, filters }: Props) {
                     isOpen={showModal}
                     onClose={() => setShowModal(false)}
                     data={selectedData}
-                />)}
+                />
+            )}
         </AppLayout>
     );
 }
