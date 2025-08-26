@@ -15,6 +15,14 @@ class ArsipSuratController extends Controller
     {
         $query = ArsipSurat::query();
 
+
+        $perPage = $request->input('perPage', 10);
+        $sortBy = $request->input('sort_by', 'tanggal_surat');
+        $allowedDirections = ['asc', 'desc'];
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $search = $request->input('search');
+        $filter = $request->input('filter');
+
         // 🔍 Filter pencarian
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -28,30 +36,39 @@ class ArsipSuratController extends Controller
         }
 
         // 📂 Filter jenis surat
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->input('jenis'));
+        if ($filter) {
+            if (in_array($filter, ['m', 'k'])) {
+                $query->where('jenis', $filter);
+            } elseif ($filter === 'with_file') {
+                $query->whereNotNull('file_path')->where('file_path', '!=', '');
+            } elseif ($filter === 'without_file') {
+                $query->whereNull('file_path')->orWhere('file_path', '=', '');
+            }
         }
 
         // 🔽 Sortir
-        $sortBy = $request->input('sortBy', 'tanggal_surat');
-        $sortDir = $request->input('sortDir', 'desc');
-
-        if (!in_array($sortBy, ['tanggal_surat', 'nomor_surat'])) {
+        $allowedSorts = ['jumlah', 'tanggal_surat', 'judul_surat', 'pengirim', 'penerima'];
+        if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'tanggal_surat';
         }
-        if (!in_array($sortDir, ['asc', 'desc'])) {
-            $sortDir = 'desc';
+        if (!in_array($sortDirection, $allowedDirections)) {
+            $sortDirection = 'desc';
         }
 
         // 📑 Pagination (pakai dropdown perPage, default 10)
-        $perPage = $request->input('perPage', 10);
-        $arsipSurat = $query->orderBy($sortBy, $sortDir)
+        $arsipSurat = $query->orderBy($sortBy, $sortDirection)
             ->paginate($perPage)
             ->withQueryString();
 
         return Inertia::render('ArsipSurat/Index', [
             'arsipSurat' => $arsipSurat,
-            'filters' => $request->only(['search', 'jenis', 'perPage', 'sortBy', 'sortDir']),
+            'filters' => [
+                'search' => $search ?? '',
+                'sort_by' => $sortBy ?? 'created_at',
+                'sort_direction' => $sortDirection ?? 'desc',
+                'perPage' => $perPage ?? 10,
+                'filter' => $filter ?? null,
+            ]
         ]);
     }
 
@@ -102,16 +119,40 @@ class ArsipSuratController extends Controller
      */
     public function edit(ArsipSurat $arsipSurat)
     {
-        //
+        return Inertia::render('ArsipSurat/Edit', [
+            'arsipSurat' => $arsipSurat
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ArsipSurat $arsipSurat)
+
+    public function update(Request $request, $id)
     {
-        //
+        $arsip = ArsipSurat::findOrFail($id);
+
+        $validated = $request->validate([
+            'judul_surat' => 'required|string|max:255',
+            'nomor_surat' => 'required|string|max:255|unique:arsip_surats,nomor_surat,' . $arsip->id,
+            'jenis' => 'required|in:m,k',
+            'pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
+            'tanggal_surat' => 'required|date',
+            'keterangan' => 'required|string',
+            'file_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx',
+        ]);
+
+        if ($request->hasFile('file_path')) {
+            $validated['file_path'] = $request->file('file_path')->store('arsip_surats', 'public');
+        }
+
+        $arsip->update($validated);
+
+        return redirect()->route('arsip-surat.index')
+            ->with('success', 'Data arsip surat berhasil diupdate');
     }
+
 
     /**
      * Remove the specified resource from storage.
