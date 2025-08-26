@@ -100,6 +100,7 @@ class RencanaController extends Controller
     public function edit(Rencana $rencana)
     {
         return Inertia::render('Rencana/Edit', [
+            'roles' => Role::all(),
             'rencana' => $rencana
         ]);
     }
