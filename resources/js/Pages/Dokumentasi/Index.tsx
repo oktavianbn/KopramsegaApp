@@ -1,437 +1,388 @@
-import { useState, useEffect } from "react";
-import { Head, Link, router } from "@inertiajs/react";
+"use client"
+
+import AppLayout from "@/Layouts/AppLayout"
+import { Head, Link, router } from "@inertiajs/react"
+import { useState, useEffect, useRef } from "react"
 import {
-    Plus,
-    Edit,
-    Trash2,
-    Search,
-    ExternalLink,
-    Download,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
-    ChevronDown,
-} from "lucide-react";
-import AppLayout from "@/Layouts/AppLayout";
+    Download,
+    Edit,
+    Filter,
+    Plus,
+    Search,
+    SortAsc,
+    SortDesc,
+    Trash2,
+    FileText,
+} from "lucide-react"
+import { ModalDetailDokumentasi } from "@/Components/ModalDetailDokumentasi"
 
 interface Dokumentasi {
-    id: number;
-    judul: string;
-    links: string[];
-    kameramen?: string;
-    keterangan?: string;
-    created_at: string;
-    updated_at: string;
+    id: number
+    judul: string
+    links: string[]
+    kameramen?: string
+    keterangan?: string
+    created_at: string
+    updated_at: string
 }
 
 interface Props {
     dokumentasis: {
-        data: Dokumentasi[];
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    };
+        data: Dokumentasi[]
+        current_page: number
+        last_page: number
+        per_page: number
+        total: number
+        from: number
+        to: number
+    }
     filters: {
-        search?: string;
-    };
+        search?: string
+        sort_by?: string
+        sort_direction?: "asc" | "desc"
+        kameramen?: string
+    }
 }
 
 export default function Index({ dokumentasis, filters }: Props) {
-    const [search, setSearch] = useState(filters.search || "");
-    const [sortBy, setSortBy] = useState("created_at");
-    const [sortDir, setSortDir] = useState("desc");
-    const [showSortDropdown, setShowSortDropdown] = useState(false);
-    const [perPage, setPerPage] = useState(dokumentasis.per_page || 10);
+    const [search, setSearch] = useState(filters.search || "")
+    const [sortBy, setSortBy] = useState(filters.sort_by || "created_at")
+    const [sortDirection, setSortDirection] = useState(filters.sort_direction || "desc")
+    const [kameramenFilter, setKameramenFilter] = useState(filters.kameramen || "")
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false)
+    const [showSortDropdown, setShowSortDropdown] = useState(false)
+    const [perPage, setPerPage] = useState(dokumentasis.per_page || 8)
+    const [showModal, setShowModal] = useState(false);
+    const [selectedData, setSelectedData] = useState<Dokumentasi | null>(null);
 
-    // Search handler
-    const handleSearch = () => {
-        router.get(
-            "/dokumentasi",
-            { search, sortBy, sortDir, perPage },
-            { preserveState: true }
-        );
-    };
+    const filterDropdownRef = useRef<HTMLDivElement>(null)
+    const sortDropdownRef = useRef<HTMLDivElement>(null)
 
-    // Search on enter
-    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            handleSearch();
-        }
-    };
-
-    // Sort handler
-    const handleSort = (field: string, direction: string) => {
-        setSortBy(field);
-        setSortDir(direction);
+    /** 🔹 Update Query */
+    const updateQuery = (extra: Record<string, any> = {}) => {
         router.get(
             "/dokumentasi",
             {
                 search,
-                sortBy: field,
-                sortDir: direction,
-                page: dokumentasis.current_page,
+                kameramen: kameramenFilter || undefined,
+                sort_by: sortBy,
+                sort_direction: sortDirection,
                 perPage,
+                ...extra,
             },
             { preserveState: true }
-        );
-    };
+        )
+    }
 
-    // Per page handler
+    const handleShow = (item: Dokumentasi) => { setSelectedData(item); setShowModal(true); };
+
+    /** 🔹 Live search dengan debounce */
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (search !== filters.search) {
+                updateQuery({ page: 1 })
+            }
+        }, 500)
+        return () => clearTimeout(timeoutId)
+    }, [search])
+
+    /** 🔹 Close dropdown kalau klik di luar */
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(target)) {
+                setShowFilterDropdown(false)
+            }
+            if (sortDropdownRef.current && !sortDropdownRef.current.contains(target)) {
+                setShowSortDropdown(false)
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [])
+
+    /** 🔹 Handler */
     const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = parseInt(e.target.value);
-        setPerPage(value);
-        router.get(
-            "/dokumentasi",
-            { search, sortBy, sortDir, page: 1, perPage: value },
-            { preserveState: true }
-        );
-    };
+        const value = parseInt(e.target.value)
+        setPerPage(value)
+        updateQuery({ perPage: value, page: 1 })
+    }
+
+    const handleSort = (field: string) => {
+        const newDirection = sortBy === field && sortDirection === "asc" ? "desc" : "asc"
+        setSortBy(field)
+        setSortDirection(newDirection)
+        updateQuery({ sort_by: field, sort_direction: newDirection })
+        setShowSortDropdown(false)
+    }
+
+    const clearFilters = () => {
+        setSearch("")
+        setKameramenFilter("")
+        setSortBy("created_at")
+        setSortDirection("desc")
+        router.get("/dokumentasi", {}, { preserveState: true })
+        setShowFilterDropdown(false)
+    }
 
     const handleDelete = (id: number) => {
         if (confirm("Apakah Anda yakin ingin menghapus dokumentasi ini?")) {
-            router.delete(`/dokumentasi/${id}`);
+            router.delete(`/dokumentasi/${id}`)
         }
-    };
+    }
 
     const renderLinks = (links: string[]) => {
-        if (!links || links.length === 0) {
-            return (
-                <span className="text-gray-600 italic whitespace-nowrap">
-                    Tidak ada link
-                </span>
-            );
-        }
-
+        if (!links || links.length === 0) return <span className="italic text-gray-500">Tidak ada link</span>
         if (links.length === 1) {
             return (
-                <a
-                    href={links[0]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline text-blue-600"
-                >
+                <a href={links[0]} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                     Lihat Link
                 </a>
-            );
+            )
         }
-
         return (
             <div className="flex flex-col gap-1">
-                {links.map((link, index) => (
-                    <a
-                        key={index}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:underline text-blue-600"
-                    >
-                        Lihat Link {index + 1}
+                {links.map((link, i) => (
+                    <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                        Link {i + 1}
                     </a>
                 ))}
             </div>
-        );
-    };
+        )
+    }
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("id-ID");
-    };
+        return new Date(dateString).toLocaleDateString("id-ID", {
+            weekday: "short",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        })
+    }
 
     return (
         <AppLayout>
             <Head title="Dokumentasi" />
-
             <div className="min-h-screen bg-gray-50 p-6">
                 <div className="mx-auto">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
-                                Dokumentasi
-                            </h1>
-                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                Dokumentasi / Daftar
-                            </h2>
+                    <div className="grid gap-2 lg:flex items-center justify-between mb-6">
+                        <div className="flex gap-6 items-center">
+                            <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
+                                <FileText className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Dokumentasi</h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Dokumentasi / Daftar</h2>
+                            </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors">
-                                <Download className="h-4 w-4" />
-                                Download CSV
-                            </button>
                             <Link
                                 href="/dokumentasi/create"
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 <Plus className="h-4 w-4" />
-                                Tambah Data
+                                Tambah Dokumentasi
                             </Link>
                         </div>
                     </div>
 
-                    {/* Pencarian dan Filter */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-                        <div className="md:flex items-center md:justify-between grid gap-2">
+                    {/* Search & Filter */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 grid gap-2 lg:flex items-center justify-between">
+                        <div className="flex items-center gap-4 flex-1">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <input
                                     type="text"
                                     placeholder="Cari dokumentasi berdasarkan judul atau kameramen"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={handleSearchKeyDown}
-                                    className="pl-10 pr-4 py-2 md:w-80 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="pl-10 pr-4 py-2 w-72 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                             </div>
-                            <div className="relative">
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {/* Filter */}
+                            <div className="relative" ref={filterDropdownRef}>
                                 <button
-                                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
-                                    onClick={() =>
-                                        setShowSortDropdown((prev) => !prev)
-                                    }
-                                    type="button"
+                                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                                    className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showFilterDropdown ? "border-blue-500 bg-blue-50 text-blue-600" : "border-gray-300 bg-white hover:bg-gray-50"
+                                        }`}
                                 >
-                                    Urutkan
-                                    <ChevronDown className="h-4 w-4" />
+                                    <Filter className="h-4 w-4" />
+                                    Filter
+                                    {kameramenFilter && <span className="bg-blue-500 w-2 h-2 rounded-full"></span>}
+                                    <ChevronDown className={`h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""}`} />
+                                </button>
+                                {showFilterDropdown && (
+                                    <div className="absolute -left-10 mt-2 w-72 bg-white border rounded-lg shadow-lg z-20">
+                                        <div className="p-4 space-y-4">
+                                            <div className="border-b pb-2">
+                                                <h3 className="text-sm font-semibold text-gray-700">Filter Kameramen</h3>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="Nama kameramen..."
+                                                value={kameramenFilter}
+                                                onChange={(e) => setKameramenFilter(e.target.value)}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                            />
+                                            <div className="flex gap-2 pt-3 border-t">
+                                                <button onClick={clearFilters} className="flex-1 border rounded-lg px-3 py-2 text-sm hover:bg-gray-50">
+                                                    Clear
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setShowFilterDropdown(false)
+                                                        updateQuery({ page: 1 })
+                                                    }}
+                                                    className="flex-1 bg-blue-500 text-white rounded-lg px-3 py-2 text-sm hover:bg-blue-600"
+                                                >
+                                                    Apply
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Sort */}
+                            <div className="relative" ref={sortDropdownRef}>
+                                <button
+                                    onClick={() => setShowSortDropdown(!showSortDropdown)}
+                                    className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showSortDropdown ? "border-blue-500 bg-blue-50 text-blue-600" : "border-gray-300 bg-white hover:bg-gray-50"
+                                        }`}
+                                >
+                                    Sort
+                                    {sortDirection === "asc" ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+                                    <ChevronDown className={`h-4 w-4 transition-transform ${showSortDropdown ? "rotate-180" : ""}`} />
                                 </button>
                                 {showSortDropdown && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                                        <button
-                                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                                                sortBy === "created_at"
-                                                    ? "text-blue-600"
-                                                    : "text-gray-700"
-                                            }`}
-                                            onClick={() => {
-                                                setShowSortDropdown(false);
-                                                handleSort(
-                                                    "created_at",
-                                                    sortDir === "asc"
-                                                        ? "desc"
-                                                        : "asc"
-                                                );
-                                            }}
-                                        >
-                                            Tanggal Dibuat{" "}
-                                            {sortBy === "created_at"
-                                                ? sortDir === "asc"
-                                                    ? "↑"
-                                                    : "↓"
-                                                : ""}
-                                        </button>
-                                        <button
-                                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                                                sortBy === "judul"
-                                                    ? "text-blue-600"
-                                                    : "text-gray-700"
-                                            }`}
-                                            onClick={() => {
-                                                setShowSortDropdown(false);
-                                                handleSort(
-                                                    "judul",
-                                                    sortDir === "asc"
-                                                        ? "desc"
-                                                        : "asc"
-                                                );
-                                            }}
-                                        >
-                                            Judul{" "}
-                                            {sortBy === "judul"
-                                                ? sortDir === "asc"
-                                                    ? "↑"
-                                                    : "↓"
-                                                : ""}
-                                        </button>
+                                    <div className="absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-20">
+                                        <div className="p-2">
+                                            <button onClick={() => handleSort("judul")} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded">
+                                                Judul
+                                            </button>
+                                            <button onClick={() => handleSort("created_at")} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded">
+                                                Tanggal Dibuat
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Table */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            No.
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Judul
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Kameramen
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Keterangan
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Link
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Tanggal
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Aksi
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200 text-center">
-                                    {dokumentasis.data.length === 0 ? (
-                                        <tr>
-                                            <td
-                                                colSpan={7}
-                                                className="px-6 py-8 text-center text-gray-500"
-                                            >
-                                                Tidak ada data dokumentasi
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        dokumentasis.data.map(
-                                            (dokumentasi, idx) => (
-                                                <tr
-                                                    key={dokumentasi.id}
-                                                    className="hover:bg-gray-50"
-                                                >
-                                                    <td className="px-6 py-4 font-medium text-sm text-gray-900">
-                                                        {(dokumentasis.current_page -
-                                                            1) *
-                                                            dokumentasis.per_page +
-                                                            idx +
-                                                            1}
-                                                    </td>
-                                                    <td className="px-6 py-4 font-medium text-sm text-gray-900 max-w-[200px] truncate">
-                                                        {dokumentasi.judul}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-6 py-4 font-medium text-sm text-gray-900">
-                                                        {dokumentasi.kameramen ||
-                                                            "-"}
-                                                    </td>
-                                                    <td className="px-6 py-4 font-medium text-sm text-gray-900 max-w-[200px] truncate">
-                                                        {dokumentasi.keterangan ||
-                                                            "-"}
-                                                    </td>
-                                                    <td className="px-6 py-4 font-medium text-sm">
-                                                        {renderLinks(
-                                                            dokumentasi.links
-                                                        )}
-                                                    </td>
-                                                    <td className="px-6 py-4 font-medium text-sm text-gray-900">
-                                                        {formatDate(
-                                                            dokumentasi.created_at
-                                                        )}
-                                                    </td>
-                                                    <td className="px-6 py-4 font-medium text-sm flex items-center justify-center gap-2">
-                                                        <Link
-                                                            href={`/dokumentasi/${dokumentasi.id}/edit`}
-                                                            className="text-blue-600 hover:text-blue-900"
-                                                            title="Edit Dokumentasi"
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Link>
-                                                        <button
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    dokumentasi.id
-                                                                )
-                                                            }
-                                                            className="text-red-600 hover:text-red-900"
-                                                            title="Hapus Dokumentasi"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        )
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <select
-                                    className="border border-gray-300 rounded px-2 py-1 text-sm"
-                                    value={perPage}
-                                    onChange={handlePerPageChange}
-                                >
-                                    <option value={10}>
-                                        10 data per halaman
-                                    </option>
-                                    <option value={20}>
-                                        20 data per halaman
-                                    </option>
-                                    <option value={50}>
-                                        50 data per halaman
-                                    </option>
-                                </select>
+                    {/* Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        {dokumentasis.data.length === 0 ? (
+                            <div className="col-span-full bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center text-gray-500">
+                                Tidak ada data dokumentasi
                             </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-700">
-                                    {(dokumentasis.current_page - 1) *
-                                        dokumentasis.per_page +
-                                        1}
-                                    -
-                                    {(dokumentasis.current_page - 1) *
-                                        dokumentasis.per_page +
-                                        dokumentasis.data.length}{" "}
-                                    dari {dokumentasis.total}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                        disabled={
-                                            dokumentasis.current_page === 1
-                                        }
-                                        onClick={() =>
-                                            router.get(
-                                                "/dokumentasi",
-                                                {
-                                                    search,
-                                                    sortBy,
-                                                    sortDir,
-                                                    page:
-                                                        dokumentasis.current_page -
-                                                        1,
-                                                    perPage,
-                                                },
-                                                { preserveState: true }
-                                            )
-                                        }
+                        ) : (
+                            dokumentasis.data.map((item, idx) => (
+                                <div
+                                    key={item.id}
+                                    className="relative bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow"
+                                >
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm text-gray-500">
+                                            #{(dokumentasis.current_page - 1) * dokumentasis.per_page + idx + 1}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleShow(item)}
+                                                className="text-gray-600 hover:text-gray-900 p-1 hover:bg-gray-50 rounded"
+                                            >
+                                                <FileText className="h-4 w-4" />
+                                            </button>
+                                            <Link
+                                                href={`/dokumentasi/${item.id}/edit`}
+                                                className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {/* Judul */}
+                                    <h3 className="mb-2 text-lg font-semibold text-gray-900">{item.judul}</h3>
+                                    {item.keterangan && (
+                                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.keterangan}</p>
+                                    )}
+                                    {/* Kameramen */}
+                                    <div className="text-sm text-gray-600 mb-1 flex justify-between">
+                                        <span className="font-medium">Kameramen:</span> <span className="font-bold text-black">{item.kameramen || "-"}</span>
+                                    </div>
+                                    {/* Keterangan */}
+                                    {/* Footer */}
+                                    <div className="mt-4 pt-4 border-t text-xs text-gray-500">Dibuat: {formatDate(item.created_at)}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Pagination */}
+                    {dokumentasis.data.length > 0 && (
+                        <div className="bg-white rounded-lg shadow-sm border px-4 py-3 mt-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <select
+                                        className="border rounded px-2 py-1 text-sm"
+                                        value={perPage}
+                                        onChange={handlePerPageChange}
                                     >
-                                        <ChevronLeft className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                        className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                        disabled={
-                                            dokumentasis.current_page ===
-                                            dokumentasis.last_page
-                                        }
-                                        onClick={() =>
-                                            router.get(
-                                                "/dokumentasi",
-                                                {
-                                                    search,
-                                                    sortBy,
-                                                    sortDir,
-                                                    page:
-                                                        dokumentasis.current_page +
-                                                        1,
-                                                    perPage,
-                                                },
-                                                { preserveState: true }
-                                            )
-                                        }
-                                    >
-                                        <ChevronRight className="h-4 w-4" />
-                                    </button>
+                                        <option value={8}>8 data per halaman</option>
+                                        <option value={16}>16 data per halaman</option>
+                                        <option value={40}>40 data per halaman</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-sm text-gray-700">
+                                        {dokumentasis.from}-{dokumentasis.to} dari {dokumentasis.total}
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                        <Link
+                                            href={`/dokumentasi?page=${dokumentasis.current_page - 1}&search=${search}&sort_by=${sortBy}&sort_direction=${sortDirection}&kameramen=${kameramenFilter}`}
+                                            className={`p-2 rounded hover:bg-gray-100 ${dokumentasis.current_page === 1 ? "opacity-50 pointer-events-none" : ""
+                                                }`}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Link>
+                                        <Link
+                                            href={`/dokumentasi?page=${dokumentasis.current_page + 1}&search=${search}&sort_by=${sortBy}&sort_direction=${sortDirection}&kameramen=${kameramenFilter}`}
+                                            className={`p-2 rounded hover:bg-gray-100 ${dokumentasis.current_page === dokumentasis.last_page
+                                                ? "opacity-50 pointer-events-none"
+                                                : ""
+                                                }`}
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
+            {/* Modal Show Data */}
+            {
+                showModal && selectedData && (
+                    <ModalDetailDokumentasi
+                        isOpen={showModal}
+                        onClose={() => setShowModal(false)}
+                        data={selectedData}
+                    />)
+            }
         </AppLayout>
-    );
+    )
 }
