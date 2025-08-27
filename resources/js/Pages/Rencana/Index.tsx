@@ -18,6 +18,7 @@ import {
     Search,
     SortAsc,
     SortDesc,
+    TimerReset,
     Trash2,
     UserPlus,
     X,
@@ -288,7 +289,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
                             <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                <FileText className="h-5 w-5 text-blue-600" />
+                                <TimerReset className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Rencana</h1>
@@ -649,14 +650,18 @@ export default function Index({ rencanas, filters, roles }: Props) {
 
                                 {/* Dates */}
                                 <div className="space-y-2 mb-4">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Calendar className="h-4 w-4 text-gray-400" />
-                                        <span className="text-gray-600">Mulai:</span>
+                                    <div className="flex items-center gap-2 text-sm justify-between">
+                                        <div className="flex">
+                                            <Calendar className="h-4 w-4 text-gray-400" />
+                                            <span className="text-gray-600">Mulai:</span>
+                                        </div>
                                         <span className="font-medium text-gray-900">{formatDate(item.tanggal_mulai)}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Calendar className="h-4 w-4 text-gray-400" />
-                                        <span className="text-gray-600">Selesai:</span>
+                                    <div className="flex items-center gap-2 text-sm justify-between">
+                                        <div className="flex">
+                                            <Calendar className="h-4 w-4 text-gray-400" />
+                                            <span className="text-gray-600">Selesai:</span>
+                                        </div>
                                         <span className="font-medium text-gray-900">{item.tanggal_selesai ? formatDate(item.tanggal_selesai) : "-"}</span>
                                     </div>
                                 </div>
