@@ -335,7 +335,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                     </div>
 
                     {/* Tabs Filter */}
-                    <div className="mb-6 flex gap-4 border-b">
+                    <div className="mb-6 flex gap-4 border-b overflow-x-auto">
                         <button
                             onClick={() => handleTab("")}
                             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
@@ -426,7 +426,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                     onChange={(e) => {
                                         setSearch(e.target.value);
                                     }}
-                                    className="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="pl-10 pr-4 py-2 w-72 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                             </div>
                         </div>
@@ -448,7 +448,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                 </button>
 
                                 {showFilterDropdown && (
-                                    <div className="absolute left-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                                    <div className="absolute -left-10 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                                         <div className="p-4 space-y-4">
                                             <div className="border-b border-gray-100 pb-3">
                                                 <h3 className="text-sm font-semibold text-gray-700 mb-3">Filter Options</h3>
@@ -654,13 +654,11 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                         <span className="text-gray-600">Mulai:</span>
                                         <span className="font-medium text-gray-900">{formatDate(item.tanggal_mulai)}</span>
                                     </div>
-                                    {item.tanggal_selesai && (
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <Calendar className="h-4 w-4 text-gray-400" />
-                                            <span className="text-gray-600">Selesai:</span>
-                                            <span className="font-medium text-gray-900">{formatDate(item.tanggal_selesai)}</span>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Calendar className="h-4 w-4 text-gray-400" />
+                                        <span className="text-gray-600">Selesai:</span>
+                                        <span className="font-medium text-gray-900">{item.tanggal_selesai ? formatDate(item.tanggal_selesai) : "-"}</span>
+                                    </div>
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     {/* Role */}
