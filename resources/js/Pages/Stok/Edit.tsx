@@ -18,7 +18,19 @@ interface Spesifikasi {
     description?: string | null;
 }
 
+interface Stok {
+    id: number;
+    barang_id: number;
+    spesifikasi_id?: number | null;
+    jumlah: number;
+    barang: Barang;
+    spesifikasi?: Spesifikasi | null;
+    created_at: string;
+    updated_at: string;
+}
+
 interface Props {
+    stok: Stok;
     barangs: Barang[];
     spesifikasis: Spesifikasi[];
 }
@@ -29,11 +41,11 @@ interface FormData {
     jumlah: string;
 }
 
-export default function Create({ barangs, spesifikasis }: Props) {
-    const { data, setData, post, processing, errors } = useForm<FormData>({
-        barang_id: "",
-        spesifikasi_id: "",
-        jumlah: "",
+export default function Edit({ stok, barangs, spesifikasis }: Props) {
+    const { data, setData, put, processing, errors } = useForm<FormData>({
+        barang_id: stok.barang_id.toString(),
+        spesifikasi_id: stok.spesifikasi_id?.toString() || "",
+        jumlah: stok.jumlah.toString(),
     });
 
     // Filter spesifikasi berdasarkan barang yang dipilih
@@ -52,12 +64,12 @@ export default function Create({ barangs, spesifikasis }: Props) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post("/stok");
+        put(`/stok/${stok.id}`);
     };
 
     return (
         <AppLayout>
-            <Head title="Tambah Data Stok" />
+            <Head title="Edit Data Stok" />
 
             <div className="p-6">
                 {/* Header */}
@@ -74,7 +86,7 @@ export default function Create({ barangs, spesifikasis }: Props) {
                                 Stok
                             </h1>
                             <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                Stok / Tambah Data
+                                Stok / Edit Data
                             </h2>
                         </div>
                     </div>
@@ -210,7 +222,7 @@ export default function Create({ barangs, spesifikasis }: Props) {
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                             >
                                 <Save className="h-4 w-4" />
-                                {processing ? "Menyimpan..." : "Simpan"}
+                                {processing ? "Menyimpan..." : "Perbarui"}
                             </button>
                         </div>
                     </form>
