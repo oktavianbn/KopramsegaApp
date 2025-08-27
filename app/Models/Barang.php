@@ -12,4 +12,8 @@ class Barang extends Model
     {
         return $this->hasMany(Spesifikasi::class);
     }
+    public function stok()
+    {
+        return $this->hasMany(Stok::class);
+    }
 }

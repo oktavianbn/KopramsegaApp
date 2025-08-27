@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArsipSuratController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StokController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\KeuanganController;
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('rencana/{rencana}/status', [RencanaController::class, 'updateStatus'])->name('rencana.updateStatus');
     Route::resource('dokumentasi', DokumentasiController::class);
     Route::resource('barang', BarangController::class);
+    Route::resource('stok', StokController::class);
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
