@@ -1,23 +1,23 @@
 "use client"
 
+import { ModalDetailDokumentasi } from "@/Components/ModalDetailDokumentasi"
 import AppLayout from "@/Layouts/AppLayout"
 import { Head, Link, router } from "@inertiajs/react"
-import { useState, useEffect, useRef } from "react"
 import {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
-    Download,
     Edit,
+    FileText,
     Filter,
     Plus,
     Search,
     SortAsc,
     SortDesc,
-    Trash2,
-    FileText,
+    SwitchCamera,
+    Trash2
 } from "lucide-react"
-import { ModalDetailDokumentasi } from "@/Components/ModalDetailDokumentasi"
+import { useEffect, useRef, useState } from "react"
 
 interface Dokumentasi {
     id: number
@@ -172,7 +172,7 @@ export default function Index({ dokumentasis, filters }: Props) {
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
                             <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                <FileText className="h-5 w-5 text-blue-600" />
+                                <SwitchCamera className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Dokumentasi</h1>

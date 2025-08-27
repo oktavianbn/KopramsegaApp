@@ -1,6 +1,6 @@
 "use client"
 
-import { X, FileText, Calendar, User, Mail, Hash, Tag, Clock } from "lucide-react"
+import { Calendar, Clock, FileText, FolderClosed, Hash, Mail, Tag, User, X } from "lucide-react";
 
 interface ModalDetailArsipSuratProps {
     isOpen: boolean;
@@ -52,7 +52,7 @@ export function ModalDetailArsipSurat({ isOpen, onClose, data }: ModalDetailArsi
                     <div className="flex items-center justify-between p-6 border-b border-gray-200">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-100 rounded-lg">
-                                <FileText className="h-6 w-6 text-blue-600" />
+                                <FolderClosed className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900">Detail Surat</h2>

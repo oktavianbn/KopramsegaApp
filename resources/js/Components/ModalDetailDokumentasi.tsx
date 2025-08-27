@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { X, FileText, User, Camera, List, Link as LinkIcon, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Camera, Clock, Link as LinkIcon, List, SwitchCamera, X } from "lucide-react"
+import { useState } from "react"
 
 interface ModalDetailDokumentasi {
     id: number
@@ -44,7 +44,7 @@ export function ModalDetailDokumentasi({ isOpen, onClose, data }: ModalDetailDok
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="h-6 w-6 text-blue-600" />
+                <SwitchCamera className="h-6 w-6 text-blue-600" />
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">Detail Dokumentasi</h2>

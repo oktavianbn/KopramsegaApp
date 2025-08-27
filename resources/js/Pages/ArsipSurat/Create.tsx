@@ -1,7 +1,7 @@
-import { useState, FormEventHandler, useEffect } from "react";
-import { Head, Link, useForm } from "@inertiajs/react";
-import { ArrowLeft, Save, FileText, Hash, Shuffle, User, Users, Calendar, StickyNote, Paperclip, ArrowUpDown, Pen } from "lucide-react";
 import AppLayout from "@/Layouts/AppLayout";
+import { Head, Link, useForm } from "@inertiajs/react";
+import { ArrowLeft, ArrowUpDown, Calendar, FileText, Hash, Paperclip, Pen, Save, User, Users } from "lucide-react";
+import { FormEventHandler, useEffect, useState } from "react";
 
 interface ArsipSurat {
     judul_surat: string;
