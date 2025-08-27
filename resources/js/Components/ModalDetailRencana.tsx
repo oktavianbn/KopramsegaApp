@@ -1,6 +1,11 @@
 "use client"
 
-import { X, FileText, Calendar, User, Mail, Hash, Tag, Clock } from "lucide-react"
+import { Calendar, Clock, Tag, TimerReset, User, X } from "lucide-react";
+
+interface Role {
+    id: number
+    name: string
+}
 
 interface ModalDetailRencanaProps {
     isOpen: boolean;
@@ -8,6 +13,7 @@ interface ModalDetailRencanaProps {
     data: {
         id: number;
         nama_rencana: string;
+        role: Role
         deskripsi?: string;
         tanggal_mulai: string;
         tanggal_selesai?: string;
@@ -50,7 +56,7 @@ export function ModalDetailRencana({ isOpen, onClose, data }: ModalDetailRencana
                     <div className="flex items-center justify-between p-6 border-b border-gray-200">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-100 rounded-lg">
-                                <FileText className="h-6 w-6 text-blue-600" />
+                                <TimerReset className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900">Detail Surat</h2>
@@ -115,7 +121,7 @@ export function ModalDetailRencana({ isOpen, onClose, data }: ModalDetailRencana
                                     <User className="h-4 w-4" />
                                     Role
                                 </label>
-                                <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">{data.role_id} Diganti</p>
+                                <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">{data.role.name}</p>
                             </div>
                         </div>
                     </div>
