@@ -53,7 +53,13 @@ class RencanaController extends Controller
 
         return Inertia::render('Rencana/Index', [
             'rencanas' => $rencanas,
-            'filters' => $request->only(['search', 'status', 'role_id', 'sort_by', 'sort_direction']),
+            'filters' => [
+                'search' => $search ?? '',
+                'sort_by' => $sortBy ?? 'created_at',
+                'sort_direction' => $sortDirection ?? 'desc',
+                'perPage' => $perPage ?? 10,
+                'filter' => $filter ?? null,
+            ],
             'roles' => Role::all(),
         ]);
     }
@@ -108,7 +114,7 @@ class RencanaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Rencana $rencana,$id)
+    public function update(Request $request, Rencana $rencana, $id)
     {
         $rencana = Rencana::findOrFail($id);
 
