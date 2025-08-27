@@ -39,8 +39,8 @@ export function ModalDetailKeuangan({ isOpen, onClose, data }: ModalDetailKeuang
                 <div className="sticky top-0 bg-white">
                     <div className="flex items-center justify-between p-6 border-b border-gray-200">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <DollarSign className="h-6 w-6 text-green-600" />
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                                <DollarSign className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900">Detail Keuangan</h2>
@@ -81,7 +81,7 @@ export function ModalDetailKeuangan({ isOpen, onClose, data }: ModalDetailKeuang
                                     : "bg-red-100 text-red-800"
                                     }`}
                             >
-                                {data.tipe === "m" ? "Pemasukkan" : "Penelkuaran"}
+                                {data.tipe === "m" ? "Pemasukkan" : "Pengeluaran"}
                             </span>
                         </div>
 

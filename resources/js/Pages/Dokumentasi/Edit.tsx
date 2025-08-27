@@ -1,7 +1,6 @@
-import { useState } from "react";
+import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-import AppLayout from "@/Layouts/AppLayout";
 
 interface Dokumentasi {
     id: number;
@@ -68,15 +67,21 @@ export default function Edit({ dokumentasi }: Props) {
             <div className="py-6">
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="flex items-center gap-4 mb-6">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Edit Dokumentasi
-                            </h1>
-                            <p className="text-gray-600 mt-1">
-                                Edit dokumentasi kegiatan
-                            </p>
+                    <div className="grid gap-2 md:flex items-center justify-between mb-6">
+                        <div className="flex gap-6 items-center">
+                            <Link
+                                href="/dokumentasi"
+                                className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center">
+                                <ArrowLeft className="h-5 w-5 text-gray-500" />
+                            </Link>
+                            <div className="flex flex-col gap-2">
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Dokumentasi</h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Dokumentasi / Tambah Data</h2>
+                            </div>
                         </div>
+                    </div>
+                    <div className="flex gap-4 mb-6 border-b">
+
                     </div>
 
                     {/* Form */}
@@ -93,11 +98,10 @@ export default function Edit({ dokumentasi }: Props) {
                                     onChange={(e) =>
                                         setData("judul", e.target.value)
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.judul
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.judul
                                             ? "border-red-500"
                                             : "border-gray-300"
-                                    }`}
+                                        }`}
                                     placeholder="Masukkan judul dokumentasi"
                                 />
                                 {errors.judul && (
@@ -139,18 +143,17 @@ export default function Edit({ dokumentasi }: Props) {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                                        errors[`links.${index}`]
+                                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`links.${index}`]
                                                             ? "border-red-500"
                                                             : "border-gray-300"
-                                                    }`}
+                                                        }`}
                                                     placeholder="https://example.com/dokumentasi"
                                                 />
                                                 {errors[`links.${index}`] && (
                                                     <p className="mt-1 text-sm text-red-600">
                                                         {
                                                             errors[
-                                                                `links.${index}`
+                                                            `links.${index}`
                                                             ]
                                                         }
                                                     </p>
@@ -189,11 +192,10 @@ export default function Edit({ dokumentasi }: Props) {
                                     onChange={(e) =>
                                         setData("kameramen", e.target.value)
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.kameramen
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.kameramen
                                             ? "border-red-500"
                                             : "border-gray-300"
-                                    }`}
+                                        }`}
                                     placeholder="Nama kameramen"
                                 />
                                 {errors.kameramen && (
@@ -214,11 +216,10 @@ export default function Edit({ dokumentasi }: Props) {
                                         setData("keterangan", e.target.value)
                                     }
                                     rows={4}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.keterangan
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.keterangan
                                             ? "border-red-500"
                                             : "border-gray-300"
-                                    }`}
+                                        }`}
                                     placeholder="Keterangan atau deskripsi dokumentasi"
                                 />
                                 {errors.keterangan && (

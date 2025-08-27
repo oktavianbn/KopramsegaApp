@@ -8,12 +8,11 @@ import {
     ArrowDownZA,
     ChevronDown,
     ChevronLeft, ChevronRight,
-    DollarSign,
     Download,
     Edit,
     FileText,
     Filter,
-    FolderOpen,
+    FolderClosed,
     Plus,
     Search,
     SortAsc, SortDesc,
@@ -163,8 +162,8 @@ export default function Index({ arsipSurat, filters }: Props) {
                     {/* Header */}
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
-                            <div className="p-2 h-max bg-green-100 rounded-lg flex justify-center items-center">
-                                <DollarSign className="h-5 w-5 text-green-600" />
+                            <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
+                                <FolderClosed className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Arsip Surat</h1>
@@ -447,7 +446,7 @@ export default function Index({ arsipSurat, filters }: Props) {
                                             className={`px-6 py-4 font-medium text-sm ${item.jenis === "m" ? "text-green-600" : "text-yellow-600"
                                                 }`}
                                         >
-                                            {item.jenis === "m" ? "Surat Masuk" : "Surat Keluar"}
+                                            {item.jenis === "m" ? "Masuk" : "Keluar"}
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 font-medium text-sm text-gray-900">{item.pengirim || "-"}</td>
                                         <td className="whitespace-nowrap px-6 py-4 font-medium text-sm text-gray-900">{item.penerima || "-"}</td>

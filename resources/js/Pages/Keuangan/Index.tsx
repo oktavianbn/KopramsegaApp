@@ -17,7 +17,7 @@ import {
     SortAsc,
     SortDesc,
     Trash2,
-    X,
+    X
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -178,13 +178,12 @@ export default function Index({ keuangan, filters }: Props) {
                     {/* Header */}
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
+                            <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
+                                <DollarSign className="h-5 w-5 text-blue-600" />
+                            </div>
                             <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
-                                    Keuangan
-                                </h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                    Keuangan / Daftar
-                                </h2>
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Keuangan</h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Keuangan / Daftar</h2>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
