@@ -58,6 +58,7 @@ interface Props {
         sort_by?: string
         sort_direction?: "asc" | "desc"
         role_id?: string
+        filter?: string
     }
     roles: Role[]
 }
@@ -69,6 +70,9 @@ export default function Index({ rencanas, filters, roles }: Props) {
     const [sortDirection, setSortDirection] = useState(filters.sort_direction || "desc")
     const [roleFilter, setRoleFilter] = useState(filters.role_id || "")
     const [showFilterDropdown, setShowFilterDropdown] = useState(false)
+    const [activeFilter, setActiveFilter] = useState<string | null>(
+        filters.filter || null
+    );
     const [showSortDropdown, setShowSortDropdown] = useState(false)
     const [perPage, setPerPage] = useState(rencanas.per_page || 10);
     // Tab: "" = semua, "belum_dimulai" = belum dimulai, "sedang_dilaksanakan" = berlangsung, "selesai" = selesai
@@ -99,6 +103,30 @@ export default function Index({ rencanas, filters, roles }: Props) {
         return () => clearTimeout(timeoutId)
     }, [search])
 
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("id-ID", {
+            weekday: "short",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        })
+    }
+
+    const updateQuery = (extra: Record<string, any> = {}) => {
+        router.get(
+            "/keuangan",
+            {
+                search,
+                sort_by: sortBy,
+                sort_direction: sortDirection,
+                perPage,
+                filter: activeFilter || undefined, // 🔹 selalu kirim filter
+                ...extra,
+            },
+            { preserveState: true }
+        );
+    };
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as Node
@@ -118,7 +146,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
-        /** 🔹 perPage */
+    /** 🔹 perPage */
     const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = parseInt(e.target.value);
         setPerPage(value);
@@ -216,10 +244,6 @@ export default function Index({ rencanas, filters, roles }: Props) {
                 preserveState: true,
             },
         )
-    }
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("id-ID")
     }
 
     const getStatusBadge = (status: string) => {
@@ -638,12 +662,41 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Role */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Koordinator:</span>
-                                        <span className="text-sm font-medium text-gray-900">{item.role.name}</span>
+                                <div className="flex flex-col gap-2">
+                                    {/* Role */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-600">Koordinator:</span>
+                                            <span className="text-sm font-medium text-gray-900">{item.role.name}</span>
+                                        </div>
+                                    </div>
+                                    {/* Status */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-600">Status:</span>
+                                            <div className="flex flex-col gap-2">
+                                                <select
+                                                    value={item.status}
+                                                    onChange={(e) =>
+                                                        handleStatusUpdate(
+                                                            item.id,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="belum_dimulai">
+                                                        Belum Dimulai
+                                                    </option>
+                                                    <option value="sedang_dilaksanakan">
+                                                        Berlangsung
+                                                    </option>
+                                                    <option value="selesai">
+                                                        Selesai
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
