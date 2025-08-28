@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
+
 
 class UserController extends Controller
 {
@@ -15,23 +17,40 @@ class UserController extends Controller
     {
         $query = User::query();
 
-        // Search functionality
+        // Search
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('role', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
-        $users = $query->paginate(10);
+        // Filter by role
+        if ($request->filled('role')) {
+            $query->where('role', $request->get('role'));
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDirection = $request->get('sort_direction', 'desc');
+        $query->orderBy($sortBy, $sortDirection);
+
+        // Per page
+        $perPage = (int) $request->get('perPage', 10);
+
+        $users = $query->paginate($perPage)->appends($request->all());
 
         return Inertia::render('User/Index', [
-            'user' => $users,
+            'users' => $users,
             'filters' => [
-                'search' => $request->get('search')
-            ]
+                'search' => $search ?? '',
+                'sort_by' => $sortBy ?? 'created_at',
+                'sort_direction' => $sortDirection ?? 'desc',
+                'perPage' => $perPage ?? 10,
+                'filter' => $filter ?? null,
+            ],
+            'roles' => Role::all(),
         ]);
     }
 
