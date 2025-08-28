@@ -32,25 +32,16 @@ export default function Edit({ arsipSurat }: Props) {
         file_path: arsipSurat.file_path,
     });
 
-    console.table({
-        id: arsipSurat.id,
-        judul_surat: arsipSurat.judul_surat,
-        nomor_surat: arsipSurat.nomor_surat,
-        jenis: arsipSurat.jenis,
-        pengirim: arsipSurat.pengirim,
-        penerima: arsipSurat.penerima,
-        tanggal_surat: arsipSurat.tanggal_surat,
-        keterangan: arsipSurat.keterangan,
-        file_path: arsipSurat.file_path,
-    });
-
-
     // nomor_surat format (hanya untuk keluar)
     const [part1, setPart1] = useState("");
     const [part2, setPart2] = useState("");
     const [part3, setPart3] = useState("KPSG");
     const [part4, setPart4] = useState("");
     const [part5, setPart5] = useState("");
+
+    // buffer buat simpan nilai asli
+    // const [bufferPengirim, setBufferPengirim] = useState(arsipSurat.pengirim);
+    // const [bufferPenerima, setBufferPenerima] = useState(arsipSurat.penerima);
 
     const bulanRomawi = [
         "I", "II", "III", "IV", "V", "VI",
@@ -62,21 +53,19 @@ export default function Edit({ arsipSurat }: Props) {
     useEffect(() => {
         if (data.jenis === "k") {
             setData("pengirim", "Dewan Ambalan Sambernyawa Dewi Sartika");
-            setData("penerima", "");
-            setData("nomor_surat", nomorSuratKeluar);
+            setData("penerima", data.penerima);
+            setData("nomor_surat", "");
+            const parts = data.nomor_surat.split(/[./]/).filter(Boolean);
+
+            setPart1(parts[0] || "");
+            setPart2(parts[1] || "");
+            setPart3(parts[2] || "");
+            setPart4(parts[3] || "");
+            setPart5(parts[4] || "");
+
         } else if (data.jenis === "m") {
             setData("penerima", "Dewan Ambalan Sambernyawa Dewi Sartika");
-            // reset nomor surat split jadi kosong, supaya tidak ada jejak
-            const parts = arsipSurat.nomor_surat.split(/[./]/);
-            // hasil: ["01", "001", "KPSG", "III", "2025"]
-
-            if (parts.length === 5) {
-                setPart1(parts[0] || "");
-                setPart2(parts[1] || "");
-                setPart3(parts[2] || "KPSG");
-                setPart4(parts[3] || "");
-                setPart5(parts[4] || "");
-            }
+            setData("pengirim", data.pengirim);
         }
     }, [data.jenis]);
 
