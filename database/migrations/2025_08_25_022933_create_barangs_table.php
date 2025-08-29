@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('nama');
             $table->text('deskripsi')->nullable();
             $table->string('foto')->nullable();
+            $table->boolean('boleh_dipinjam')->default(true);
             $table->timestamps();
         });
 

@@ -30,6 +30,7 @@ interface Barang {
     nama: string;
     deskripsi?: string;
     foto?: string;
+    boleh_dipinjam: boolean;
     spesifikasi?: Spesifikasi[];
     created_at: string;
     updated_at: string;
@@ -314,6 +315,9 @@ export default function Index({ barangs, filters }: Props) {
                                             Spesifikasi
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status Peminjaman
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Tanggal Dibuat
                                         </th>
 
@@ -326,7 +330,7 @@ export default function Index({ barangs, filters }: Props) {
                                     {barangs.data.length === 0 ? (
                                         <tr>
                                             <td
-                                                colSpan={5}
+                                                colSpan={6}
                                                 className="px-6 py-12 text-center text-gray-500"
                                             >
                                                 <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
@@ -385,6 +389,19 @@ export default function Index({ barangs, filters }: Props) {
                                                             "-"}{" "}
                                                         Spesifikasi
                                                     </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span
+                                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                            barang.boleh_dipinjam
+                                                                ? "bg-green-100 text-green-800"
+                                                                : "bg-red-100 text-red-800"
+                                                        }`}
+                                                    >
+                                                        {barang.boleh_dipinjam
+                                                            ? "Dapat Dipinjam"
+                                                            : "Tidak Dapat Dipinjam"}
+                                                    </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {formatDate(
