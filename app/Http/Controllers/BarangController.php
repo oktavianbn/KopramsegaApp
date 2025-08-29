@@ -58,13 +58,14 @@ class BarangController extends Controller
             'nama' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // 2MB max
+            'boleh_dipinjam' => 'boolean',
             'spesifikasi' => 'nullable|array',
             'spesifikasi.*.key' => 'required|string|max:255',
             'spesifikasi.*.value' => 'required|string|max:255',
             'spesifikasi.*.description' => 'nullable|string',
         ]);
 
-        $data = $request->only(['nama', 'deskripsi']);
+        $data = $request->only(['nama', 'deskripsi', 'boleh_dipinjam']);
 
         // Handle file upload
         if ($request->hasFile('foto')) {
@@ -120,13 +121,14 @@ class BarangController extends Controller
             'nama' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // 2MB max
+            'boleh_dipinjam' => 'boolean',
             'spesifikasi' => 'nullable|array',
             'spesifikasi.*.key' => 'required|string|max:255',
             'spesifikasi.*.value' => 'required|string|max:255',
             'spesifikasi.*.description' => 'nullable|string',
         ]);
 
-        $data = $request->only(['nama', 'deskripsi']);
+        $data = $request->only(['nama', 'deskripsi', 'boleh_dipinjam']);
 
         // Handle file upload
         if ($request->hasFile('foto')) {
