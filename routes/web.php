@@ -10,6 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RencanaController;
 use App\Http\Controllers\DokumentasiController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\PeminjamanController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -30,6 +31,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('dokumentasi', DokumentasiController::class);
     Route::resource('barang', BarangController::class);
     Route::resource('stok', StokController::class);
+    Route::resource('peminjaman', PeminjamanController::class);
+    Route::patch('peminjaman/{peminjaman}/status', [PeminjamanController::class, 'updateStatus'])->name('peminjaman.updateStatus');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
