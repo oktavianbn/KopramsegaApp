@@ -15,7 +15,6 @@ class ArsipSuratController extends Controller
     {
         $query = ArsipSurat::query();
 
-
         $perPage = $request->input('perPage', 10);
         $sortBy = $request->input('sort_by', 'tanggal_surat');
         $allowedDirections = ['asc', 'desc'];

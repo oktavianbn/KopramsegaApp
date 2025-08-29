@@ -18,7 +18,6 @@ import {
     Search,
     SortAsc,
     SortDesc,
-    TimerReset,
     Trash2,
     UserPlus,
     X,
@@ -59,7 +58,7 @@ interface Props {
         sort_by?: string
         sort_direction?: "asc" | "desc"
         role_id?: string
-        filter?: string
+        filter?: string;
     }
     roles: Role[]
 }
@@ -69,13 +68,13 @@ export default function Index({ rencanas, filters, roles }: Props) {
     const [status, setStatus] = useState(filters.status || "")
     const [sortBy, setSortBy] = useState(filters.sort_by || "created_at")
     const [sortDirection, setSortDirection] = useState(filters.sort_direction || "desc")
-    const [roleFilter, setRoleFilter] = useState(filters.role_id || "")
-    const [showFilterDropdown, setShowFilterDropdown] = useState(false)
-    const [activeFilter, setActiveFilter] = useState<string | null>(
+        const [activeFilter, setActiveFilter] = useState<string | null>(
         filters.filter || null
     );
+    const [roleFilter, setRoleFilter] = useState(filters.role_id || "")
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false)
     const [showSortDropdown, setShowSortDropdown] = useState(false)
-    const [perPage, setPerPage] = useState(rencanas.per_page || 10);
+    const [perPage, setPerPage] = useState(rencanas.per_page || 8);
     // Tab: "" = semua, "belum_dimulai" = belum dimulai, "sedang_dilaksanakan" = berlangsung, "selesai" = selesai
     const [activeTab, setActiveTab] = useState(filters.status || "")
     const [showModal, setShowModal] = useState(false);
@@ -97,36 +96,12 @@ export default function Index({ rencanas, filters, roles }: Props) {
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             if (search !== filters.search) {
-                handleFilter()
+                updateQuery()
             }
         }, 500) // 500ms delay
 
         return () => clearTimeout(timeoutId)
     }, [search])
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("id-ID", {
-            weekday: "short",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        })
-    }
-
-    const updateQuery = (extra: Record<string, any> = {}) => {
-        router.get(
-            "/keuangan",
-            {
-                search,
-                sort_by: sortBy,
-                sort_direction: sortDirection,
-                perPage,
-                filter: activeFilter || undefined, // 🔹 selalu kirim filter
-                ...extra,
-            },
-            { preserveState: true }
-        );
-    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -147,7 +122,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
-    /** 🔹 perPage */
+        /** 🔹 perPage */
     const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = parseInt(e.target.value);
         setPerPage(value);
@@ -155,14 +130,16 @@ export default function Index({ rencanas, filters, roles }: Props) {
     };
 
     // Filter handler
-    const handleFilter = () => {
+    const updateQuery = (extra: Record<string, any> = {}) => {
         router.get(
             "/rencana",
             {
                 search,
                 status: activeTab,
                 sort_by: sortBy,
+                perPage,
                 sort_direction: sortDirection,
+                filter: activeFilter || undefined, // 🔹 selalu kirim filter
                 role_id: roleFilter,
             },
             { preserveState: true },
@@ -247,6 +224,10 @@ export default function Index({ rencanas, filters, roles }: Props) {
         )
     }
 
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("id-ID")
+    }
+
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "belum_dimulai":
@@ -289,7 +270,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
                             <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                <TimerReset className="h-5 w-5 text-blue-600" />
+                                <FileText className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Rencana</h1>
@@ -336,7 +317,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                     </div>
 
                     {/* Tabs Filter */}
-                    <div className="mb-6 flex gap-4 border-b overflow-x-auto">
+                    <div className="mb-6 flex gap-4 border-b">
                         <button
                             onClick={() => handleTab("")}
                             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
@@ -427,7 +408,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                     onChange={(e) => {
                                         setSearch(e.target.value);
                                     }}
-                                    className="pl-10 pr-4 py-2 w-72 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                             </div>
                         </div>
@@ -449,7 +430,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                 </button>
 
                                 {showFilterDropdown && (
-                                    <div className="absolute -left-10 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                                    <div className="absolute left-0 md:-left-12 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                                         <div className="p-4 space-y-4">
                                             <div className="border-b border-gray-100 pb-3">
                                                 <h3 className="text-sm font-semibold text-gray-700 mb-3">Filter Options</h3>
@@ -460,7 +441,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                                     value={roleFilter}
                                                     onChange={(e) => {
                                                         setRoleFilter(e.target.value)
-                                                        setTimeout(handleFilter, 100)
+                                                        setTimeout(updateQuery, 100)
                                                     }}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                 >
@@ -650,56 +631,25 @@ export default function Index({ rencanas, filters, roles }: Props) {
 
                                 {/* Dates */}
                                 <div className="space-y-2 mb-4">
-                                    <div className="flex items-center gap-2 text-sm justify-between">
-                                        <div className="flex">
-                                            <Calendar className="h-4 w-4 text-gray-400" />
-                                            <span className="text-gray-600">Mulai:</span>
-                                        </div>
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Calendar className="h-4 w-4 text-gray-400" />
+                                        <span className="text-gray-600">Mulai:</span>
                                         <span className="font-medium text-gray-900">{formatDate(item.tanggal_mulai)}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm justify-between">
-                                        <div className="flex">
+                                    {item.tanggal_selesai && (
+                                        <div className="flex items-center gap-2 text-sm">
                                             <Calendar className="h-4 w-4 text-gray-400" />
                                             <span className="text-gray-600">Selesai:</span>
+                                            <span className="font-medium text-gray-900">{formatDate(item.tanggal_selesai)}</span>
                                         </div>
-                                        <span className="font-medium text-gray-900">{item.tanggal_selesai ? formatDate(item.tanggal_selesai) : "-"}</span>
-                                    </div>
+                                    )}
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    {/* Role */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">Koordinator:</span>
-                                            <span className="text-sm font-medium text-gray-900">{item.role.name}</span>
-                                        </div>
-                                    </div>
-                                    {/* Status */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">Status:</span>
-                                            <div className="flex flex-col gap-2">
-                                                <select
-                                                    value={item.status}
-                                                    onChange={(e) =>
-                                                        handleStatusUpdate(
-                                                            item.id,
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                >
-                                                    <option value="belum_dimulai">
-                                                        Belum Dimulai
-                                                    </option>
-                                                    <option value="sedang_dilaksanakan">
-                                                        Berlangsung
-                                                    </option>
-                                                    <option value="selesai">
-                                                        Selesai
-                                                    </option>
-                                                </select>
-                                            </div>
-                                        </div>
+
+                                {/* Role */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600">Koordinator:</span>
+                                        <span className="text-sm font-medium text-gray-900">{item.role.name}</span>
                                     </div>
                                 </div>
 
@@ -753,8 +703,8 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                         onChange={handlePerPageChange}
                                     >
                                         <option value={8}>8 data per halaman</option>
-                                        <option value={16}>20 data per halaman</option>
-                                        <option value={40}>50 data per halaman</option>
+                                        <option value={16}>16 data per halaman</option>
+                                        <option value={40}>40 data per halaman</option>
                                     </select>
                                 </div>
                                 <div className="flex items-center gap-4">

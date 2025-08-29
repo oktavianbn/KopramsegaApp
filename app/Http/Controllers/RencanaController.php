@@ -57,7 +57,7 @@ class RencanaController extends Controller
                 'search' => $search ?? '',
                 'sort_by' => $sortBy ?? 'created_at',
                 'sort_direction' => $sortDirection ?? 'desc',
-                'perPage' => $perPage ?? 10,
+                'perPage' => $perPage ?? 8,
                 'filter' => $filter ?? null,
             ],
             'roles' => Role::all(),
