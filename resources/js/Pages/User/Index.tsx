@@ -17,9 +17,9 @@ import {
     Search,
     SortAsc,
     SortDesc,
-    TimerReset,
     Trash2,
     UserPlus,
+    Users,
     X
 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
@@ -285,7 +285,7 @@ export default function Index({ users, filters, roles }: Props) {
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
                             <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                <TimerReset className="h-5 w-5 text-blue-600" />
+                                <Users className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Pengguna</h1>

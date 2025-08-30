@@ -50,6 +50,7 @@ interface Props {
 export default function Index({ dokumentasis, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "")
     const [sortBy, setSortBy] = useState(filters.sort_by || "created_at")
+    const [currentPage, setCurrentPage] = useState(1);
     const [sortDirection, setSortDirection] = useState(filters.sort_direction || "desc")
     const [kameramenFilter, setKameramenFilter] = useState(filters.kameramen || "")
     const [showFilterDropdown, setShowFilterDropdown] = useState(false)
@@ -315,13 +316,13 @@ export default function Index({ dokumentasis, filters }: Props) {
                                         </div>
                                     </div>
                                     {/* Judul */}
-                                    <h3 className="mb-2 text-lg font-semibold text-gray-900">{item.judul}</h3>
+                                    <h3 className="mb-2 text-lg font-semibold text-gray-900 w-[200px] truncate">{item.judul}</h3>
                                     {item.keterangan && (
-                                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.keterangan}</p>
+                                        <p className="text-sm text-gray-600 mb-2 line-clamp-2 ">{item.keterangan}</p>
                                     )}
                                     {/* Kameramen */}
                                     <div className="text-sm text-gray-600 mb-1 flex justify-between">
-                                        <span className="font-medium">Kameramen:</span> <span className="font-bold text-black">{item.kameramen || "-"}</span>
+                                        <span className="font-medium">Kameramen:</span> <span className="font-bold text-black w-[100px] truncate text-end">{item.kameramen || "-"}</span>
                                     </div>
                                     {/* Keterangan */}
                                     {/* Footer */}
@@ -351,22 +352,22 @@ export default function Index({ dokumentasis, filters }: Props) {
                                         {dokumentasis.from}-{dokumentasis.to} dari {dokumentasis.total}
                                     </span>
                                     <div className="flex items-center gap-1">
-                                        <Link
-                                            href={`/dokumentasi?page=${dokumentasis.current_page - 1}&search=${search}&sort_by=${sortBy}&sort_direction=${sortDirection}&kameramen=${kameramenFilter}`}
+                                        <button
+                                            onClick={() => setCurrentPage(currentPage - 1)}
                                             className={`p-2 rounded hover:bg-gray-100 ${dokumentasis.current_page === 1 ? "opacity-50 pointer-events-none" : ""
                                                 }`}
                                         >
                                             <ChevronLeft className="h-4 w-4" />
-                                        </Link>
-                                        <Link
-                                            href={`/dokumentasi?page=${dokumentasis.current_page + 1}&search=${search}&sort_by=${sortBy}&sort_direction=${sortDirection}&kameramen=${kameramenFilter}`}
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage(currentPage + 1)}
                                             className={`p-2 rounded hover:bg-gray-100 ${dokumentasis.current_page === dokumentasis.last_page
                                                 ? "opacity-50 pointer-events-none"
                                                 : ""
                                                 }`}
                                         >
                                             <ChevronRight className="h-4 w-4" />
-                                        </Link>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

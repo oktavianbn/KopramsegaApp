@@ -62,7 +62,7 @@ export default function Index({ stoks }: Props) {
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState("nama");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-    const [perPage, setPerPage] = useState(12);
+    const [perPage, setPerPage] = useState(8);
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
     const [showSortDropdown, setShowSortDropdown] = useState(false);

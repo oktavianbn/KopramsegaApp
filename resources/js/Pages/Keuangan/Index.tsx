@@ -162,12 +162,13 @@ export default function Index({ keuangan, filters }: Props) {
     /** 🔹 utils */
     const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString("id-ID");
+
     const clearFilters = () => {
         setSearch("");
         setSortBy("created_at");
         setSortDirection("desc");
         setActiveFilter(null);
-        updateQuery({});
+        updateQuery({ filter: undefined, page: 1 });
     };
 
     return (

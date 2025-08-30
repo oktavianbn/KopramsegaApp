@@ -1,9 +1,7 @@
-import { useState, FormEventHandler } from "react";
-import { Head, Link, useForm } from "@inertiajs/react";
-import { Navbar } from "@/Components/Navbar";
-import { Sidebar } from "@/Components/Sidebar";
-import { ArrowLeft, Save } from "lucide-react";
 import AppLayout from "@/Layouts/AppLayout";
+import { Head, Link, useForm } from "@inertiajs/react";
+import { ArrowLeft, Save } from "lucide-react";
+import { FormEventHandler } from "react";
 
 interface FormData {
     name: string;
@@ -43,7 +41,7 @@ export default function Create() {
                                 User
                             </h1>
                             <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                User / Edit Data
+                                User / Tambah Data
                             </h2>
                         </div>
                     </div>
@@ -92,6 +90,7 @@ export default function Create() {
                                 <input
                                     type="text"
                                     id="email"
+                                    autoComplete="new-email"
                                     value={data.email}
                                     onChange={(e) =>
                                         setData("email", e.target.value)
@@ -119,6 +118,7 @@ export default function Create() {
                                 <input
                                     type="password"
                                     id="kategori"
+                                    autoComplete="new-password"
                                     value={data.password}
                                     onChange={(e) =>
                                         setData("password", e.target.value)

@@ -15,18 +15,47 @@ class DokumentasiController extends Controller
     {
         $query = Dokumentasi::query();
 
-        // Filter berdasarkan pencarian
-        if ($request->filled('search')) {
-            $query->where('judul', 'like', '%' . $request->search . '%')
-                ->orWhere('kameramen', 'like', '%' . $request->search . '%')
-                ->orWhere('keterangan', 'like', '%' . $request->search . '%');
+        $perPage = $request->input('perPage', 8);
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $search = $request->input('search', '');
+        $filter = $request->input('filter', null);
+
+        $allowedSorts = ['created_at', 'judul'];
+        $allowedDirections = ['asc', 'desc'];
+        // Search
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%$search%")
+                    ->orWhere('kameramen', 'like', "%$search%")
+                    ->orWhere('keterangan', 'like', "%$search%");
+            });
         }
 
-        $dokumentasis = $query->orderBy('created_at', 'desc')->paginate(10);
+        // filter
+        // kosong
+
+        // Short
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+        if (!in_array($sortDirection, $allowedDirections)) {
+            $sortDirection = 'desc';
+        }
+
+        $dokumentasis = $query->orderBy($sortBy, $sortDirection)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return Inertia::render('Dokumentasi/Index', [
             'dokumentasis' => $dokumentasis,
-            'filters' => $request->only(['search'])
+            'filters' => [
+                'search' => $search,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'perPage' => $perPage,
+                'filter' => $filter,
+            ]
         ]);
     }
 

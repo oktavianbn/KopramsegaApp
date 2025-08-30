@@ -151,7 +151,8 @@ export default function Index({ arsipSurat, filters }: Props) {
         setSortBy("created_at");
         setSortDirection("desc");
         setActiveFilter(null);
-        updateQuery({});
+        updateQuery({ filter: undefined, page: 1 });
+
     };
 
     return (
@@ -360,17 +361,17 @@ export default function Index({ arsipSurat, filters }: Props) {
                             >
                                 Urutkan
                                 {sortBy === "tanggal_surat" ?
-                                sortDirection === "asc" ? (
-                                    <SortAsc className="h-4 w-4" />
-                                ) : (
-                                    <SortDesc className="h-4 w-4" />
-                                )
-                                :
-                                sortDirection === "asc" ? (
-                                    <ArrowDownAZ className="h-4 w-4" />
-                                ) : (
-                                    <ArrowDownZA className="h-4 w-4" />
-                                )
+                                    sortDirection === "asc" ? (
+                                        <SortAsc className="h-4 w-4" />
+                                    ) : (
+                                        <SortDesc className="h-4 w-4" />
+                                    )
+                                    :
+                                    sortDirection === "asc" ? (
+                                        <ArrowDownAZ className="h-4 w-4" />
+                                    ) : (
+                                        <ArrowDownZA className="h-4 w-4" />
+                                    )
                                 }
 
                                 <ChevronDown
