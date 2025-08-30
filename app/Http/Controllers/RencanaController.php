@@ -16,49 +16,57 @@ class RencanaController extends Controller
     {
         $query = Rencana::with('role');
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+        $perPage = $request->input('perPage', 8);
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $search = $request->input('search', '');
+        $filter = $request->input('filter', null);
 
-        // Filter by role
-        if ($request->filled('role_id')) {
-            $query->where('role_id', $request->role_id);
-        }
+        $allowedSorts = ['nama_rencana', 'tanggal_mulai', 'tanggal_selesai', 'status', 'created_at'];
+        $allowedDirections = ['asc', 'desc'];
 
-        // Search functionality
-        if ($request->filled('search')) {
+        // Search
+        if ($search) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama_rencana', 'like', '%' . $request->search . '%')
                     ->orWhere('deskripsi', 'like', '%' . $request->search . '%');
             });
         }
 
-        // Sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortDirection = $request->get('sort_direction', 'desc');
-
-        // Validate sort fields
-        $allowedSortFields = ['nama_rencana', 'tanggal_mulai', 'tanggal_selesai', 'status', 'created_at'];
-        if (in_array($sortBy, $allowedSortFields)) {
-            if ($sortBy === 'tanggal_selesai') {
-                // Handle null values in tanggal_selesai
-                $query->orderByRaw("tanggal_selesai IS NULL, tanggal_selesai {$sortDirection}");
-            } else {
-                $query->orderBy($sortBy, $sortDirection);
-            }
+        // Filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        if ($request->filled('role_id')) {
+            $query->where('role_id', $request->input('role_id'));
         }
 
-        $rencanas = $query->paginate(10);
+        // Short
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+        if (!in_array($sortDirection, $allowedDirections)) {
+            $sortDirection = 'desc';
+        }
+        if ($sortBy === 'tanggal_selesai') {
+            $query->orderByRaw("tanggal_selesai IS NULL, tanggal_selesai {$sortDirection}");
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        // Pagination
+        $rencanas = $query->orderBy($sortBy, $sortDirection)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return Inertia::render('Rencana/Index', [
             'rencanas' => $rencanas,
             'filters' => [
-                'search' => $search ?? '',
-                'sort_by' => $sortBy ?? 'created_at',
-                'sort_direction' => $sortDirection ?? 'desc',
-                'perPage' => $perPage ?? 8,
-                'filter' => $filter ?? null,
+                'search' => $search,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'perPage' => $perPage,
+                'filter' => $filter,
             ],
             'roles' => Role::all(),
         ]);

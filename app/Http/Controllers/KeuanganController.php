@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Keuangan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Validator;
 
 class KeuanganController extends Controller
 {
@@ -19,9 +18,13 @@ class KeuanganController extends Controller
         $perPage = $request->input('perPage', 10);
         $sortBy = $request->input('sort_by', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
-        $search = $request->input('search');
-        $filter = $request->input('filter');
+        $search = $request->input('search','');
+        $filter = $request->input('filter',null);
 
+        $allowedSorts = ['jumlah', 'created_at'];
+        $allowedDirections = ['asc', 'desc'];
+
+        // Search
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('catatan', 'like', "%$search%")
@@ -29,6 +32,7 @@ class KeuanganController extends Controller
             });
         }
 
+        // Filter
         if ($filter) {
             if (in_array($filter, ['m', 'k'])) {
                 $query->where('tipe', $filter);
@@ -39,24 +43,28 @@ class KeuanganController extends Controller
             }
         }
 
-        // 🔹 validasi kolom untuk urutkan
-        $allowedSorts = ['jumlah', 'created_at'];
+        // Short
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'created_at';
         }
+        if (!in_array($sortDirection, $allowedDirections)) {
+            $sortDirection = 'desc';
+        }
 
+        // Pagination
         $keuangan = $query->orderBy($sortBy, $sortDirection)
             ->paginate($perPage)
             ->withQueryString();
 
+        // Return
         return Inertia::render('Keuangan/Index', [
             'keuangan' => $keuangan,
             'filters' => [
-                'search' => $search ?? '',
-                'sort_by' => $sortBy ?? 'created_at',
-                'sort_direction' => $sortDirection ?? 'desc',
-                'perPage' => $perPage ?? 10,
-                'filter' => $filter ?? null,
+                'search' => $search ,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'perPage' => $perPage,
+                'filter' => $filter,
             ]
         ]);
     }
@@ -74,7 +82,6 @@ class KeuanganController extends Controller
      */
     public function store(Request $request)
     {
-        // hilangkan semua titik di input jumlah
         $request->merge([
             'jumlah' => str_replace('.', '', $request->jumlah),
         ]);
@@ -85,7 +92,7 @@ class KeuanganController extends Controller
             'jenis_pemasukkan' => 'nullable|in:k,u,a',
             'catatan'  => 'nullable|string|max:255'
         ]);
-        // dd($validated);
+
         Keuangan::create($validated);
         return redirect()->route('keuangan.index')
             ->with('success', 'Data keuangan berhasil disimpan');

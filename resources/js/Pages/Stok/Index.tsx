@@ -25,6 +25,7 @@ interface Barang {
     nama: string;
     deskripsi?: string | null;
     foto?: string | null;
+    boleh_dipinjam: boolean;
 }
 
 interface Spesifikasi {
@@ -61,7 +62,7 @@ export default function Index({ stoks }: Props) {
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState("nama");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-    const [perPage, setPerPage] = useState(12);
+    const [perPage, setPerPage] = useState(8);
     const [currentPage, setCurrentPage] = useState(1);
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -554,7 +555,7 @@ export default function Index({ stoks }: Props) {
                                     </div>
 
                                     {/* Total Stock Badge */}
-                                    <div className="mb-3">
+                                    <div className="mb-3 space-y-2">
                                         {group.totalStok === 0 ? (
                                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                                                 Habis - {group.totalStok} unit
@@ -567,6 +568,17 @@ export default function Index({ stoks }: Props) {
                                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                                 Tersedia - {group.totalStok}{" "}
                                                 unit
+                                            </span>
+                                        )}
+
+                                        {/* Status Peminjaman Badge */}
+                                        {group.barang.boleh_dipinjam ? (
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 ml-2">
+                                                Dapat Dipinjam
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 ml-2">
+                                                Tidak Dapat Dipinjam
                                             </span>
                                         )}
                                     </div>

@@ -17,38 +17,50 @@ class UserController extends Controller
     {
         $query = User::query();
 
+        $perPage = $request->input('perPage', 10);
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $search = $request->input('search', '');
+        $filter = $request->input('filter', null);
+
+        $allowedSorts = ['name', 'email', 'created_at'];
+        $allowedDirections = ['asc', 'desc'];
+
         // Search
-        if ($request->filled('search')) {
-            $search = $request->get('search');
+        if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
-        // Filter by role
-        if ($request->filled('role')) {
-            $query->where('role', $request->get('role'));
+        // Filter
+        if ($filter) {
+            $query->where('role', $filter);
         }
 
-        // Sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortDirection = $request->get('sort_direction', 'desc');
-        $query->orderBy($sortBy, $sortDirection);
+        // Short
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+        if (!in_array($sortDirection, $allowedDirections)) {
+            $sortDirection = 'desc';
+        }
 
-        // Per page
-        $perPage = (int) $request->get('perPage', 10);
+        // Pagination
+        $users = $query->orderBy($sortBy, $sortDirection)
+            ->paginate($perPage)
+            ->withQueryString();
 
-        $users = $query->paginate($perPage)->appends($request->all());
-
+        // Return
         return Inertia::render('User/Index', [
             'users' => $users,
             'filters' => [
-                'search' => $search ?? '',
-                'sort_by' => $sortBy ?? 'created_at',
-                'sort_direction' => $sortDirection ?? 'desc',
-                'perPage' => $perPage ?? 10,
-                'filter' => $filter ?? null,
+                'search' => $search,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'perPage' => $perPage,
+                'filter' => $filter,
             ],
             'roles' => Role::all(),
         ]);
@@ -67,18 +79,15 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
-            'password' => bcrypt($request->password),
-        ]);
+        $validated['password'] = bcrypt($validated['password']);
+
+        User::create($validated);
 
         return redirect()->route('user.index')->with('success', 'User berhasil dibuat');
     }

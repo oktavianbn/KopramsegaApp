@@ -16,15 +16,16 @@ class ArsipSuratController extends Controller
         $query = ArsipSurat::query();
 
         $perPage = $request->input('perPage', 10);
-        $sortBy = $request->input('sort_by', 'tanggal_surat');
-        $allowedDirections = ['asc', 'desc'];
+        $sortBy = $request->input('sort_by', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
-        $search = $request->input('search');
-        $filter = $request->input('filter');
+        $search = $request->input('search','');
+        $filter = $request->input('filter',null);
 
-        // 🔍 Filter pencarian
-        if ($request->filled('search')) {
-            $search = $request->input('search');
+        $allowedSorts = ['jumlah', 'tanggal_surat', 'judul_surat', 'pengirim', 'penerima'];
+        $allowedDirections = ['asc', 'desc'];
+
+        // Search
+        if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('judul_surat', 'like', "%$search%")
                     ->orWhere('nomor_surat', 'like', "%$search%")
@@ -34,7 +35,7 @@ class ArsipSuratController extends Controller
             });
         }
 
-        // 📂 Filter jenis surat
+        // Filter
         if ($filter) {
             if (in_array($filter, ['m', 'k'])) {
                 $query->where('jenis', $filter);
@@ -45,28 +46,28 @@ class ArsipSuratController extends Controller
             }
         }
 
-        // 🔽 Sortir
-        $allowedSorts = ['jumlah', 'tanggal_surat', 'judul_surat', 'pengirim', 'penerima'];
+        // Short
         if (!in_array($sortBy, $allowedSorts)) {
-            $sortBy = 'tanggal_surat';
+            $sortBy = 'created_at';
         }
         if (!in_array($sortDirection, $allowedDirections)) {
             $sortDirection = 'desc';
         }
 
-        // 📑 Pagination (pakai dropdown perPage, default 10)
+        // Pagination
         $arsipSurat = $query->orderBy($sortBy, $sortDirection)
             ->paginate($perPage)
             ->withQueryString();
 
+        // Return
         return Inertia::render('ArsipSurat/Index', [
             'arsipSurat' => $arsipSurat,
             'filters' => [
-                'search' => $search ?? '',
-                'sort_by' => $sortBy ?? 'created_at',
-                'sort_direction' => $sortDirection ?? 'desc',
-                'perPage' => $perPage ?? 10,
-                'filter' => $filter ?? null,
+                'search' => $search ,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'perPage' => $perPage,
+                'filter' => $filter,
             ]
         ]);
     }

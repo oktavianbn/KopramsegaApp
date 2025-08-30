@@ -27,6 +27,7 @@ interface Barang {
     nama: string;
     deskripsi?: string;
     foto?: string;
+    boleh_dipinjam: boolean;
     spesifikasi: Spesifikasi[];
 }
 
@@ -39,6 +40,7 @@ export default function Edit({ barang }: Props) {
         nama: barang.nama || "",
         deskripsi: barang.deskripsi || "",
         foto: null as File | null,
+        boleh_dipinjam: barang.boleh_dipinjam ?? true,
         spesifikasi: barang.spesifikasi || [],
         _method: "PATCH",
     });
@@ -186,6 +188,42 @@ export default function Edit({ barang }: Props) {
                                 {errors.deskripsi && (
                                     <p className="mt-1 text-sm text-red-600">
                                         {errors.deskripsi}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Boleh Dipinjam */}
+                            <div>
+                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                                    <Settings className="h-4 w-4" />
+                                    Status Peminjaman
+                                </label>
+                                <div className="flex items-center space-x-3">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={data.boleh_dipinjam}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "boleh_dipinjam",
+                                                    e.target.checked
+                                                )
+                                            }
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                        />
+                                        <span className="ml-2 text-sm text-gray-700">
+                                            Barang dapat dipinjam
+                                        </span>
+                                    </label>
+                                </div>
+                                <p className="mt-1 text-sm text-gray-500">
+                                    {data.boleh_dipinjam
+                                        ? "Barang ini dapat dipinjam oleh pengguna"
+                                        : "Barang ini tidak dapat dipinjam"}
+                                </p>
+                                {errors.boleh_dipinjam && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.boleh_dipinjam}
                                     </p>
                                 )}
                             </div>
