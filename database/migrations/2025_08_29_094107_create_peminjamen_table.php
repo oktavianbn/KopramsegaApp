@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('peminjamen', function (Blueprint $table) {
             $table->id();
             // informasi admin
-            $table->foreignId('pemberi')->constrained('users');
+            $table->foreignId('pemberi')->nullable()->constrained('users');
             $table->foreignId('penerima')->nullable()->constrained('users');
             // informasi orang peminjam
             $table->string('nama_peminjam');
@@ -28,7 +28,7 @@ return new class extends Migration {
             $table->timestamp('waktu_kembali')->nullable();
             $table->enum('status', ['pending', 'disetujui', 'sudah_ambil', 'sudah_kembali', 'dibatalkan'])->default('pending');
             $table->boolean('tepat_waktu')->nullable();
-            $table->string('foto_barang_diambil');
+            $table->string('foto_barang_diambil')->nullable();
             $table->string('foto_barang_kembali')->nullable();
             $table->timestamps();
         });

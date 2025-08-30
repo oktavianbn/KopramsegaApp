@@ -136,9 +136,6 @@ class PeminjamanController extends Controller
             'jenis' => 'required|in:pinjam,sewa',
             'waktu_pinjam_mulai' => 'required|date|after_or_equal:today',
             'waktu_pinjam_selesai' => 'required|date|after:waktu_pinjam_mulai',
-            'foto_barang_diambil' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'pemberi' => 'required|exists:users,id',
-            'penerima' => 'nullable|exists:users,id',
             'detail_peminjaman' => 'required|array|min:1',
             'detail_peminjaman.*.stok_id' => 'required|exists:stoks,id',
             'detail_peminjaman.*.jumlah' => 'required|integer|min:1',
@@ -147,7 +144,7 @@ class PeminjamanController extends Controller
         try {
             DB::beginTransaction();
 
-            // Check stok availability
+            // Check stok availability for validation only (don't reduce stock yet)
             foreach ($validated['detail_peminjaman'] as $detail) {
                 $stok = Stok::find($detail['stok_id']);
                 if ($stok->jumlah < $detail['jumlah']) {
@@ -157,30 +154,25 @@ class PeminjamanController extends Controller
 
             // Upload files
             $validated['foto_identitas'] = $request->file('foto_identitas')->store('peminjaman/identitas', 'public');
-            $validated['foto_barang_diambil'] = $request->file('foto_barang_diambil')->store('peminjaman/barang_diambil', 'public');
 
-            // Create peminjaman
+            // Create peminjaman with pending status (stock not reduced yet)
             $peminjaman = Peminjaman::create($validated);
 
-            // Create detail peminjaman and update stok
+            // Create detail peminjaman (without reducing stock)
             foreach ($validated['detail_peminjaman'] as $detail) {
                 DetailPeminjaman::create([
                     'peminjaman_id' => $peminjaman->id,
                     'stok_id' => $detail['stok_id'],
                     'jumlah' => $detail['jumlah']
                 ]);
-
-                // Update stok (kurangi jumlah)
-                $stok = Stok::find($detail['stok_id']);
-                $stok->decrement('jumlah', $detail['jumlah']);
             }
 
             DB::commit();
 
-            return redirect()->route('peminjaman.index')->with('success', 'Data peminjaman berhasil ditambahkan');
+            return redirect()->route('peminjaman.index')->with('success', 'Permintaan peminjaman berhasil dibuat dan menunggu persetujuan');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
 
@@ -223,8 +215,13 @@ class PeminjamanController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|in:disetujui,sudah_ambil,sudah_kembali,dibatalkan',
-            'penerima' => 'required_if:status,sudah_ambil|exists:users,id',
+            'pemberi' => 'required_if:status,sudah_ambil|exists:users,id',
+            'penerima' => 'required_if:status,sudah_kembali|exists:users,id',
+            'foto_barang_diambil' => 'required_if:status,sudah_ambil|image|mimes:jpeg,png,jpg|max:2048',
             'foto_barang_kembali' => 'required_if:status,sudah_kembali|image|mimes:jpeg,png,jpg|max:2048',
+            'detail_kembali' => 'required_if:status,sudah_kembali|array',
+            'detail_kembali.*.id' => 'required_if:status,sudah_kembali|exists:detail_peminjamen,id',
+            'detail_kembali.*.jumlah_kembali' => 'required_if:status,sudah_kembali|integer|min:0',
         ]);
 
         try {
@@ -232,34 +229,56 @@ class PeminjamanController extends Controller
 
             $updateData = ['status' => $validated['status']];
 
+            if ($validated['status'] === 'disetujui') {
+                // Kurangi stok saat disetujui
+                foreach ($peminjaman->detailPeminjaman as $detail) {
+                    $stok = Stok::find($detail->stok_id);
+                    if ($stok->jumlah < $detail->jumlah) {
+                        throw new \Exception("Stok tidak mencukupi untuk barang {$stok->barang->nama}");
+                    }
+                    $stok->decrement('jumlah', $detail->jumlah);
+                }
+            }
+
             if ($validated['status'] === 'sudah_ambil') {
-                $updateData['penerima'] = $validated['penerima'];
+                // Upload foto barang diambil dan set admin pemberi
+                $updateData['foto_barang_diambil'] = $request->file('foto_barang_diambil')->store('peminjaman/barang_diambil', 'public');
+                $updateData['pemberi'] = $validated['pemberi'];
             }
 
             if ($validated['status'] === 'sudah_kembali') {
                 $updateData['waktu_kembali'] = now();
+                $updateData['penerima'] = $validated['penerima'];
 
                 // Check if return is on time
                 $isLate = now()->gt(Carbon::parse($peminjaman->waktu_pinjam_selesai)->endOfDay());
                 $updateData['tepat_waktu'] = !$isLate;
 
                 // Upload foto barang kembali
-                if ($request->hasFile('foto_barang_kembali')) {
-                    $updateData['foto_barang_kembali'] = $request->file('foto_barang_kembali')->store('peminjaman/barang_kembali', 'public');
-                }
+                $updateData['foto_barang_kembali'] = $request->file('foto_barang_kembali')->store('peminjaman/barang_kembali', 'public');
 
-                // Return stok
-                foreach ($peminjaman->detailPeminjaman as $detail) {
-                    $stok = Stok::find($detail->stok_id);
-                    $stok->increment('jumlah', $detail->jumlah);
+                // Update detail peminjaman dengan jumlah yang kembali dan kembalikan ke stok
+                foreach ($validated['detail_kembali'] as $detailKembali) {
+                    $detailPeminjaman = DetailPeminjaman::find($detailKembali['id']);
+
+                    // Update jumlah kembali di detail peminjaman
+                    $detailPeminjaman->update([
+                        'jumlah_kembali' => $detailKembali['jumlah_kembali']
+                    ]);
+
+                    // Kembalikan stok sesuai jumlah yang kembali
+                    $stok = Stok::find($detailPeminjaman->stok_id);
+                    $stok->increment('jumlah', $detailKembali['jumlah_kembali']);
                 }
             }
 
             if ($validated['status'] === 'dibatalkan') {
-                // Return stok if cancelled
-                foreach ($peminjaman->detailPeminjaman as $detail) {
-                    $stok = Stok::find($detail->stok_id);
-                    $stok->increment('jumlah', $detail->jumlah);
+                // Return stok jika dibatalkan setelah disetujui
+                if ($peminjaman->status === 'disetujui' || $peminjaman->status === 'sudah_ambil') {
+                    foreach ($peminjaman->detailPeminjaman as $detail) {
+                        $stok = Stok::find($detail->stok_id);
+                        $stok->increment('jumlah', $detail->jumlah);
+                    }
                 }
             }
 

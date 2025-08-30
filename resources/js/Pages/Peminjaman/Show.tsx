@@ -24,6 +24,7 @@ interface DetailPeminjaman {
     id: number;
     stok_id: number;
     jumlah: number;
+    jumlah_kembali?: number;
     stok: {
         id: number;
         barang: {
@@ -31,11 +32,11 @@ interface DetailPeminjaman {
             nama: string;
             foto?: string;
         };
-        spesifikasi: {
+        spesifikasi?: {
             id: number;
             key: string;
             value: string;
-        };
+        } | null;
     };
 }
 
@@ -64,7 +65,7 @@ interface Peminjaman {
     tepat_waktu?: boolean;
     foto_barang_diambil: string;
     foto_barang_kembali?: string;
-    pemberi_user: {
+    pemberi_user?: {
         id: number;
         name: string;
     };
@@ -284,17 +285,20 @@ export default function Show({ peminjaman, users }: Props) {
                                                 <h4 className="font-medium text-gray-900">
                                                     {detail.stok.barang.nama}
                                                 </h4>
-                                                <p className="text-sm text-gray-600">
-                                                    {
-                                                        detail.stok.spesifikasi
-                                                            .key
-                                                    }
-                                                    :{" "}
-                                                    {
-                                                        detail.stok.spesifikasi
-                                                            .value
-                                                    }
-                                                </p>
+                                                {detail.stok.spesifikasi && (
+                                                    <p className="text-sm text-gray-600">
+                                                        {
+                                                            detail.stok
+                                                                .spesifikasi.key
+                                                        }
+                                                        :{" "}
+                                                        {
+                                                            detail.stok
+                                                                .spesifikasi
+                                                                .value
+                                                        }
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="text-right">
                                                 <span className="text-lg font-semibold text-gray-900">
@@ -456,14 +460,16 @@ export default function Show({ peminjaman, users }: Props) {
                             </h2>
 
                             <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-500">
-                                        Admin Pemberi
-                                    </label>
-                                    <p className="text-gray-900 font-medium">
-                                        {peminjaman.pemberi_user.name}
-                                    </p>
-                                </div>
+                                {peminjaman.pemberi_user && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-500">
+                                            Admin Pemberi
+                                        </label>
+                                        <p className="text-gray-900 font-medium">
+                                            {peminjaman.pemberi_user.name}
+                                        </p>
+                                    </div>
+                                )}
 
                                 {peminjaman.penerima_user && (
                                     <div>

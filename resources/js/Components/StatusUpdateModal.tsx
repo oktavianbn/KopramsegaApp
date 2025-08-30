@@ -4,10 +4,27 @@ import type React from "react";
 
 import { useState } from "react";
 import { X, Save, Clock, CheckCircle, XCircle, Package } from "lucide-react";
+import { router } from "@inertiajs/react";
 
 interface User {
     id: number;
     name: string;
+}
+
+interface DetailPeminjaman {
+    id: number;
+    stok_id: number;
+    jumlah: number;
+    jumlah_kembali?: number;
+    stok: {
+        barang: {
+            nama: string;
+        };
+        spesifikasi?: {
+            key: string;
+            value: string;
+        } | null;
+    };
 }
 
 interface Peminjaman {
@@ -19,7 +36,7 @@ interface Peminjaman {
         | "sudah_ambil"
         | "sudah_kembali"
         | "dibatalkan";
-    pemberi_user: {
+    pemberi_user?: {
         id: number;
         name: string;
     };
@@ -27,6 +44,7 @@ interface Peminjaman {
         id: number;
         name: string;
     };
+    detail_peminjaman: DetailPeminjaman[];
 }
 
 interface StatusUpdateModalProps {
@@ -41,8 +59,23 @@ export default function StatusUpdateModal({
     onClose,
 }: StatusUpdateModalProps) {
     const [selectedStatus, setSelectedStatus] = useState(peminjaman.status);
-    const [selectedUser, setSelectedUser] = useState(
+    const [selectedPemberi, setSelectedPemberi] = useState(
+        peminjaman.pemberi_user?.id || ""
+    );
+    const [selectedPenerima, setSelectedPenerima] = useState(
         peminjaman.penerima_user?.id || ""
+    );
+    const [fotoBarangDiambil, setFotoBarangDiambil] = useState<File | null>(
+        null
+    );
+    const [fotoBarangKembali, setFotoBarangKembali] = useState<File | null>(
+        null
+    );
+    const [detailKembali, setDetailKembali] = useState(
+        peminjaman.detail_peminjaman.map((detail) => ({
+            id: detail.id,
+            jumlah_kembali: detail.jumlah,
+        }))
     );
     const [isLoading, setIsLoading] = useState(false);
 
@@ -84,22 +117,89 @@ export default function StatusUpdateModal({
         setIsLoading(true);
 
         try {
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // Use different approaches based on whether files are involved
+            const hasFiles =
+                (selectedStatus === "sudah_ambil" && fotoBarangDiambil) ||
+                (selectedStatus === "sudah_kembali" && fotoBarangKembali);
 
-            // Here you would typically make an API call to update the status
-            console.log("Updating status:", {
-                id: peminjaman.id,
-                status: selectedStatus,
-                penerima_user_id: selectedUser,
-            });
+            if (hasFiles) {
+                // Use FormData for file uploads
+                const formData = new FormData();
+                formData.append("status", selectedStatus);
 
-            // Close modal and refresh data
-            onClose();
-            window.location.reload(); // Simple refresh - in real app you'd update state
+                if (selectedStatus === "sudah_ambil") {
+                    if (selectedPemberi) {
+                        formData.append("pemberi", selectedPemberi.toString());
+                    }
+                    if (fotoBarangDiambil) {
+                        formData.append(
+                            "foto_barang_diambil",
+                            fotoBarangDiambil
+                        );
+                    }
+                }
+
+                if (selectedStatus === "sudah_kembali") {
+                    if (selectedPenerima) {
+                        formData.append(
+                            "penerima",
+                            selectedPenerima.toString()
+                        );
+                    }
+                    if (fotoBarangKembali) {
+                        formData.append(
+                            "foto_barang_kembali",
+                            fotoBarangKembali
+                        );
+                    }
+
+                    // Add detail kembali
+                    detailKembali.forEach((detail, index) => {
+                        formData.append(
+                            `detail_kembali[${index}][id]`,
+                            detail.id.toString()
+                        );
+                        formData.append(
+                            `detail_kembali[${index}][jumlah_kembali]`,
+                            detail.jumlah_kembali.toString()
+                        );
+                    });
+                }
+
+                router.post(`/peminjaman/${peminjaman.id}/status`, formData, {
+                    headers: {
+                        "X-HTTP-Method-Override": "PATCH",
+                    },
+                    onSuccess: () => {
+                        onClose();
+                    },
+                    onError: (error) => {
+                        console.error("Error updating status:", error);
+                    },
+                    onFinish: () => {
+                        setIsLoading(false);
+                    },
+                });
+            } else {
+                // Use regular data object for simple status updates
+                const data: any = {
+                    status: selectedStatus,
+                };
+
+                router.patch(`/peminjaman/${peminjaman.id}/status`, data, {
+                    onSuccess: () => {
+                        onClose();
+                    },
+                    onError: (error) => {
+                        console.error("Error updating status:", error);
+                    },
+                    onFinish: () => {
+                        setIsLoading(false);
+                    },
+                });
+            }
         } catch (error) {
             console.error("Error updating status:", error);
-        } finally {
             setIsLoading(false);
         }
     };
@@ -127,9 +227,11 @@ export default function StatusUpdateModal({
                         <h3 className="font-semibold text-gray-900 mb-2">
                             #{peminjaman.id} - {peminjaman.nama_peminjam}
                         </h3>
-                        <p className="text-sm text-gray-600">
-                            Admin Pemberi: {peminjaman.pemberi_user.name}
-                        </p>
+                        {peminjaman.pemberi_user && (
+                            <p className="text-sm text-gray-600">
+                                Admin Pemberi: {peminjaman.pemberi_user.name}
+                            </p>
+                        )}
                     </div>
 
                     {/* Status Selection */}
@@ -176,27 +278,174 @@ export default function StatusUpdateModal({
                     </div>
 
                     {/* User Selection for certain statuses */}
-                    {(selectedStatus === "sudah_ambil" ||
-                        selectedStatus === "sudah_kembali") && (
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                Admin Penerima
-                            </label>
-                            <select
-                                value={selectedUser}
-                                onChange={(e) =>
-                                    setSelectedUser(e.target.value)
-                                }
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                required
-                            >
-                                <option value="">Pilih Admin</option>
-                                {users.map((user) => (
-                                    <option key={user.id} value={user.id}>
-                                        {user.name}
+                    {selectedStatus === "sudah_ambil" && (
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Admin Pemberi (Yang Menyerahkan Barang)
+                                </label>
+                                <select
+                                    value={selectedPemberi}
+                                    onChange={(e) =>
+                                        setSelectedPemberi(e.target.value)
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                >
+                                    <option value="">
+                                        Pilih Admin Pemberi
                                     </option>
-                                ))}
-                            </select>
+                                    {users.map((user) => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Foto Barang yang Diambil
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        setFotoBarangDiambil(
+                                            e.target.files?.[0] || null
+                                        )
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedStatus === "sudah_kembali" && (
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Admin Penerima (Yang Menerima Barang
+                                    Kembali)
+                                </label>
+                                <select
+                                    value={selectedPenerima}
+                                    onChange={(e) =>
+                                        setSelectedPenerima(e.target.value)
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                >
+                                    <option value="">
+                                        Pilih Admin Penerima
+                                    </option>
+                                    {users.map((user) => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Foto Barang yang Dikembalikan
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        setFotoBarangKembali(
+                                            e.target.files?.[0] || null
+                                        )
+                                    }
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                    Detail Jumlah Barang yang Dikembalikan
+                                </label>
+                                <div className="space-y-3">
+                                    {peminjaman.detail_peminjaman.map(
+                                        (detail, index) => (
+                                            <div
+                                                key={detail.id}
+                                                className="flex items-center justify-between p-3 border rounded-lg"
+                                            >
+                                                <div className="flex-1">
+                                                    <p className="font-medium">
+                                                        {
+                                                            detail.stok.barang
+                                                                .nama
+                                                        }
+                                                    </p>
+                                                    {detail.stok
+                                                        .spesifikasi && (
+                                                        <p className="text-sm text-gray-500">
+                                                            {
+                                                                detail.stok
+                                                                    .spesifikasi
+                                                                    .key
+                                                            }
+                                                            :{" "}
+                                                            {
+                                                                detail.stok
+                                                                    .spesifikasi
+                                                                    .value
+                                                            }
+                                                        </p>
+                                                    )}
+                                                    <p className="text-sm text-gray-600">
+                                                        Dipinjam:{" "}
+                                                        {detail.jumlah}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-sm">
+                                                        Kembali:
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max={detail.jumlah}
+                                                        value={
+                                                            detailKembali[index]
+                                                                ?.jumlah_kembali ||
+                                                            0
+                                                        }
+                                                        onChange={(e) => {
+                                                            const newDetailKembali =
+                                                                [
+                                                                    ...detailKembali,
+                                                                ];
+                                                            newDetailKembali[
+                                                                index
+                                                            ] = {
+                                                                ...newDetailKembali[
+                                                                    index
+                                                                ],
+                                                                jumlah_kembali:
+                                                                    parseInt(
+                                                                        e.target
+                                                                            .value
+                                                                    ) || 0,
+                                                            };
+                                                            setDetailKembali(
+                                                                newDetailKembali
+                                                            );
+                                                        }}
+                                                        className="w-20 px-2 py-1 border rounded"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     )}
 

@@ -11,7 +11,8 @@ class DetailPeminjaman extends Model
     protected $fillable = [
         'peminjaman_id',
         'stok_id',
-        'jumlah'
+        'jumlah',
+        'jumlah_kembali'
     ];
 
     // Relationships

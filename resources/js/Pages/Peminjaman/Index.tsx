@@ -38,11 +38,11 @@ interface DetailPeminjaman {
             id: number;
             nama: string;
         };
-        spesifikasi: {
+        spesifikasi?: {
             id: number;
             key: string;
             value: string;
-        };
+        } | null;
     };
 }
 
@@ -71,7 +71,7 @@ interface Peminjaman {
     tepat_waktu?: boolean;
     foto_barang_diambil: string;
     foto_barang_kembali?: string;
-    pemberi_user: {
+    pemberi_user?: {
         id: number;
         name: string;
     };
@@ -573,7 +573,7 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="space-y-2">
+                                            <div className=" gap-2 flex items-center">
                                                 {getJenisBadge(item.jenis)}
                                                 {getStatusBadge(
                                                     item.status,
@@ -612,10 +612,12 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm text-gray-900">
-                                                <div>
-                                                    Pemberi:{" "}
-                                                    {item.pemberi_user.name}
-                                                </div>
+                                                {item.pemberi_user && (
+                                                    <div>
+                                                        Pemberi:{" "}
+                                                        {item.pemberi_user.name}
+                                                    </div>
+                                                )}
                                                 {item.penerima_user && (
                                                     <div className="text-gray-500">
                                                         Penerima:{" "}

@@ -61,8 +61,6 @@ export default function Create({ availableStok, users }: Props) {
         jenis: "pinjam" as "pinjam" | "sewa",
         waktu_pinjam_mulai: "",
         waktu_pinjam_selesai: "",
-        foto_barang_diambil: null as File | null,
-        pemberi: "",
         penerima: "",
         detail_peminjaman: [] as { stok_id: number; jumlah: number }[],
     });
@@ -158,10 +156,7 @@ export default function Create({ availableStok, users }: Props) {
         post("/peminjaman");
     };
 
-    const handleFileChange = (
-        field: "foto_identitas" | "foto_barang_diambil",
-        file: File | null
-    ) => {
+    const handleFileChange = (field: "foto_identitas", file: File | null) => {
         setData(field, file);
     };
 
@@ -496,109 +491,7 @@ export default function Create({ availableStok, users }: Props) {
                                 )}
                             </div>
                         </div>
-
-                        {/* Foto Barang Diambil */}
-                        <div className="mt-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Foto Barang yang Diambil *
-                            </label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) =>
-                                    handleFileChange(
-                                        "foto_barang_diambil",
-                                        e.target.files?.[0] || null
-                                    )
-                                }
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                    errors.foto_barang_diambil
-                                        ? "border-red-500"
-                                        : "border-gray-300"
-                                }`}
-                                required
-                            />
-                            {errors.foto_barang_diambil && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.foto_barang_diambil}
-                                </p>
-                            )}
-                        </div>
                     </div>
-
-                    {/* Informasi Admin */}
-                    <div className="bg-white rounded-lg shadow-sm border p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <User className="w-5 h-5" />
-                            Informasi Admin
-                        </h2>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Admin Pemberi *
-                                </label>
-                                <select
-                                    value={data.pemberi}
-                                    onChange={(e) =>
-                                        setData("pemberi", e.target.value)
-                                    }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.pemberi
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    required
-                                >
-                                    <option value="">
-                                        Pilih Admin Pemberi
-                                    </option>
-                                    {users.map((user) => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.pemberi && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        {errors.pemberi}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Admin Penerima (Opsional)
-                                </label>
-                                <select
-                                    value={data.penerima}
-                                    onChange={(e) =>
-                                        setData("penerima", e.target.value)
-                                    }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.penerima
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                >
-                                    <option value="">
-                                        Pilih Admin Penerima
-                                    </option>
-                                    {users.map((user) => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.penerima && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        {errors.penerima}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Submit Buttons */}
                     <div className="flex justify-end gap-4">
                         <button
