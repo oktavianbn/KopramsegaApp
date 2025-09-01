@@ -80,11 +80,11 @@ class PeminjamanController extends Controller
             'peminjaman' => $peminjaman,
             'users' => $users,
             'filters' => [
-                'search' => $search ?? '',
-                'sort_by' => $sortBy ?? 'created_at',
-                'sort_direction' => $sortDirection ?? 'desc',
-                'perPage' => $perPage ?? 10,
-                'filter' => $filter ?? null,
+                'search' => $search,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'perPage' => $perPage,
+                'filter' => $filter,
             ]
         ]);
     }

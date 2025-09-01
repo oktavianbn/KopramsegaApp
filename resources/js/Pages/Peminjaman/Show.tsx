@@ -173,42 +173,41 @@ export default function Show({ peminjaman, users }: Props) {
 
             <div className="p-6">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
+                {/* Header */}
+                <div className="grid gap-2 md:flex items-center justify-between mb-6">
+                    <div className="flex gap-6 items-center">
                         <Link
                             href="/peminjaman"
-                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Kembali
+                            className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center">
+                            <ArrowLeft className="h-5 w-5 text-gray-500" />
                         </Link>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Detail Peminjaman
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
+                                Data Peminjaman
                             </h1>
-                            <p className="text-gray-600">
-                                #{peminjaman.id} - {peminjaman.nama_peminjam}
-                            </p>
+                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
+                                Inventory / Peminjaman/ Lihat Data
+                            </h2>
                         </div>
                     </div>
-
-                    <div className="flex items-center gap-3">
-                        {getJenisBadge(peminjaman.jenis)}
-                        {getStatusBadge(
-                            peminjaman.status,
-                            peminjaman.tepat_waktu
+                    {peminjaman.status !== "sudah_kembali" &&
+                        peminjaman.status !== "dibatalkan" && (
+                            <button
+                                onClick={openStatusModal}
+                                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                <Edit className="w-4 h-4" />
+                                Update Status
+                            </button>
                         )}
-                        {peminjaman.status !== "sudah_kembali" &&
-                            peminjaman.status !== "dibatalkan" && (
-                                <button
-                                    onClick={openStatusModal}
-                                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                    Update Status
-                                </button>
-                            )}
-                    </div>
+                </div>
+                <div className="flex gap-4 mb-6 border-b py-2">
+                    <h3>Status Peminjaman</h3>
+                    {getJenisBadge(peminjaman.jenis)}
+                    {getStatusBadge(
+                        peminjaman.status,
+                        peminjaman.tepat_waktu
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -440,46 +439,49 @@ export default function Show({ peminjaman, users }: Props) {
                                 <label className="block text-sm font-medium text-gray-500 mb-2">
                                     Foto Barang Diambil
                                 </label>
-                                <button
-                                    onClick={() =>
-                                        setShowImageModal(
-                                            `/storage/${peminjaman.foto_barang_diambil}`
-                                        )
-                                    }
-                                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors"
-                                >
-                                    <div className="flex flex-col items-center">
-                                        <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                                        <span className="text-sm text-blue-600">
-                                            Lihat Foto
-                                        </span>
-                                    </div>
-                                </button>
-                            </div>
-
-                            {peminjaman.foto_barang_kembali && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                                        Foto Barang Kembali
-                                    </label>
+                                {peminjaman.foto_barang_diambil ? (
                                     <button
                                         onClick={() =>
-                                            setShowImageModal(
-                                                `/storage/${peminjaman.foto_barang_kembali}`
-                                            )
+                                            setShowImageModal(`/storage/${peminjaman.foto_barang_diambil}`)
                                         }
                                         className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors"
                                     >
                                         <div className="flex flex-col items-center">
                                             <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                                            <span className="text-sm text-blue-600">
-                                                Lihat Foto
-                                            </span>
+                                            <span className="text-sm text-blue-600">Lihat Foto</span>
                                         </div>
                                     </button>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-sm text-gray-400">
+                                        Barang belum diambil <br />(Foto belum tersedia)
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500 mb-2">
+                                    Foto Barang Kembali
+                                </label>
+                                {peminjaman.foto_barang_kembali ? (
+                                    <button
+                                        onClick={() =>
+                                            setShowImageModal(`/storage/${peminjaman.foto_barang_kembali}`)
+                                        }
+                                        className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors"
+                                    >
+                                        <div className="flex flex-col items-center">
+                                            <Camera className="w-8 h-8 text-gray-400 mb-2" />
+                                            <span className="text-sm text-blue-600">Lihat Foto</span>
+                                        </div>
+                                    </button>
+                                ) : (
+                                    <div className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-sm text-gray-400">
+                                        Barang belum dikembalikan <br />(Foto belum tersedia)
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
                     </div>
                 </div>
 
