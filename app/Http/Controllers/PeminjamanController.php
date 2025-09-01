@@ -179,18 +179,38 @@ class PeminjamanController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Peminjaman $peminjaman)
-    {
-        $peminjaman->load(['pemberiUser', 'penerimaUser', 'detailPeminjaman.stok.barang', 'detailPeminjaman.stok.spesifikasi']);
+public function show(Peminjaman $peminjaman)
+{
+    $peminjaman->load([
+        'pemberiUser',
+        'penerimaUser',
+        'detailPeminjaman.stok.barang',
+        'detailPeminjaman.stok.spesifikasi'
+    ]);
 
-        // Get users for status update modal
-        $users = User::select('id', 'name')->get();
+    // Default
+    $peminjaman->total_hari_terlambat = 0;
 
-        return Inertia::render('Peminjaman/Show', [
-            'peminjaman' => $peminjaman,
-            'users' => $users
-        ]);
+    if ($peminjaman->waktu_pinjam_selesai) {
+        $selesai = Carbon::parse($peminjaman->waktu_pinjam_selesai);
+        $kembali = $peminjaman->waktu_kembali
+            ? Carbon::parse($peminjaman->waktu_kembali)
+            : Carbon::now(); // kalau belum dikembalikan, pakai waktu sekarang
+
+        if ($kembali->greaterThan($selesai)) {
+            $jamTerlambat = $selesai->diffInHours($kembali);
+            $peminjaman->total_hari_terlambat = (int) ceil($jamTerlambat / 24);
+        }
     }
+
+    // Get users for status update modal
+    $users = User::select('id', 'name')->get();
+
+    return Inertia::render('Peminjaman/Show', [
+        'peminjaman' => $peminjaman,
+        'users' => $users
+    ]);
+}
 
     /**
      * Show the form for editing the specified resource.

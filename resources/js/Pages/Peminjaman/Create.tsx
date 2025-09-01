@@ -200,7 +200,7 @@ export default function Create({ availableStok, users }: Props) {
                                 onChange={(e) =>
                                     setData("nama_peminjam", e.target.value)
                                 }
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.nama_peminjam
+                                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.nama_peminjam
                                     ? "border-red-500"
                                     : "border-gray-300"
                                     }`}
@@ -220,10 +220,11 @@ export default function Create({ availableStok, users }: Props) {
                             <input
                                 type="tel"
                                 value={data.no_telp}
+                                maxLength={18}
                                 onChange={(e) =>
-                                    setData("no_telp", e.target.value)
+                                    setData("no_telp", e.target.value.replace(/[^0-9]/g, ""))
                                 }
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.no_telp
+                                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.no_telp
                                     ? "border-red-500"
                                     : "border-gray-300"
                                     }`}
@@ -246,7 +247,7 @@ export default function Create({ availableStok, users }: Props) {
                                     setData("alamat", e.target.value)
                                 }
                                 rows={3}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.alamat
+                                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.alamat
                                     ? "border-red-500"
                                     : "border-gray-300"
                                     }`}
@@ -269,7 +270,7 @@ export default function Create({ availableStok, users }: Props) {
                                 onChange={(e) =>
                                     setData("asal", e.target.value)
                                 }
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.asal
+                                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.asal
                                     ? "border-red-500"
                                     : "border-gray-300"
                                     }`}
@@ -295,7 +296,7 @@ export default function Create({ availableStok, users }: Props) {
                                         e.target.files?.[0] || null
                                     )
                                 }
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.foto_identitas
+                                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.foto_identitas
                                     ? "border-red-500"
                                     : "border-gray-300"
                                     }`}
@@ -415,7 +416,7 @@ export default function Create({ availableStok, users }: Props) {
                                             e.target.value as "pinjam" | "sewa"
                                         )
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.jenis
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.jenis
                                         ? "border-red-500"
                                         : "border-gray-300"
                                         }`}
@@ -445,7 +446,7 @@ export default function Create({ availableStok, users }: Props) {
                                         )
                                     }
                                     min={new Date().toISOString().split("T")[0]}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.waktu_pinjam_mulai
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.waktu_pinjam_mulai
                                         ? "border-red-500"
                                         : "border-gray-300"
                                         }`}
@@ -475,7 +476,7 @@ export default function Create({ availableStok, users }: Props) {
                                         data.waktu_pinjam_mulai ||
                                         new Date().toISOString().split("T")[0]
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.waktu_pinjam_selesai
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.waktu_pinjam_selesai
                                         ? "border-red-500"
                                         : "border-gray-300"
                                         }`}
