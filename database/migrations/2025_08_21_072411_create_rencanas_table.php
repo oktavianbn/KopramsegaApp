@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->enum('status', ['belum_dimulai', 'sedang_dilaksanakan', 'selesai'])->default('belum_dimulai');
             $table->foreignId('role_id')
                 ->constrained('roles')
-                ->onDelete('cascade')
+                ->onDelete('set null')
                 ->onUpdate('cascade');
             $table->timestamps();
         });

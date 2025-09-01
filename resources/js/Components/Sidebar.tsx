@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Children, useState } from "react";
 import {
     Home,
     BarChart3,
@@ -20,10 +20,12 @@ import {
     Package,
     Warehouse,
     UserCheck,
+    icons,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePage } from "@inertiajs/react";
 import Dropdown from "./Dropdown";
+import { group } from "console";
 
 interface SimpleSidebarProps {
     className?: string;
@@ -34,7 +36,10 @@ interface SimpleSidebarProps {
 const menuItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: DollarSign, label: "Keuangan", href: "/keuangan" },
-    { icon: Users, label: "Pengguna", href: "/user" },
+    { icon: Users, label: "Pengguna", group:true,children:[
+        {icon:Users, label:"Role",href:"/role"},
+        {icon:Users, label:"User",href:"/user"}
+    ]},
     {
         icon: Layers,
         label: "Inventory",
