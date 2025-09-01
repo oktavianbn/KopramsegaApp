@@ -36,10 +36,15 @@ interface SimpleSidebarProps {
 const menuItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" },
     { icon: DollarSign, label: "Keuangan", href: "/keuangan" },
-    { icon: Users, label: "Pengguna", group:true,children:[
-        {icon:Users, label:"Role",href:"/role"},
-        {icon:Users, label:"User",href:"/user"}
-    ]},
+    {
+        icon: Users,
+        label: "Pengguna",
+        group: true,
+        children: [
+            { icon: Users, label: "Role", href: "/role" },
+            { icon: Users, label: "User", href: "/user" },
+        ],
+    },
     {
         icon: Layers,
         label: "Inventory",
@@ -139,7 +144,9 @@ export function Sidebar({
                                 const isGroupActive = item.children.some(
                                     (child) => isActiveRoute(child.href, url)
                                 );
-                                const [open, setOpen] = useState(false);
+                                // Initialize dropdown as open if any child is active
+                                const [open, setOpen] = useState(isGroupActive);
+
                                 return (
                                     <li key={index} className="">
                                         <button
@@ -163,8 +170,8 @@ export function Sidebar({
                                                 )}
                                             />
                                         </button>
-                                        {/* Dropdown submenu */}
-                                        {(open || isGroupActive) && (
+                                        {/* Dropdown submenu - Now only controlled by open state */}
+                                        {open && (
                                             <ul className="ml-8 mt-1 space-y-1">
                                                 {item.children.map(
                                                     (child, cidx) => {
