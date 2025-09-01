@@ -1,31 +1,28 @@
 "use client";
 
-import AppLayout from "@/Layouts/AppLayout";
 import StatusUpdateModal from "@/Components/StatusUpdateModal";
+import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import {
-    ArrowDownAZ,
-    ArrowDownZA,
+    CheckCircle,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
+    Clock,
     Download,
     Edit,
+    Eye,
     FileText,
     Filter,
-    FolderClosed,
+    Package,
     Plus,
     Search,
     SortAsc,
     SortDesc,
     Trash2,
+    UserCheck,
     X,
-    Eye,
-    Clock,
-    CheckCircle,
-    XCircle,
-    AlertCircle,
-    Package,
+    XCircle
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -63,11 +60,11 @@ interface Peminjaman {
     waktu_pinjam_selesai: string;
     waktu_kembali?: string;
     status:
-        | "pending"
-        | "disetujui"
-        | "sudah_ambil"
-        | "sudah_kembali"
-        | "dibatalkan";
+    | "pending"
+    | "disetujui"
+    | "sudah_ambil"
+    | "sudah_kembali"
+    | "dibatalkan";
     tepat_waktu?: boolean;
     foto_barang_diambil: string;
     foto_barang_kembali?: string;
@@ -183,9 +180,10 @@ export default function Index({ peminjaman, filters, users }: Props) {
     };
 
     // handle per page change
-    const handlePerPageChange = (newPerPage: number) => {
-        setPerPage(newPerPage);
-        updateQuery({ perPage: newPerPage });
+    const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = parseInt(e.target.value);
+        setPerPage(value);
+        updateQuery({ perPage: value, page: 1 });
     };
 
     // close dropdowns when clicking outside
@@ -215,6 +213,19 @@ export default function Index({ peminjaman, filters, users }: Props) {
         return () =>
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    const handleTab = (tab: string | null) => {
+        setActiveFilter(tab);
+        updateQuery({ filter: tab || undefined, page: 1 });
+    };
+
+    const clearFilters = () => {
+        setSearch("");
+        setSortBy("created_at");
+        setSortDirection("desc");
+        setActiveFilter(null);
+        updateQuery({ filter: undefined, page: 1 });
+    };
 
     const getStatusBadge = (status: string, tepatWaktu?: boolean) => {
         const statusConfig = {
@@ -267,11 +278,10 @@ export default function Index({ peminjaman, filters, users }: Props) {
     const getJenisBadge = (jenis: string) => {
         return (
             <span
-                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    jenis === "pinjam"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-purple-100 text-purple-800"
-                }`}
+                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${jenis === "pinjam"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-purple-100 text-purple-800"
+                    }`}
             >
                 {jenis === "pinjam" ? "Pinjam" : "Sewa"}
             </span>
@@ -296,22 +306,154 @@ export default function Index({ peminjaman, filters, users }: Props) {
             <div className="p-6">
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">
-                            Data Peminjaman
-                        </h1>
-                        <p className="text-gray-600">
-                            Kelola data peminjaman barang
-                        </p>
+                    <div className="flex gap-6 items-center">
+                        <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
+                            <UserCheck className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
+                                Data Peminjaman
+                            </h1>
+                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
+                                Inventory / Peminjaman/ Daftar
+                            </h2>
+                        </div>
                     </div>
-                    <Link
-                        href="/peminjaman/create"
-                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Tambah Peminjaman
-                    </Link>
+                    <div className="flex items-center gap-3">
+
+                        {/* Dropdown Download */}
+                        <div
+                            className="relative inline-block text-left"
+                            ref={downloadDropdownRef}
+                        >
+                            <button
+                                onClick={() =>
+                                    setShowDownloadDropdown(
+                                        !showDownloadDropdown
+                                    )
+                                }
+                                className="inline-flex justify-center items-center px-4 py-2 bg-white text-black rounded-lg border border-black hover:bg-gray-200 text-left"
+                            >
+                                <Download className="mr-2 h-5 w-5" />
+                                Download Data
+                                <ChevronDown className="ml-2 h-4 w-4" />
+                            </button>
+
+                            {showDownloadDropdown && (
+                                <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50">
+                                    {downloadOptions.map((opt) => (
+                                        <Link
+                                            key={opt.label}
+                                            href={opt.href}
+                                            method="get"
+                                            as="button"
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                            onClick={() =>
+                                                setShowDownloadDropdown(
+                                                    false
+                                                )
+                                            }
+                                        >
+                                            <FileText className="h-4 w-4" />
+                                            {opt.label}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <Link
+                            href="/peminjaman/create"
+                            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Tambah Peminjaman
+                        </Link>
+                    </div>
                 </div>
+                <div className="flex gap-4 mb-6 border-b">
+                    <button
+                        onClick={() => handleTab("")}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === ""
+                            ? "border-blue-500 text-blue-600"
+                            : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`}
+                    >
+                        Seluruh Data{" "}
+                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 ro unded-full">
+                            {peminjaman.total}
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => handleTab("pinjam")}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "pinjam"
+                            ? "border-blue-700 text-blue-800"
+                            : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`}
+                    >
+                        Peminjaman{" "}
+                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
+                            {peminjaman.data.filter((d) => d.jenis === "pinjam").length}
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => handleTab("sewa")}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "sewa"
+                            ? "border-purple-700 text-purple-800"
+                            : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`}
+                    >
+                        Penyewaan{" "}
+                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
+                            {peminjaman.data.filter((d) => d.jenis === "sewa").length}
+                        </span>
+                    </button>
+                </div>
+
+                {/* Filter Status */}
+                {(search || activeFilter) && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
+                                <Filter className="h-4 w-4" />
+                                <span>Filter aktif:</span>
+                                {search && (
+                                    <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
+                                        <Search className="h-3 w-3" />
+                                        Cari: "{search}"
+                                    </span>
+                                )}
+                                {activeFilter && (
+                                    <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
+                                        {activeFilter === "pending"
+                                            ? "Menunggu Persetujuan"
+                                            : activeFilter === "disetujui"
+                                                ? "Disetujui"
+                                                : activeFilter === "sudah_ambil"
+                                                    ? "Sudah Diambil"
+                                                    : activeFilter === "sudah_kembali"
+                                                        ? "Sudah Kembali"
+                                                        : activeFilter === "dibatalkan"
+                                                            ? "Dibatalkan"
+                                                            : activeFilter === "pinjam"
+                                                                ? "Peminjaman"
+                                                                : activeFilter === "sewa"
+                                                                    ? "Sewa"
+                                                                    : activeFilter === "terlambat"
+                                                                        ? "Terlambat"
+                                                                        : "Semua"}
+                                    </span>
+                                )}
+                            </div>
+                            <button
+                                onClick={clearFilters}
+                                className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                <X className="h-3 w-3" />
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Search and Filters */}
                 <div className="bg-white rounded-lg shadow-sm border mb-6">
@@ -328,7 +470,7 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                         onChange={(e) =>
                                             setSearch(e.target.value)
                                         }
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full pl-10 max-w-80 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                     {search && (
                                         <button
@@ -388,11 +530,10 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                                     onClick={() =>
                                                         handleSort(sort.value)
                                                     }
-                                                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
-                                                        sortBy === sort.value
-                                                            ? "bg-blue-50 text-blue-700"
-                                                            : ""
-                                                    }`}
+                                                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${sortBy === sort.value
+                                                        ? "bg-blue-50 text-blue-700"
+                                                        : ""
+                                                        }`}
                                                 >
                                                     {sort.label}
                                                 </button>
@@ -410,11 +551,10 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                             !showFilterDropdown
                                         )
                                     }
-                                    className={`flex items-center gap-2 px-4 py-2 border rounded-lg ${
-                                        activeFilter
-                                            ? "border-blue-500 bg-blue-50 text-blue-700"
-                                            : "border-gray-200 hover:bg-gray-50"
-                                    }`}
+                                    className={`flex items-center gap-2 px-4 py-2 border rounded-lg ${activeFilter
+                                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                                        : "border-gray-200 hover:bg-gray-50"
+                                        }`}
                                 >
                                     <Filter className="w-4 h-4" />
                                     <span>Filter</span>
@@ -428,11 +568,10 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                                 onClick={() =>
                                                     handleFilter(null)
                                                 }
-                                                className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
-                                                    !activeFilter
-                                                        ? "bg-blue-50 text-blue-700"
-                                                        : ""
-                                                }`}
+                                                className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${!activeFilter
+                                                    ? "bg-blue-50 text-blue-700"
+                                                    : ""
+                                                    }`}
                                             >
                                                 Semua Status
                                             </button>
@@ -477,47 +616,14 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                                             filter.value
                                                         )
                                                     }
-                                                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
-                                                        activeFilter ===
+                                                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${activeFilter ===
                                                         filter.value
-                                                            ? "bg-blue-50 text-blue-700"
-                                                            : ""
-                                                    }`}
+                                                        ? "bg-blue-50 text-blue-700"
+                                                        : ""
+                                                        }`}
                                                 >
                                                     {filter.label}
                                                 </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Download Dropdown */}
-                            <div className="relative" ref={downloadDropdownRef}>
-                                <button
-                                    onClick={() =>
-                                        setShowDownloadDropdown(
-                                            !showDownloadDropdown
-                                        )
-                                    }
-                                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    <span>Export</span>
-                                    <ChevronDown className="w-4 h-4" />
-                                </button>
-
-                                {showDownloadDropdown && (
-                                    <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                                        <div className="py-1">
-                                            {downloadOptions.map((option) => (
-                                                <a
-                                                    key={option.label}
-                                                    href={option.href}
-                                                    className="block px-4 py-2 text-sm hover:bg-gray-50"
-                                                >
-                                                    {option.label}
-                                                </a>
                                             ))}
                                         </div>
                                     </div>
@@ -527,38 +633,49 @@ export default function Index({ peminjaman, filters, users }: Props) {
                     </div>
                 </div>
 
+
+
                 {/* Table */}
                 <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead className="bg-gray-50 border-b">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        No.
+                                    </th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Peminjam
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Jenis & Status
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Waktu Pinjam
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Admin
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Total Barang
                                     </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-center  text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Aksi
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {peminjaman.data.map((item) => (
+                                {peminjaman.data.map((item, idx) => (
                                     <tr
                                         key={item.id}
                                         className="hover:bg-gray-50"
                                     >
+                                        <td className="px-6 py-4 text-sm text-gray-900 text-center">
+                                            {(peminjaman.current_page - 1) *
+                                                peminjaman.per_page +
+                                                idx +
+                                                1}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div>
                                                 <div className="text-sm font-medium text-gray-900">
@@ -655,7 +772,7 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                                 {item.status !==
                                                     "sudah_kembali" &&
                                                     item.status !==
-                                                        "dibatalkan" && (
+                                                    "dibatalkan" && (
                                                         <button
                                                             onClick={() =>
                                                                 openStatusModal(
@@ -686,118 +803,65 @@ export default function Index({ peminjaman, filters, users }: Props) {
                     </div>
 
                     {/* Pagination */}
-                    <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                            {/* Entries per page */}
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-700">
-                                    Tampilkan
-                                </span>
-                                <select
-                                    value={perPage}
-                                    onChange={(e) =>
-                                        handlePerPageChange(
-                                            Number(e.target.value)
+                    <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <select
+                                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                value={perPage}
+                                onChange={handlePerPageChange}
+                            >
+                                <option value={10}>10 data per halaman</option>
+                                <option value={20}>20 data per halaman</option>
+                                <option value={50}>50 data per halaman</option>
+                            </select>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm text-gray-700 whitespace-nowrap">
+                                {peminjaman.from}-{peminjaman.to} dari{" "}
+                                {peminjaman.total}
+                            </span>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                                    disabled={peminjaman.current_page === 1}
+                                    onClick={() =>
+                                        router.get(
+                                            "/peminjaman",
+                                            {
+                                                search,
+                                                sort_by: sortBy,
+                                                sort_direction: sortDirection,
+                                                page: peminjaman.current_page - 1,
+                                                perPage,
+                                            },
+                                            { preserveState: true }
                                         )
                                     }
-                                    className="border border-gray-300 rounded px-3 py-1 text-sm"
                                 >
-                                    <option value={10}>10</option>
-                                    <option value={25}>25</option>
-                                    <option value={50}>50</option>
-                                    <option value={100}>100</option>
-                                </select>
-                                <span className="text-sm text-gray-700">
-                                    dari {peminjaman.total} data
-                                </span>
-                            </div>
-
-                            {/* Pagination info and controls */}
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-700">
-                                    {peminjaman.from}-{peminjaman.to} dari{" "}
-                                    {peminjaman.total}
-                                </span>
-
-                                <div className="flex items-center gap-1">
-                                    <Link
-                                        href={`/peminjaman?page=${
-                                            peminjaman.current_page - 1
-                                        }&search=${search}&sort_by=${sortBy}&sort_direction=${sortDirection}&perPage=${perPage}&filter=${
-                                            activeFilter || ""
-                                        }`}
-                                        className={`p-1 rounded ${
-                                            peminjaman.current_page <= 1
-                                                ? "text-gray-400 cursor-not-allowed"
-                                                : "text-gray-700 hover:bg-gray-100"
-                                        }`}
-                                        tabIndex={
-                                            peminjaman.current_page <= 1
-                                                ? -1
-                                                : 0
-                                        }
-                                    >
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </Link>
-
-                                    {/* Page numbers */}
-                                    {Array.from(
-                                        {
-                                            length: Math.min(
-                                                5,
-                                                peminjaman.last_page
-                                            ),
-                                        },
-                                        (_, i) => {
-                                            const page =
-                                                Math.max(
-                                                    1,
-                                                    peminjaman.current_page - 2
-                                                ) + i;
-                                            if (page <= peminjaman.last_page) {
-                                                return (
-                                                    <Link
-                                                        key={page}
-                                                        href={`/peminjaman?page=${page}&search=${search}&sort_by=${sortBy}&sort_direction=${sortDirection}&perPage=${perPage}&filter=${
-                                                            activeFilter || ""
-                                                        }`}
-                                                        className={`px-3 py-1 rounded text-sm ${
-                                                            page ===
-                                                            peminjaman.current_page
-                                                                ? "bg-blue-600 text-white"
-                                                                : "text-gray-700 hover:bg-gray-100"
-                                                        }`}
-                                                    >
-                                                        {page}
-                                                    </Link>
-                                                );
-                                            }
-                                            return null;
-                                        }
-                                    )}
-
-                                    <Link
-                                        href={`/peminjaman?page=${
-                                            peminjaman.current_page + 1
-                                        }&search=${search}&sort_by=${sortBy}&sort_direction=${sortDirection}&perPage=${perPage}&filter=${
-                                            activeFilter || ""
-                                        }`}
-                                        className={`p-1 rounded ${
-                                            peminjaman.current_page >=
-                                            peminjaman.last_page
-                                                ? "text-gray-400 cursor-not-allowed"
-                                                : "text-gray-700 hover:bg-gray-100"
-                                        }`}
-                                        tabIndex={
-                                            peminjaman.current_page >=
-                                            peminjaman.last_page
-                                                ? -1
-                                                : 0
-                                        }
-                                    >
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Link>
-                                </div>
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                <button
+                                    className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                                    disabled={
+                                        peminjaman.current_page ===
+                                        peminjaman.last_page
+                                    }
+                                    onClick={() =>
+                                        router.get(
+                                            "/peminjaman",
+                                            {
+                                                search,
+                                                sort_by: sortBy,
+                                                sort_direction: sortDirection,
+                                                page: peminjaman.current_page + 1,
+                                                perPage,
+                                            },
+                                            { preserveState: true }
+                                        )
+                                    }
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
                             </div>
                         </div>
                     </div>

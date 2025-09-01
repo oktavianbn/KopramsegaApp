@@ -1,19 +1,14 @@
 "use client";
 
 import AppLayout from "@/Layouts/AppLayout";
-import { Head, router, useForm } from "@inertiajs/react";
+import { Head, Link, router, useForm } from "@inertiajs/react";
 import {
-    Plus,
+    ArrowLeft,
     Minus,
-    Upload,
-    X,
-    Calendar,
-    User,
-    MapPin,
-    Phone,
-    Building,
     Package,
-    Camera,
+    Plus,
+    User,
+    X
 } from "lucide-react";
 import { useState } from "react";
 
@@ -166,151 +161,156 @@ export default function Create({ availableStok, users }: Props) {
 
             <div className="p-6">
                 {/* Header */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Tambah Peminjaman
-                    </h1>
-                    <p className="text-gray-600">
-                        Buat data peminjaman barang baru
-                    </p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Informasi Peminjam */}
-                    <div className="bg-white rounded-lg shadow-sm border p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <User className="w-5 h-5" />
-                            Informasi Peminjam
-                        </h2>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Nama Peminjam *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.nama_peminjam}
-                                    onChange={(e) =>
-                                        setData("nama_peminjam", e.target.value)
-                                    }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.nama_peminjam
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    required
-                                />
-                                {errors.nama_peminjam && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        {errors.nama_peminjam}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Nomor Telepon *
-                                </label>
-                                <input
-                                    type="tel"
-                                    value={data.no_telp}
-                                    onChange={(e) =>
-                                        setData("no_telp", e.target.value)
-                                    }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.no_telp
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    required
-                                />
-                                {errors.no_telp && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        {errors.no_telp}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Alamat *
-                                </label>
-                                <textarea
-                                    value={data.alamat}
-                                    onChange={(e) =>
-                                        setData("alamat", e.target.value)
-                                    }
-                                    rows={3}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.alamat
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    required
-                                />
-                                {errors.alamat && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        {errors.alamat}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Asal Institusi/Organisasi *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.asal}
-                                    onChange={(e) =>
-                                        setData("asal", e.target.value)
-                                    }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.asal
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    required
-                                />
-                                {errors.asal && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        {errors.asal}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Foto Identitas *
-                                </label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) =>
-                                        handleFileChange(
-                                            "foto_identitas",
-                                            e.target.files?.[0] || null
-                                        )
-                                    }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.foto_identitas
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
-                                    required
-                                />
-                                {errors.foto_identitas && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        {errors.foto_identitas}
-                                    </p>
-                                )}
-                            </div>
+                <div className="flex justify-between items-center mb-6">
+                    <div className="flex gap-6 items-center">
+                        <Link
+                            href={"/peminjaman"}
+                            className="p-2 h-max bg-gray-100 rounded-lg flex justify-center items-center">
+                            <ArrowLeft className="h-5 w-5 text-gray-600" />
+                        </Link>
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
+                                Data Peminjaman
+                            </h1>
+                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
+                                Inventory / Peminjaman/ Tambah Data
+                            </h2>
                         </div>
                     </div>
+                </div>
+                <div className="flex gap-4 mb-6 border-b">
 
-                    {/* Detail Peminjaman */}
-                    <div className="bg-white rounded-lg shadow-sm border p-6">
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-lg shadow p-6">
+                    {/* Informasi Peminjam */}
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <User className="w-5 h-5" />
+                        Informasi Peminjam
+                    </h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nama Peminjam <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={data.nama_peminjam}
+                                onChange={(e) =>
+                                    setData("nama_peminjam", e.target.value)
+                                }
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.nama_peminjam
+                                    ? "border-red-500"
+                                    : "border-gray-300"
+                                    }`}
+                                required
+                            />
+                            {errors.nama_peminjam && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.nama_peminjam}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nomor Telepon <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="tel"
+                                value={data.no_telp}
+                                onChange={(e) =>
+                                    setData("no_telp", e.target.value)
+                                }
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.no_telp
+                                    ? "border-red-500"
+                                    : "border-gray-300"
+                                    }`}
+                                required
+                            />
+                            {errors.no_telp && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.no_telp}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Alamat <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                value={data.alamat}
+                                onChange={(e) =>
+                                    setData("alamat", e.target.value)
+                                }
+                                rows={3}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.alamat
+                                    ? "border-red-500"
+                                    : "border-gray-300"
+                                    }`}
+                                required
+                            />
+                            {errors.alamat && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.alamat}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Asal Institusi/Organisasi <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={data.asal}
+                                onChange={(e) =>
+                                    setData("asal", e.target.value)
+                                }
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.asal
+                                    ? "border-red-500"
+                                    : "border-gray-300"
+                                    }`}
+                                required
+                            />
+                            {errors.asal && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.asal}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Foto Identitas <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) =>
+                                    handleFileChange(
+                                        "foto_identitas",
+                                        e.target.files?.[0] || null
+                                    )
+                                }
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.foto_identitas
+                                    ? "border-red-500"
+                                    : "border-gray-300"
+                                    }`}
+                                required
+                            />
+                            {errors.foto_identitas && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.foto_identitas}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <div className="pt-6 border-t">
+
+                        {/* Detail Peminjaman */}
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                 <Package className="w-5 h-5" />
@@ -405,7 +405,7 @@ export default function Create({ availableStok, users }: Props) {
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Jenis Peminjaman *
+                                    Jenis Peminjaman <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     value={data.jenis}
@@ -415,11 +415,10 @@ export default function Create({ availableStok, users }: Props) {
                                             e.target.value as "pinjam" | "sewa"
                                         )
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.jenis
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.jenis
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                        }`}
                                     required
                                 >
                                     <option value="pinjam">Pinjam</option>
@@ -434,7 +433,7 @@ export default function Create({ availableStok, users }: Props) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Waktu Mulai *
+                                    Waktu Mulai <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
@@ -446,11 +445,10 @@ export default function Create({ availableStok, users }: Props) {
                                         )
                                     }
                                     min={new Date().toISOString().split("T")[0]}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.waktu_pinjam_mulai
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.waktu_pinjam_mulai
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                        }`}
                                     required
                                 />
                                 {errors.waktu_pinjam_mulai && (
@@ -462,7 +460,7 @@ export default function Create({ availableStok, users }: Props) {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Waktu Selesai *
+                                    Waktu Selesai <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
@@ -477,11 +475,10 @@ export default function Create({ availableStok, users }: Props) {
                                         data.waktu_pinjam_mulai ||
                                         new Date().toISOString().split("T")[0]
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                        errors.waktu_pinjam_selesai
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.waktu_pinjam_selesai
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                        }`}
                                     required
                                 />
                                 {errors.waktu_pinjam_selesai && (
@@ -493,14 +490,13 @@ export default function Create({ availableStok, users }: Props) {
                         </div>
                     </div>
                     {/* Submit Buttons */}
-                    <div className="flex justify-end gap-4">
-                        <button
-                            type="button"
-                            onClick={() => router.get("/peminjaman")}
-                            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    <div className="flex items-center justify-end gap-4 pt-6 border-t">
+                        <Link
+                            href="/peminjaman"
+                            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                         >
                             Batal
-                        </button>
+                        </Link>
                         <button
                             type="submit"
                             disabled={
@@ -589,13 +585,12 @@ function AddItemModal({
                         <div
                             key={stok.id}
                             onClick={() => setSelectedStok(stok)}
-                            className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                                selectedStok?.id === stok.id
-                                    ? "border-blue-500 bg-blue-50"
-                                    : usedStokIds.includes(stok.id)
+                            className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedStok?.id === stok.id
+                                ? "border-blue-500 bg-blue-50"
+                                : usedStokIds.includes(stok.id)
                                     ? "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed"
                                     : "border-gray-200 hover:bg-gray-50"
-                            }`}
+                                }`}
                         >
                             <h4 className="font-medium">{stok.barang_nama}</h4>
                             <p className="text-sm text-gray-600">
