@@ -57,11 +57,11 @@ interface Peminjaman {
     waktu_pinjam_selesai: string;
     waktu_kembali?: string;
     status:
-        | "pending"
-        | "disetujui"
-        | "sudah_ambil"
-        | "sudah_kembali"
-        | "dibatalkan";
+    | "pending"
+    | "disetujui"
+    | "sudah_ambil"
+    | "sudah_kembali"
+    | "dibatalkan";
     tepat_waktu?: boolean;
     foto_barang_diambil: string;
     foto_barang_kembali?: string;
@@ -138,11 +138,10 @@ export default function Show({ peminjaman, users }: Props) {
     const getJenisBadge = (jenis: string) => {
         return (
             <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    jenis === "pinjam"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-purple-100 text-purple-800"
-                }`}
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${jenis === "pinjam"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-purple-100 text-purple-800"
+                    }`}
             >
                 {jenis === "pinjam" ? "Pinjam" : "Sewa"}
             </span>
@@ -157,6 +156,16 @@ export default function Show({ peminjaman, users }: Props) {
         (sum, detail) => sum + detail.jumlah,
         0
     );
+
+    const selesai = new Date(peminjaman.waktu_pinjam_selesai);
+    const kembali = peminjaman.waktu_kembali ? new Date(peminjaman.waktu_kembali) : null;
+
+    const selisihMs = kembali ? selesai.getTime() - kembali.getTime() : null;
+
+    // ubah ke hari, dibulatkan ke bawah dan selalu positif
+    const selisihHari = selisihMs !== null
+        ? Math.floor(Math.abs(selisihMs) / (1000 * 60 * 60 * 24))
+        : null;
 
     return (
         <AppLayout>
@@ -203,133 +212,260 @@ export default function Show({ peminjaman, users }: Props) {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column - Informasi Utama */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Informasi Peminjam */}
-                        <div className="bg-white rounded-lg shadow-sm border p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <User className="w-5 h-5" />
-                                Informasi Peminjam
-                            </h2>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Row 1: Informasi Peminjam (2 grid) dan Timeline (1 grid) */}
+                    <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <User className="w-5 h-5" />
+                            Informasi Peminjam
+                        </h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500">
+                                    Nama
+                                </label>
+                                <p className="text-gray-900 font-medium">
+                                    {peminjaman.nama_peminjam}
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500">
+                                    Nomor Telepon
+                                </label>
+                                <p className="text-gray-900 flex items-center gap-1">
+                                    <Phone className="w-4 h-4" />
+                                    {peminjaman.no_telp}
+                                </p>
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-500">
+                                    Alamat
+                                </label>
+                                <p className="text-gray-900 flex items-start gap-1">
+                                    <MapPin className="w-4 h-4 mt-0.5" />
+                                    {peminjaman.alamat}
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500">
+                                    Asal Institusi
+                                </label>
+                                <p className="text-gray-900 flex items-center gap-1">
+                                    <Building className="w-4 h-4" />
+                                    {peminjaman.asal}
+                                </p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500">
+                                    Foto Identitas
+                                </label>
+                                <button
+                                    onClick={() =>
+                                        setShowImageModal(
+                                            `/storage/${peminjaman.foto_identitas}`
+                                        )
+                                    }
+                                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                                >
+                                    <Eye className="w-4 h-4" />
+                                    Lihat Foto
+                                </button>
+                            </div>
+                            <div className="">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-500">
-                                        Nama
+                                        Pemberi
                                     </label>
                                     <p className="text-gray-900 font-medium">
-                                        {peminjaman.nama_peminjam}
+                                        {peminjaman.pemberi_user?.name || "Barang belum diberikan"}
                                     </p>
                                 </div>
+                            </div>
+
+                            <div className="">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-500">
-                                        Nomor Telepon
+                                        Penerima
                                     </label>
-                                    <p className="text-gray-900 flex items-center gap-1">
-                                        <Phone className="w-4 h-4" />
-                                        {peminjaman.no_telp}
+                                    <p className="text-gray-900 font-medium">
+                                        {peminjaman.penerima_user?.name || "Barang belum diterima"}
                                     </p>
                                 </div>
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-500">
-                                        Alamat
-                                    </label>
-                                    <p className="text-gray-900 flex items-start gap-1">
-                                        <MapPin className="w-4 h-4 mt-0.5" />
-                                        {peminjaman.alamat}
-                                    </p>
-                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Timeline Peminjaman (1 grid) */}
+                    <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Calendar className="w-5 h-5" />
+                            Timeline Peminjaman
+                        </h2>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500">
-                                        Asal Institusi
-                                    </label>
-                                    <p className="text-gray-900 flex items-center gap-1">
-                                        <Building className="w-4 h-4" />
-                                        {peminjaman.asal}
+                                    <p className="text-sm font-medium">
+                                        Mulai Pinjam
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                        {new Date(
+                                            peminjaman.waktu_pinjam_mulai
+                                        ).toLocaleDateString("id-ID", {
+                                            weekday: "long",
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
                                     </p>
                                 </div>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500">
-                                        Foto Identitas
-                                    </label>
-                                    <button
-                                        onClick={() =>
-                                            setShowImageModal(
-                                                `/storage/${peminjaman.foto_identitas}`
-                                            )
-                                        }
-                                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                                    <p className="text-sm font-medium">
+                                        Batas Kembali
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                        {new Date(
+                                            peminjaman.waktu_pinjam_selesai
+                                        ).toLocaleDateString("id-ID", {
+                                            weekday: "long",
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
+                                    </p>
+                                </div>
+                            </div>
+
+
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className={`w-2 h-2 rounded-full ${peminjaman.tepat_waktu
+                                        ? "bg-green-500"
+                                        : "bg-red-500"
+                                        }`}
+                                ></div>
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Waktu Kembali
+                                    </p>
+                                    {peminjaman.waktu_kembali ? (
+                                        <p className="text-sm text-gray-500">
+                                            {new Date(
+                                                peminjaman.waktu_kembali
+                                            ).toLocaleDateString("id-ID", {
+                                                weekday: "long",
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                            })}
+                                        </p>
+                                    ) : (
+                                        <p className="text-sm text-gray-500">
+                                            Barang belum Dikembalikan
+                                        </p>
+                                    )}
+                                    {peminjaman.tepat_waktu ===
+                                        false && (
+                                            <p className="text-sm text-red-600 font-medium">
+                                                Terlambat {selisihHari} Hari
+                                            </p>
+                                        )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Row 2: Detail Barang */}
+                    <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Package className="w-5 h-5" />
+                            Detail Barang ({totalItems} item)
+                        </h2>
+
+                        <div className="space-y-4">
+                            {peminjaman.detail_peminjaman.map(
+                                (detail, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between p-4 border rounded-lg"
                                     >
-                                        <Eye className="w-4 h-4" />
-                                        Lihat Foto
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Detail Barang */}
-                        <div className="bg-white rounded-lg shadow-sm border p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <Package className="w-5 h-5" />
-                                Detail Barang ({totalItems} item)
-                            </h2>
-
-                            <div className="space-y-4">
-                                {peminjaman.detail_peminjaman.map(
-                                    (detail, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between p-4 border rounded-lg"
-                                        >
-                                            <div className="flex-1">
-                                                <h4 className="font-medium text-gray-900">
-                                                    {detail.stok.barang.nama}
-                                                </h4>
-                                                {detail.stok.spesifikasi && (
-                                                    <p className="text-sm text-gray-600">
-                                                        {
-                                                            detail.stok
-                                                                .spesifikasi.key
-                                                        }
-                                                        :{" "}
-                                                        {
-                                                            detail.stok
-                                                                .spesifikasi
-                                                                .value
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <div className="text-right">
-                                                <span className="text-lg font-semibold text-gray-900">
-                                                    {detail.jumlah}
-                                                </span>
-                                                <p className="text-sm text-gray-500">
-                                                    unit
+                                        <div className="flex-1">
+                                            <h4 className="font-medium text-gray-900">
+                                                {detail.stok.barang.nama}
+                                            </h4>
+                                            {detail.stok.spesifikasi && (
+                                                <p className="text-sm text-gray-600">
+                                                    {
+                                                        detail.stok
+                                                            .spesifikasi.key
+                                                    }
+                                                    :{" "}
+                                                    {
+                                                        detail.stok
+                                                            .spesifikasi
+                                                            .value
+                                                    }
                                                 </p>
-                                            </div>
+                                            )}
                                         </div>
-                                    )
-                                )}
-                            </div>
+                                        <div className="text-right">
+                                            <span className="text-lg font-semibold text-gray-900">
+                                                {detail.jumlah}
+                                            </span>
+                                            <p className="text-sm text-gray-500">
+                                                unit
+                                            </p>
+                                        </div>
+                                    </div>
+                                )
+                            )}
                         </div>
+                    </div>
 
-                        {/* Foto Barang */}
-                        <div className="bg-white rounded-lg shadow-sm border p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <Camera className="w-5 h-5" />
-                                Dokumentasi Barang
-                            </h2>
+                    {/* Foto Barang */}
+                    <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Camera className="w-5 h-5" />
+                            Dokumentasi Barang
+                        </h2>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-500 mb-2">
+                                    Foto Barang Diambil
+                                </label>
+                                <button
+                                    onClick={() =>
+                                        setShowImageModal(
+                                            `/storage/${peminjaman.foto_barang_diambil}`
+                                        )
+                                    }
+                                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors"
+                                >
+                                    <div className="flex flex-col items-center">
+                                        <Camera className="w-8 h-8 text-gray-400 mb-2" />
+                                        <span className="text-sm text-blue-600">
+                                            Lihat Foto
+                                        </span>
+                                    </div>
+                                </button>
+                            </div>
+
+                            {peminjaman.foto_barang_kembali && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-500 mb-2">
-                                        Foto Barang Diambil
+                                        Foto Barang Kembali
                                     </label>
                                     <button
                                         onClick={() =>
                                             setShowImageModal(
-                                                `/storage/${peminjaman.foto_barang_diambil}`
+                                                `/storage/${peminjaman.foto_barang_kembali}`
                                             )
                                         }
                                         className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors"
@@ -342,182 +478,7 @@ export default function Show({ peminjaman, users }: Props) {
                                         </div>
                                     </button>
                                 </div>
-
-                                {peminjaman.foto_barang_kembali && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-2">
-                                            Foto Barang Kembali
-                                        </label>
-                                        <button
-                                            onClick={() =>
-                                                setShowImageModal(
-                                                    `/storage/${peminjaman.foto_barang_kembali}`
-                                                )
-                                            }
-                                            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors"
-                                        >
-                                            <div className="flex flex-col items-center">
-                                                <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                                                <span className="text-sm text-blue-600">
-                                                    Lihat Foto
-                                                </span>
-                                            </div>
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Column - Timeline & Admin */}
-                    <div className="space-y-6">
-                        {/* Timeline Peminjaman */}
-                        <div className="bg-white rounded-lg shadow-sm border p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <Calendar className="w-5 h-5" />
-                                Timeline Peminjaman
-                            </h2>
-
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <div>
-                                        <p className="text-sm font-medium">
-                                            Mulai Pinjam
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {new Date(
-                                                peminjaman.waktu_pinjam_mulai
-                                            ).toLocaleDateString("id-ID", {
-                                                weekday: "long",
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                            })}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                    <div>
-                                        <p className="text-sm font-medium">
-                                            Batas Kembali
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {new Date(
-                                                peminjaman.waktu_pinjam_selesai
-                                            ).toLocaleDateString("id-ID", {
-                                                weekday: "long",
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                            })}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {peminjaman.waktu_kembali && (
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`w-2 h-2 rounded-full ${
-                                                peminjaman.tepat_waktu
-                                                    ? "bg-green-500"
-                                                    : "bg-red-500"
-                                            }`}
-                                        ></div>
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                Waktu Kembali
-                                            </p>
-                                            <p className="text-sm text-gray-500">
-                                                {new Date(
-                                                    peminjaman.waktu_kembali
-                                                ).toLocaleDateString("id-ID", {
-                                                    weekday: "long",
-                                                    year: "numeric",
-                                                    month: "long",
-                                                    day: "numeric",
-                                                })}
-                                            </p>
-                                            {peminjaman.tepat_waktu ===
-                                                false && (
-                                                <span className="text-xs text-red-600 font-medium">
-                                                    Terlambat
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Informasi Admin */}
-                        <div className="bg-white rounded-lg shadow-sm border p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <User className="w-5 h-5" />
-                                Admin
-                            </h2>
-
-                            <div className="space-y-4">
-                                {peminjaman.pemberi_user && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500">
-                                            Admin Pemberi
-                                        </label>
-                                        <p className="text-gray-900 font-medium">
-                                            {peminjaman.pemberi_user.name}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {peminjaman.penerima_user && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500">
-                                            Admin Penerima
-                                        </label>
-                                        <p className="text-gray-900 font-medium">
-                                            {peminjaman.penerima_user.name}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Metadata */}
-                        <div className="bg-white rounded-lg shadow-sm border p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                                Metadata
-                            </h2>
-
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">
-                                        Dibuat:
-                                    </span>
-                                    <span className="text-gray-900">
-                                        {new Date(
-                                            peminjaman.created_at
-                                        ).toLocaleDateString("id-ID")}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">
-                                        Diupdate:
-                                    </span>
-                                    <span className="text-gray-900">
-                                        {new Date(
-                                            peminjaman.updated_at
-                                        ).toLocaleDateString("id-ID")}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">ID:</span>
-                                    <span className="text-gray-900">
-                                        #{peminjaman.id}
-                                    </span>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
