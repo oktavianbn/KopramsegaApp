@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai')->nullable();
             $table->enum('status', ['belum_dimulai', 'sedang_dilaksanakan', 'selesai'])->default('belum_dimulai');
-            $table->foreignId('role_id')
+            $table->foreignId('role_id')->nullable()
                 ->constrained('roles')
                 ->onDelete('set null')
                 ->onUpdate('cascade');

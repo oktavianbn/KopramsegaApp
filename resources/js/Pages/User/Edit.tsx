@@ -5,29 +5,36 @@ import { Sidebar } from "@/Components/Sidebar";
 import { ArrowLeft, Save } from "lucide-react";
 import AppLayout from "@/Layouts/AppLayout";
 
+interface Role {
+    id: number;
+    name: string;
+}
+
 interface User {
     id: number;
     name: string;
     email: string;
-    role: string;
+    role_id: number;
+    role?: Role;
 }
 
 interface FormData {
     name: string;
     email: string;
-    role: string;
+    role_id: string;
     password?: string;
 }
 
 interface Props {
     user: User;
+    roles: Role[];
 }
 
-export default function Edit({ user }: Props) {
+export default function Edit({ user, roles }: Props) {
     const { data, setData, put, processing, errors } = useForm<FormData>({
         name: user.name,
         email: user.email,
-        role: user.role,
+        role_id: user.role_id?.toString() || "",
         password: "",
     });
 
@@ -150,26 +157,31 @@ export default function Edit({ user }: Props) {
                             {/* Role */}
                             <div>
                                 <label
-                                    htmlFor="role"
+                                    htmlFor="role_id"
                                     className="block text-sm font-medium text-gray-700 mb-2"
                                 >
                                     Role
                                     <span className="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="text"
-                                    id="role"
-                                    value={data.role}
+                                <select
+                                    id="role_id"
+                                    value={data.role_id}
                                     onChange={(e) =>
-                                        setData("role", e.target.value)
+                                        setData("role_id", e.target.value)
                                     }
-                                    placeholder="Masukkan role..."
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     required
-                                />
-                                {errors.role && (
+                                >
+                                    <option value="">Pilih Role</option>
+                                    {roles.map((role) => (
+                                        <option key={role.id} value={role.id}>
+                                            {role.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.role_id && (
                                     <p className="mt-1 text-sm text-red-600">
-                                        {errors.role}
+                                        {errors.role_id}
                                     </p>
                                 )}
                             </div>
