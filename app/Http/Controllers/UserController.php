@@ -48,7 +48,8 @@ class UserController extends Controller
         }
 
         // Pagination
-        $users = $query->orderBy($sortBy, $sortDirection)
+        $users = $query->with('role')
+            ->orderBy($sortBy, $sortDirection)
             ->paginate($perPage)
             ->withQueryString();
 
@@ -71,7 +72,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        return Inertia::render('User/Create');
+        return Inertia::render('User/Create', [
+            'roles' => Role::all(),
+        ]);
     }
 
     /**
@@ -83,6 +86,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
         $validated['password'] = bcrypt($validated['password']);
@@ -105,10 +109,11 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with('role')->findOrFail($id);
 
         return Inertia::render('User/Edit', [
-            'user' => $user
+            'user' => $user,
+            'roles' => Role::all(),
         ]);
     }
 
@@ -120,14 +125,14 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
-            'role' => 'required|string',
+            'role_id' => 'required|exists:roles,id',
             'password' => 'nullable|string|min:8',
         ]);
 
         $user = User::findOrFail($id);
         $user->name = $request->name;
         $user->email = $request->email;
-        $user->role = $request->role;
+        $user->role_id = $request->role_id;
 
         if ($request->filled('password')) {
             $user->password = bcrypt($request->password);
