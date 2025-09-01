@@ -56,6 +56,7 @@ interface Peminjaman {
     waktu_pinjam_mulai: string;
     waktu_pinjam_selesai: string;
     waktu_kembali?: string;
+    total_hari_terlambat?:number;
     status:
     | "pending"
     | "disetujui"
@@ -156,16 +157,6 @@ export default function Show({ peminjaman, users }: Props) {
         (sum, detail) => sum + detail.jumlah,
         0
     );
-
-    const selesai = new Date(peminjaman.waktu_pinjam_selesai);
-    const kembali = peminjaman.waktu_kembali ? new Date(peminjaman.waktu_kembali) : null;
-
-    const selisihMs = kembali ? selesai.getTime() - kembali.getTime() : null;
-
-    // ubah ke hari, dibulatkan ke bawah dan selalu positif
-    const selisihHari = selisihMs !== null
-        ? Math.floor(Math.abs(selisihMs) / (1000 * 60 * 60 * 24))
-        : null;
 
     return (
         <AppLayout>
@@ -372,7 +363,7 @@ export default function Show({ peminjaman, users }: Props) {
                                     {peminjaman.tepat_waktu ===
                                         false && (
                                             <p className="text-sm text-red-600 font-medium">
-                                                Terlambat {selisihHari} Hari
+                                                Terlambat {peminjaman.total_hari_terlambat} Hari
                                             </p>
                                         )}
                                 </div>
@@ -418,7 +409,7 @@ export default function Show({ peminjaman, users }: Props) {
                                                 {detail.jumlah}
                                             </span>
                                             <p className="text-sm text-gray-500">
-                                                unit
+                                                Buah / Unit
                                             </p>
                                         </div>
                                     </div>
