@@ -17,6 +17,7 @@ import {
     Trash2,
     X,
     Package,
+    Warehouse,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -102,28 +103,28 @@ export default function Index({ stoks }: Props) {
     const filteredGroups = groupedStoks.filter((group) => {
         const matchesSearch = search
             ? group.barang.nama.toLowerCase().includes(search.toLowerCase()) ||
-              group.barang.deskripsi
-                  ?.toLowerCase()
-                  .includes(search.toLowerCase()) ||
-              group.stoks.some(
-                  (stok) =>
-                      stok.spesifikasi?.key
-                          .toLowerCase()
-                          .includes(search.toLowerCase()) ||
-                      stok.spesifikasi?.value
-                          .toLowerCase()
-                          .includes(search.toLowerCase())
-              )
+            group.barang.deskripsi
+                ?.toLowerCase()
+                .includes(search.toLowerCase()) ||
+            group.stoks.some(
+                (stok) =>
+                    stok.spesifikasi?.key
+                        .toLowerCase()
+                        .includes(search.toLowerCase()) ||
+                    stok.spesifikasi?.value
+                        .toLowerCase()
+                        .includes(search.toLowerCase())
+            )
             : true;
 
         const matchesFilter = activeFilter
             ? activeFilter === "low" && group.totalStok < 10
                 ? true
                 : activeFilter === "out" && group.totalStok === 0
-                ? true
-                : activeFilter === "available" && group.totalStok > 0
-                ? true
-                : false
+                    ? true
+                    : activeFilter === "available" && group.totalStok > 0
+                        ? true
+                        : false
             : true;
 
         return matchesSearch && matchesFilter;
@@ -240,15 +241,23 @@ export default function Index({ stoks }: Props) {
             <div className="min-h-screen bg-gray-50 p-6 overflow-hidden">
                 <div className="mx-auto">
                     {/* Header */}
-                    <div className="grid gap-2 lg:flex items-center justify-between mb-6">
-                        <div className="flex gap-6 items-center">
-                            <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
-                                    Stok
-                                </h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                    Stok / Daftar
-                                </h2>
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-6 items-center">
+                                <Link
+                                    href={"/stok"}
+                                    className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
+                                    <Warehouse className="h-5 w-5 text-blue-600" />
+                                </Link>
+                                <div className="flex flex-col gap-2">
+
+                                    <h1 className="text-2xl font-bold text-gray-700">
+                                        Barang
+                                    </h1>
+                                    <h2 className="text-base font-medium text-gray-700">
+                                        Inventory / Barang / Daftar
+                                    </h2>
+                                </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -305,11 +314,10 @@ export default function Index({ stoks }: Props) {
                 <div className="flex gap-4 mb-6 border-b">
                     <button
                         onClick={() => handleTab(null)}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                            activeFilter === null
-                                ? "border-blue-500 text-blue-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700"
-                        }`}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === null
+                            ? "border-blue-500 text-blue-600"
+                            : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`}
                     >
                         Semua Barang{" "}
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
@@ -318,11 +326,10 @@ export default function Index({ stoks }: Props) {
                     </button>
                     <button
                         onClick={() => handleTab("available")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                            activeFilter === "available"
-                                ? "border-green-500 text-green-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700"
-                        }`}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "available"
+                            ? "border-green-500 text-green-600"
+                            : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`}
                     >
                         Tersedia{" "}
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
@@ -331,11 +338,10 @@ export default function Index({ stoks }: Props) {
                     </button>
                     <button
                         onClick={() => handleTab("low")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                            activeFilter === "low"
-                                ? "border-yellow-500 text-yellow-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700"
-                        }`}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "low"
+                            ? "border-yellow-500 text-yellow-600"
+                            : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`}
                     >
                         Stok Rendah{" "}
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
@@ -344,11 +350,10 @@ export default function Index({ stoks }: Props) {
                     </button>
                     <button
                         onClick={() => handleTab("out")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                            activeFilter === "out"
-                                ? "border-red-500 text-red-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700"
-                        }`}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "out"
+                            ? "border-red-500 text-red-600"
+                            : "border-transparent text-gray-500 hover:text-gray-700"
+                            }`}
                     >
                         Habis{" "}
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
@@ -374,8 +379,8 @@ export default function Index({ stoks }: Props) {
                                         {activeFilter === "available"
                                             ? "Tersedia"
                                             : activeFilter === "low"
-                                            ? "Stok Rendah"
-                                            : "Habis"}
+                                                ? "Stok Rendah"
+                                                : "Habis"}
                                     </span>
                                 )}
                             </div>
@@ -410,17 +415,15 @@ export default function Index({ stoks }: Props) {
                                 onClick={() =>
                                     setShowFilterDropdown(!showFilterDropdown)
                                 }
-                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
-                                    showFilterDropdown
-                                        ? "border-blue-500 bg-blue-50 text-blue-600"
-                                        : "border-gray-300 bg-white hover:bg-gray-50"
-                                }`}
+                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showFilterDropdown
+                                    ? "border-blue-500 bg-blue-50 text-blue-600"
+                                    : "border-gray-300 bg-white hover:bg-gray-50"
+                                    }`}
                             >
                                 Filter
                                 <ChevronDown
-                                    className={`h-4 w-4 transition-transform ${
-                                        showFilterDropdown ? "rotate-180" : ""
-                                    }`}
+                                    className={`h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""
+                                        }`}
                                 />
                             </button>
                             {showFilterDropdown && (
@@ -433,31 +436,28 @@ export default function Index({ stoks }: Props) {
                                             onClick={() =>
                                                 handleTab("available")
                                             }
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
-                                                activeFilter === "available"
-                                                    ? "bg-blue-50 text-blue-600 font-medium"
-                                                    : ""
-                                            }`}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "available"
+                                                ? "bg-blue-50 text-blue-600 font-medium"
+                                                : ""
+                                                }`}
                                         >
                                             Tersedia
                                         </button>
                                         <button
                                             onClick={() => handleTab("low")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
-                                                activeFilter === "low"
-                                                    ? "bg-blue-50 text-blue-600 font-medium"
-                                                    : ""
-                                            }`}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "low"
+                                                ? "bg-blue-50 text-blue-600 font-medium"
+                                                : ""
+                                                }`}
                                         >
                                             Stok Rendah (&lt; 10)
                                         </button>
                                         <button
                                             onClick={() => handleTab("out")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
-                                                activeFilter === "out"
-                                                    ? "bg-blue-50 text-blue-600 font-medium"
-                                                    : ""
-                                            }`}
+                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "out"
+                                                ? "bg-blue-50 text-blue-600 font-medium"
+                                                : ""
+                                                }`}
                                         >
                                             Habis
                                         </button>
@@ -470,11 +470,10 @@ export default function Index({ stoks }: Props) {
                                 onClick={() =>
                                     setShowSortDropdown(!showSortDropdown)
                                 }
-                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
-                                    showSortDropdown
-                                        ? "border-blue-500 bg-blue-50 text-blue-600"
-                                        : "border-gray-300 bg-white hover:bg-gray-50"
-                                }`}
+                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showSortDropdown
+                                    ? "border-blue-500 bg-blue-50 text-blue-600"
+                                    : "border-gray-300 bg-white hover:bg-gray-50"
+                                    }`}
                             >
                                 Urutkan
                                 {sortDirection === "asc" ? (
@@ -483,9 +482,8 @@ export default function Index({ stoks }: Props) {
                                     <SortDesc className="h-4 w-4" />
                                 )}
                                 <ChevronDown
-                                    className={`h-4 w-4 transition-transform ${
-                                        showSortDropdown ? "rotate-180" : ""
-                                    }`}
+                                    className={`h-4 w-4 transition-transform ${showSortDropdown ? "rotate-180" : ""
+                                        }`}
                                 />
                             </button>
                             {showSortDropdown && (
@@ -493,11 +491,10 @@ export default function Index({ stoks }: Props) {
                                     <div className="p-2">
                                         <button
                                             onClick={() => handleSort("nama")}
-                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
-                                                sortBy === "nama"
-                                                    ? "bg-blue-50 text-blue-600 font-medium"
-                                                    : "text-gray-700"
-                                            }`}
+                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "nama"
+                                                ? "bg-blue-50 text-blue-600 font-medium"
+                                                : "text-gray-700"
+                                                }`}
                                         >
                                             <span>Nama Barang</span>
                                         </button>
@@ -505,11 +502,10 @@ export default function Index({ stoks }: Props) {
                                             onClick={() =>
                                                 handleSort("total_stok")
                                             }
-                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${
-                                                sortBy === "total_stok"
-                                                    ? "bg-blue-50 text-blue-600 font-medium"
-                                                    : "text-gray-700"
-                                            }`}
+                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "total_stok"
+                                                ? "bg-blue-50 text-blue-600 font-medium"
+                                                : "text-gray-700"
+                                                }`}
                                         >
                                             <span>Total Stok</span>
                                         </button>

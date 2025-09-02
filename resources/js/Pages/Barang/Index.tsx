@@ -1,22 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Head, Link, router } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
+import { cn } from "@/lib/utils";
+import { Head, Link, router } from "@inertiajs/react";
 import {
-    Search,
-    Filter,
     ArrowUpDown,
     ChevronDown,
-    Plus,
+    ChevronLeft,
+    ChevronRight,
     Download,
     Edit,
-    Trash2,
+    FileText,
+    Filter,
     Package,
-    Eye,
-    X,
+    Plus,
+    Search,
+    Trash2,
+    X
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
 
 interface Spesifikasi {
     id: number;
@@ -50,32 +52,62 @@ interface Props {
         search?: string;
         sort_by?: string;
         sort_direction?: "asc" | "desc";
+        filter?: string;
     };
 }
 
 export default function Index({ barangs, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "");
+    const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
     const [sortBy, setSortBy] = useState(filters.sort_by || "created_at");
     const [sortDirection, setSortDirection] = useState(
         filters.sort_direction || "desc"
     );
+    const [activeFilter, setActiveFilter] = useState<string | null>(
+        filters.filter || null
+    );
+    const [perPage, setPerPage] = useState(barangs.per_page || 10);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [selectedBarang, setSelectedBarang] = useState<Barang | null>(null);
     const [activeTab, setActiveTab] = useState<"info" | "spec">("info");
 
     const sortDropdownRef = useRef<HTMLDivElement>(null);
+    const downloadDropdownRef = useRef<HTMLDivElement>(null);
+
+    const downloadOptions = [
+        { label: "Excel", href: "/export/excel" },
+        { label: "CSV", href: "/export/excel?format=csv" },
+        { label: "PDF", href: "/export/pdf" },
+        { label: "Word", href: "/export/word" },
+    ];
 
     // Live search with debounce
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             if (search !== filters.search) {
-                handleFilter();
+                updateQuery();
             }
         }, 500); // 500ms delay
 
         return () => clearTimeout(timeoutId);
     }, [search]);
+
+    const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = parseInt(e.target.value);
+        setPerPage(value);
+        updateQuery({ perPage: value, page: 1 });
+    };
+
+    const handleTab = (tab: string | boolean | null) => {
+        // Untuk tab filter, kirim string 'true' atau 'false' agar backend bisa memproses
+        let filterValue: string | undefined = undefined;
+        if (tab === true) filterValue = "true";
+        else if (tab === false) filterValue = "false";
+        else if (typeof tab === "string") filterValue = tab;
+        setActiveFilter(filterValue || null);
+        updateQuery({ filter: filterValue, page: 1 });
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -107,17 +139,21 @@ export default function Index({ barangs, filters }: Props) {
     };
 
     // Filter handler
-    const handleFilter = () => {
+    const updateQuery = (extra: Record<string, any> = {}) => {
         router.get(
             "/barang",
             {
                 search,
                 sort_by: sortBy,
                 sort_direction: sortDirection,
+                perPage,
+                filter: activeFilter || undefined, // 🔹 selalu kirim filter
+                ...extra,
             },
             { preserveState: true }
         );
     };
+    console.log(activeFilter);
 
     // Sort handler
     const handleSort = (field: string) => {
@@ -143,7 +179,7 @@ export default function Index({ barangs, filters }: Props) {
         setSearch("");
         setSortBy("created_at");
         setSortDirection("desc");
-
+        setActiveFilter(null);
         router.get("/barang", {}, { preserveState: true });
     };
 
@@ -182,18 +218,62 @@ export default function Index({ barangs, filters }: Props) {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700">
-                                Barang
-                            </h1>
-                            <h2 className="text-base font-medium text-gray-700">
-                                Inventory / Barang / Daftar
-                            </h2>
+                            <div className="flex gap-6 items-center">
+                                <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
+                                    <Package className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <div className="flex flex-col gap-2">
+
+                                    <h1 className="text-2xl font-bold text-gray-700">
+                                        Barang
+                                    </h1>
+                                    <h2 className="text-base font-medium text-gray-700">
+                                        Inventory / Barang / Daftar
+                                    </h2>
+                                </div>
+                            </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors">
-                                <Download className="h-4 w-4" />
-                                Download CSV
-                            </button>
+                            {/* Dropdown Download */}
+                            <div
+                                className="relative inline-block text-left"
+                                ref={downloadDropdownRef}
+                            >
+                                <button
+                                    onClick={() =>
+                                        setShowDownloadDropdown(
+                                            !showDownloadDropdown
+                                        )
+                                    }
+                                    className="inline-flex justify-center items-center px-4 py-2 bg-white text-black rounded-lg border border-black hover:bg-gray-200 text-left"
+                                >
+                                    <Download className="mr-2 h-5 w-5" />
+                                    Download Data
+                                    <ChevronDown className="ml-2 h-4 w-4" />
+                                </button>
+
+                                {showDownloadDropdown && (
+                                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50">
+                                        {downloadOptions.map((opt) => (
+                                            <Link
+                                                key={opt.label}
+                                                href={opt.href}
+                                                method="get"
+                                                as="button"
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+                                                onClick={() =>
+                                                    setShowDownloadDropdown(
+                                                        false
+                                                    )
+                                                }
+                                            >
+                                                <FileText className="h-4 w-4" />
+                                                {opt.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                             <Link
                                 href="/barang/create"
                                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -203,27 +283,70 @@ export default function Index({ barangs, filters }: Props) {
                             </Link>
                         </div>
                     </div>
+                    <div className="flex gap-4 mb-6 border-b">
+                        <button
+                            onClick={() => handleTab("")}
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === null
+                                ? "border-blue-500 text-blue-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                                }`}
+                        >
+                            Semua Barang{" "}
+                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
+                                {barangs.total}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => handleTab(true)}
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "true"
+                                ? "border-green-500 text-green-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                                }`}
+                        >
+                            Dapat Dipinjam
+                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
+                                {barangs.data.filter((d) => d.boleh_dipinjam === true).length}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => handleTab(false)}
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "false"
+                                ? "border-red-500 text-red-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
+                                }`}
+                        >
+                            Tidak Dapat Dipinjam
+                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
+                                {barangs.data.filter((d) => d.boleh_dipinjam === false).length}
+                            </span>
+                        </button>
+                    </div>
 
-                    {/* Active Filters */}
-                    {search && (
+                    {/* Filter Status */}
+                    {(search || activeFilter) && (
                         <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Filter className="h-4 w-4 text-blue-600" />
-                                    <span className="text-sm font-medium text-blue-800">
-                                        Filter aktif:
-                                    </span>
+                                <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
+                                    <Filter className="h-4 w-4" />
+                                    <span>Filter aktif:</span>
                                     {search && (
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            Pencarian: "{search}"
+                                        <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
+                                            <Search className="h-3 w-3" />
+                                            Cari: "{search}"
+                                        </span>
+                                    )}
+                                    {activeFilter && (
+                                        <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
+                                            {activeFilter === "true" ? "Dapat Dipinjam" : "Tidak Dapat Dipinjam"}
                                         </span>
                                     )}
                                 </div>
                                 <button
                                     onClick={clearFilters}
-                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
                                 >
-                                    Hapus semua filter
+                                    <X className="h-3 w-3" />
+                                    Clear All
                                 </button>
                             </div>
                         </div>
@@ -243,7 +366,7 @@ export default function Index({ barangs, filters }: Props) {
                                         onChange={(e) =>
                                             setSearch(e.target.value)
                                         }
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="pl-10 pr-6 py-2 border md:w-80 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
                                 </div>
                             </div>
@@ -270,7 +393,7 @@ export default function Index({ barangs, filters }: Props) {
                                                 className={cn(
                                                     "w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center justify-between",
                                                     sortBy === "nama" &&
-                                                        "bg-blue-50 text-blue-700"
+                                                    "bg-blue-50 text-blue-700"
                                                 )}
                                             >
                                                 Nama
@@ -283,7 +406,7 @@ export default function Index({ barangs, filters }: Props) {
                                                 className={cn(
                                                     "w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center justify-between",
                                                     sortBy === "created_at" &&
-                                                        "bg-blue-50 text-blue-700"
+                                                    "bg-blue-50 text-blue-700"
                                                 )}
                                             >
                                                 Tanggal Dibuat
@@ -302,26 +425,29 @@ export default function Index({ barangs, filters }: Props) {
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            No.
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Foto
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Barang
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Deskripsi
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Spesifikasi
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status Peminjaman
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Tanggal Dibuat
                                         </th>
 
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Aksi
                                         </th>
                                     </tr>
@@ -330,7 +456,7 @@ export default function Index({ barangs, filters }: Props) {
                                     {barangs.data.length === 0 ? (
                                         <tr>
                                             <td
-                                                colSpan={6}
+                                                colSpan={9}
                                                 className="px-6 py-12 text-center text-gray-500"
                                             >
                                                 <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
@@ -344,12 +470,18 @@ export default function Index({ barangs, filters }: Props) {
                                             </td>
                                         </tr>
                                     ) : (
-                                        barangs.data.map((barang) => (
+                                        barangs.data.map((barang, idx) => (
                                             <tr
                                                 key={barang.id}
                                                 className="hover:bg-gray-50"
                                             >
-                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                <td className="px-6 py-4 text-center text-sm text-gray-900 ">
+                                                    {(barangs.current_page - 1) *
+                                                        barangs.per_page +
+                                                        idx +
+                                                        1}
+                                                </td>
+                                                <td className="px-6 py-4 text-center whitespace-nowrap">
                                                     {barang.foto ? (
                                                         <div className="flex items-center">
                                                             <img
@@ -366,23 +498,22 @@ export default function Index({ barangs, filters }: Props) {
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                <td className="px-6 py-4 text-center whitespace-nowrap">
                                                     <div className="flex items-center">
-                                                        <div className="flex-shrink-0 h-10 w-10"></div>
                                                         <div className="ml-4">
-                                                            <div className="text-sm font-medium text-gray-900">
+                                                            <div className="text-sm text-center font-medium text-gray-900">
                                                                 {barang.nama}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 text-center">
                                                     <div className="text-sm text-gray-900 max-w-xs truncate">
                                                         {barang.deskripsi ||
                                                             "-"}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 text-center">
                                                     <div className="text-sm text-gray-900 max-w-xs truncate">
                                                         {barang.spesifikasi
                                                             ?.length ||
@@ -390,25 +521,24 @@ export default function Index({ barangs, filters }: Props) {
                                                         Spesifikasi
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                <td className="px-6 py-4 text-center whitespace-nowrap">
                                                     <span
-                                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                            barang.boleh_dipinjam
-                                                                ? "bg-green-100 text-green-800"
-                                                                : "bg-red-100 text-red-800"
-                                                        }`}
+                                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${barang.boleh_dipinjam
+                                                            ? "bg-green-100 text-green-800"
+                                                            : "bg-red-100 text-red-800"
+                                                            }`}
                                                     >
                                                         {barang.boleh_dipinjam
                                                             ? "Dapat Dipinjam"
                                                             : "Tidak Dapat Dipinjam"}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                                                     {formatDate(
                                                         barang.created_at
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <td className="px-6 py-4 text-center whitespace-nowrap text-sm font-medium">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <button
                                                             onClick={() =>
@@ -419,7 +549,7 @@ export default function Index({ barangs, filters }: Props) {
                                                             className="text-black p-1 hover:bg-green-50 rounded"
                                                             title="Lihat Detail"
                                                         >
-                                                            <Eye className="h-4 w-4" />
+                                                            <FileText className="h-4 w-4" />
                                                         </button>
                                                         <button
                                                             onClick={() =>
@@ -453,75 +583,65 @@ export default function Index({ barangs, filters }: Props) {
                         </div>
 
                         {/* Pagination */}
-                        <div className="bg-white px-4 py-3 border-t border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 flex justify-between sm:hidden">
-                                    {barangs.current_page > 1 && (
-                                        <Link
-                                            href={`/barang?page=${
-                                                barangs.current_page - 1
-                                            }`}
-                                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                                        >
-                                            Previous
-                                        </Link>
-                                    )}
-                                    {barangs.current_page <
-                                        barangs.last_page && (
-                                        <Link
-                                            href={`/barang?page=${
-                                                barangs.current_page + 1
-                                            }`}
-                                            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                                        >
-                                            Next
-                                        </Link>
-                                    )}
-                                </div>
-                                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                                    <div>
-                                        <p className="text-sm text-gray-700">
-                                            Menampilkan{" "}
-                                            <span className="font-medium">
-                                                {barangs.from}
-                                            </span>{" "}
-                                            sampai{" "}
-                                            <span className="font-medium">
-                                                {barangs.to}
-                                            </span>{" "}
-                                            dari{" "}
-                                            <span className="font-medium">
-                                                {barangs.total}
-                                            </span>{" "}
-                                            hasil
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <nav
-                                            className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                                            aria-label="Pagination"
-                                        >
-                                            {/* Pagination buttons */}
-                                            {Array.from(
-                                                { length: barangs.last_page },
-                                                (_, i) => i + 1
-                                            ).map((page) => (
-                                                <Link
-                                                    key={page}
-                                                    href={`/barang?page=${page}`}
-                                                    className={cn(
-                                                        "relative inline-flex items-center px-4 py-2 border text-sm font-medium",
-                                                        page ===
-                                                            barangs.current_page
-                                                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                                                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                                                    )}
-                                                >
-                                                    {page}
-                                                </Link>
-                                            ))}
-                                        </nav>
-                                    </div>
+                        <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <select
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                    value={perPage}
+                                    onChange={handlePerPageChange}
+                                >
+                                    <option value={10}>10 data per halaman</option>
+                                    <option value={20}>20 data per halaman</option>
+                                    <option value={50}>50 data per halaman</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm text-gray-700 whitespace-nowrap">
+                                    {barangs.from}-{barangs.to} dari{" "}
+                                    {barangs.total}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                                        disabled={barangs.current_page === 1}
+                                        onClick={() =>
+                                            router.get(
+                                                "/barangs",
+                                                {
+                                                    search,
+                                                    sort_by: sortBy,
+                                                    sort_direction: sortDirection,
+                                                    page: barangs.current_page - 1,
+                                                    perPage,
+                                                },
+                                                { preserveState: true }
+                                            )
+                                        }
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                                        disabled={
+                                            barangs.current_page ===
+                                            barangs.last_page
+                                        }
+                                        onClick={() =>
+                                            router.get(
+                                                "/barangs",
+                                                {
+                                                    search,
+                                                    sort_by: sortBy,
+                                                    sort_direction: sortDirection,
+                                                    page: barangs.current_page + 1,
+                                                    perPage,
+                                                },
+                                                { preserveState: true }
+                                            )
+                                        }
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -639,7 +759,7 @@ export default function Index({ barangs, filters }: Props) {
                                     {activeTab === "spec" && (
                                         <div className="space-y-4">
                                             {selectedBarang.spesifikasi &&
-                                            selectedBarang.spesifikasi.length >
+                                                selectedBarang.spesifikasi.length >
                                                 0 ? (
                                                 <div className="space-y-3">
                                                     {selectedBarang.spesifikasi.map(
