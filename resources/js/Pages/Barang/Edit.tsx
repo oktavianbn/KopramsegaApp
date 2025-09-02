@@ -116,16 +116,27 @@ export default function Edit({ barang }: Props) {
                 <div className="mx-auto">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-4">
-                            <div className="flex flex-col gap-1">
-                                <h1 className="text-2xl font-bold text-gray-700">
-                                    Edit Barang
-                                </h1>
-                                <h2 className="text-base font-medium text-gray-700">
-                                    Inventory / Barang / Edit / {barang.nama}
-                                </h2>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-6 items-center">
+                                <Link
+                                    href={"/barang"}
+                                    className="p-2 h-max bg-gray-100 rounded-lg flex justify-center items-center">
+                                    <ArrowLeft className="h-5 w-5 text-gray-600" />
+                                </Link>
+                                <div className="flex flex-col gap-2">
+
+                                    <h1 className="text-2xl font-bold text-gray-700">
+                                        Barang
+                                    </h1>
+                                    <h2 className="text-base font-medium text-gray-700">
+                                        Inventory / Barang / Edit Data
+                                    </h2>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                    <div className="flex gap-4 mb-6 border-b">
+
                     </div>
 
                     {/* Form */}
@@ -148,11 +159,10 @@ export default function Edit({ barang }: Props) {
                                     onChange={(e) =>
                                         setData("nama", e.target.value)
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        errors.nama
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.nama
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                        }`}
                                     placeholder="Masukkan nama barang"
                                 />
                                 {errors.nama && (
@@ -178,11 +188,10 @@ export default function Edit({ barang }: Props) {
                                         setData("deskripsi", e.target.value)
                                     }
                                     rows={4}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        errors.deskripsi
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.deskripsi
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                        }`}
                                     placeholder="Masukkan deskripsi barang (opsional)"
                                 />
                                 {errors.deskripsi && (
@@ -236,11 +245,10 @@ export default function Edit({ barang }: Props) {
                                 </label>
 
                                 <div
-                                    className={`border rounded-lg p-4 ${
-                                        errors.foto
-                                            ? "border-red-500"
-                                            : "border-gray-300"
-                                    }`}
+                                    className={`border rounded-lg p-4 ${errors.foto
+                                        ? "border-red-500"
+                                        : "border-gray-300"
+                                        }`}
                                 >
                                     {/* Current Photo */}
                                     {currentPhoto && !previewUrl && (

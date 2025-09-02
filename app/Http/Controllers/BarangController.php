@@ -15,12 +15,27 @@ class BarangController extends Controller
     {
         $query = Barang::with('spesifikasi');
 
+        $perPage = $request->input('perPage', 8);
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $search = $request->input('search', '');
+        $filter = $request->input('filter', null);
+
         // Search functionality
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->search . '%')
                     ->orWhere('deskripsi', 'like', '%' . $request->search . '%');
             });
+        }
+
+        // Filter by boleh_dipinjam (from filter tabs)
+        if ($request->filled('filter')) {
+            if ($request->filter === 'true') {
+                $query->where('boleh_dipinjam', true);
+            } elseif ($request->filter === 'false') {
+                $query->where('boleh_dipinjam', false);
+            }
         }
 
         // Sorting
@@ -33,11 +48,19 @@ class BarangController extends Controller
             $query->orderBy($sortBy, $sortDirection);
         }
 
-        $barangs = $query->paginate(10);
+        // Per page
+        $perPage = $request->get('perPage', 10);
+        $barangs = $query->paginate($perPage);
 
         return Inertia::render('Barang/Index', [
             'barangs' => $barangs,
-            'filters' => $request->only(['search', 'sort_by', 'sort_direction']),
+            'filters' => [
+                'search' => $search,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'perPage' => $perPage,
+                'filter' => $filter,
+            ],
         ]);
     }
 

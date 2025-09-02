@@ -86,7 +86,7 @@ export default function Edit({ stok, barangs, spesifikasis }: Props) {
                                 Stok
                             </h1>
                             <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                Stok / Edit Data
+                                Inventory / Barang / Edit Data
                             </h2>
                         </div>
                     </div>

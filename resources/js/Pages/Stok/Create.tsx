@@ -74,7 +74,7 @@ export default function Create({ barangs, spesifikasis }: Props) {
                                 Stok
                             </h1>
                             <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                Stok / Tambah Data
+                                Inventory / Barang / Tambah Data
                             </h2>
                         </div>
                     </div>
