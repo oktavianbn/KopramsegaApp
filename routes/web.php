@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RencanaController;
 use App\Http\Controllers\DokumentasiController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\DokumenController;
 use App\Http\Controllers\PeminjamanController;
 
 Route::get('/', function () {
@@ -25,6 +26,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('arsip-surat', ArsipSuratController::class);
+    Route::resource('dokumen', DokumenController::class);
     Route::resource('keuangan', KeuanganController::class);
     Route::resource('user', UserController::class);
     Route::resource('role', RoleController::class);
