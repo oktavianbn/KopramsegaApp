@@ -1,5 +1,6 @@
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
+import { table } from "console";
 import { ArrowLeft, ArrowUpDown, Calendar, FileText, Hash, Paperclip, Pen, Save, User, Users } from "lucide-react";
 import { FormEventHandler, useEffect, useState } from "react";
 
@@ -12,7 +13,7 @@ interface ArsipSurat {
     penerima: string;
     tanggal_surat: string;
     keterangan: string;
-    file_path?: File | null;
+    file_path?: File | string | null;
 }
 
 interface Props {
@@ -29,7 +30,7 @@ export default function Edit({ arsipSurat }: Props) {
         penerima: arsipSurat.penerima,
         tanggal_surat: arsipSurat.tanggal_surat,
         keterangan: arsipSurat.keterangan,
-        file_path: arsipSurat.file_path,
+        file_path: null,
     });
 
     // nomor_surat format (hanya untuk keluar)
@@ -39,15 +40,16 @@ export default function Edit({ arsipSurat }: Props) {
     const [part4, setPart4] = useState("");
     const [part5, setPart5] = useState("");
 
-    // buffer buat simpan nilai asli
-    // const [bufferPengirim, setBufferPengirim] = useState(arsipSurat.pengirim);
-    // const [bufferPenerima, setBufferPenerima] = useState(arsipSurat.penerima);
-
     const bulanRomawi = [
         "I", "II", "III", "IV", "V", "VI",
         "VII", "VIII", "IX", "X", "XI", "XII"
     ];
     const nomorSuratKeluar = `${part1}.${part2}/${part3}/${part4}/${part5}`;
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null
+        setData("file_path", file)
+    }
 
     // kalau jenis = keluar, auto set pengirim
     useEffect(() => {
@@ -68,6 +70,10 @@ export default function Edit({ arsipSurat }: Props) {
             setData("pengirim", data.pengirim);
         }
     }, [data.jenis]);
+    const formData = new FormData();
+    if (data.file_path) {
+        formData.append("file_path", data.file_path);
+    }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -276,16 +282,50 @@ export default function Edit({ arsipSurat }: Props) {
 
                             {/* File Upload */}
                             <div className="md:col-span-2">
-                                <label htmlFor="file_path" className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <label
+                                    htmlFor="file_path"
+                                    className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+                                >
                                     <Paperclip className="h-4 w-4 text-gray-500" /> File Surat (opsional)
                                 </label>
+
+                                {/* Tampilkan file lama kalau ada */}
+                                {data?.file_path && (
+                                    <div className="mb-2 flex items-center gap-2">
+                                        {typeof data.file_path === "string" ? (
+                                            // ✅ Jika dari database
+                                            <a
+                                                href={`/storage/${data.file_path}`}
+                                                target="_blank"
+                                                className="text-blue-600 underline text-sm"
+                                            >
+                                                {data.file_path.split("/").pop()}
+                                            </a>
+                                        ) : (
+                                            // ✅ Jika file baru diupload
+                                            <span className="text-gray-700 text-sm">
+                                                {data.file_path.name}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+
+
                                 <input
                                     type="file"
                                     id="file_path"
-                                    onChange={e => setData("file_path", e.target.files ? e.target.files[0] : null)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    onChange={handleFileChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
-                                {errors.file_path && <p className="mt-1 text-sm text-red-600">{errors.file_path}</p>}
+
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Format: PDF, JPG, PNG, DOC, DOCX — Maks. 2MB
+                                </p>
+
+                                {errors.file_path && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.file_path}</p>
+                                )}
                             </div>
                         </div>
 

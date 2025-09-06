@@ -1,6 +1,7 @@
+import ModalPreviewFile from "@/Components/ModalPrifiewFile";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { ArrowLeft, ArrowUpDown, Calendar, FileText, Hash, Paperclip, Pen, Save, User, Users } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Calendar, Eye, FileText, Hash, Paperclip, Pen, Save, User, Users } from "lucide-react";
 import { FormEventHandler, useEffect, useState } from "react";
 
 interface ArsipSurat {
@@ -38,6 +39,12 @@ export default function Create() {
     ];
     const nomorSuratKeluar = `${part1}.${part2}/${part3}/${part4}/${part5}`;
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null
+        setData("file_path", file)
+    }
+
+
     // kalau jenis = keluar, auto set pengirim
     useEffect(() => {
         if (data.jenis === "k") {
@@ -58,7 +65,12 @@ export default function Create() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post("/arsip-surat", { forceFormData: true });
+        post("/arsip-surat", {
+            forceFormData: true,
+            preserveScroll: true,
+            onError: (err) => console.error("Validation Error:", err),
+        })
+
     };
 
     return (
@@ -263,16 +275,28 @@ export default function Create() {
 
                             {/* File Upload */}
                             <div className="md:col-span-2">
-                                <label htmlFor="file_path" className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <label
+                                    htmlFor="file_path"
+                                    className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+                                >
                                     <Paperclip className="h-4 w-4 text-gray-500" /> File Surat (opsional)
                                 </label>
+
                                 <input
                                     type="file"
                                     id="file_path"
-                                    onChange={e => setData("file_path", e.target.files ? e.target.files[0] : null)}
+                                    onChange={handleFileChange}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
-                                {errors.file_path && <p className="mt-1 text-sm text-red-600">{errors.file_path}</p>}
+
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Format: PDF, JPG, PNG, DOC, DOCX — Maks. 2MB
+                                </p>
+
+                                {errors.file_path && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.file_path}</p>
+                                )}
+
                             </div>
                         </div>
 

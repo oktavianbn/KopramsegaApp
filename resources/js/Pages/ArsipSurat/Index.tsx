@@ -141,7 +141,7 @@ export default function Index({ arsipSurat, filters }: Props) {
 
     /** 🔹 CRUD handlers */
     const handleEdit = (id: number) => router.visit(`/arsip-surat/${id}/edit`);
-    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus data ini?") && router.delete(`/arisp-surat/${id}`);
+    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus data ini?") && router.delete(`/arsip-surat/${id}`);
     const handleShow = (item: ArsipSurat) => { setSelectedData(item); setShowModal(true); };
 
     /** 🔹 utils */

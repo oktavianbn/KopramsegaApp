@@ -77,11 +77,10 @@ const truncateText = (text: string, maxLength: number = 15): string => {
 
 // Helper function to check if a route is active
 const isActiveRoute = (href: string, currentUrl: string): boolean => {
-    // Remove trailing slash and normalize URLs
     const normalizedHref = href.replace(/\/$/, "") || "/";
     const normalizedCurrentUrl = currentUrl.replace(/\/$/, "") || "/";
 
-    // For exact match on dashboard
+    // Untuk dashboard
     if (normalizedHref === "/dashboard") {
         return (
             normalizedCurrentUrl === "/dashboard" ||
@@ -89,9 +88,15 @@ const isActiveRoute = (href: string, currentUrl: string): boolean => {
         );
     }
 
-    // For other routes, check if current URL starts with the href
-    return normalizedCurrentUrl.startsWith(normalizedHref);
+    // Exact match
+    if (normalizedCurrentUrl === normalizedHref) {
+        return true;
+    }
+
+    // Match prefix hanya kalau diikuti slash (sub route)
+    return normalizedCurrentUrl.startsWith(normalizedHref + "/");
 };
+
 
 export function Sidebar({
     className,
