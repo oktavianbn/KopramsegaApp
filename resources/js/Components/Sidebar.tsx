@@ -1,31 +1,27 @@
 "use client";
 
-import { Children, useState } from "react";
-import {
-    Home,
-    BarChart3,
-    Users,
-    Settings,
-    FileText,
-    Menu,
-    X,
-    DollarSign,
-    Layers,
-    FolderClosed,
-    ChevronDown,
-    LogOut,
-    User,
-    TimerReset,
-    SwitchCamera,
-    Package,
-    Warehouse,
-    UserCheck,
-    icons,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePage } from "@inertiajs/react";
+import {
+    ChevronDown,
+    DollarSign,
+    FileCheck,
+    FolderClosed,
+    Home,
+    Layers,
+    LogOut,
+    Mail,
+    Package,
+    SwitchCamera,
+    TimerReset,
+    User,
+    UserCheck,
+    Users,
+    Warehouse,
+    X
+} from "lucide-react";
+import { useState } from "react";
 import Dropdown from "./Dropdown";
-import { group } from "console";
 
 interface SimpleSidebarProps {
     className?: string;
@@ -55,7 +51,15 @@ const menuItems = [
             { icon: UserCheck, label: "Peminjaman", href: "/peminjaman" },
         ],
     },
-    { icon: FolderClosed, label: "Arsip Surat", href: "/arsip-surat" },
+    {
+        icon: FolderClosed,
+        label: "Arsip",
+        group: true,
+        children: [
+            { icon: Mail, label: "Surat", href: "/arsip-surat" },
+            { icon: FileCheck, label: "Dokumen", href: "/dokumen" }
+        ]
+    },
     { icon: TimerReset, label: "Rencana", href: "/rencana" },
     { icon: SwitchCamera, label: "Dokumentasi", href: "/dokumentasi" },
     // { icon: BarChart3, label: "Analytics", href: "/analytics" },
@@ -73,11 +77,10 @@ const truncateText = (text: string, maxLength: number = 15): string => {
 
 // Helper function to check if a route is active
 const isActiveRoute = (href: string, currentUrl: string): boolean => {
-    // Remove trailing slash and normalize URLs
     const normalizedHref = href.replace(/\/$/, "") || "/";
     const normalizedCurrentUrl = currentUrl.replace(/\/$/, "") || "/";
 
-    // For exact match on dashboard
+    // Untuk dashboard
     if (normalizedHref === "/dashboard") {
         return (
             normalizedCurrentUrl === "/dashboard" ||
@@ -85,9 +88,15 @@ const isActiveRoute = (href: string, currentUrl: string): boolean => {
         );
     }
 
-    // For other routes, check if current URL starts with the href
-    return normalizedCurrentUrl.startsWith(normalizedHref);
+    // Exact match
+    if (normalizedCurrentUrl === normalizedHref) {
+        return true;
+    }
+
+    // Match prefix hanya kalau diikuti slash (sub route)
+    return normalizedCurrentUrl.startsWith(normalizedHref + "/");
 };
+
 
 export function Sidebar({
     className,

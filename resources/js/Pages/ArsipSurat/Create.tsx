@@ -38,6 +38,12 @@ export default function Create() {
     ];
     const nomorSuratKeluar = `${part1}.${part2}/${part3}/${part4}/${part5}`;
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null
+        setData("file_path", file)
+    }
+
+
     // kalau jenis = keluar, auto set pengirim
     useEffect(() => {
         if (data.jenis === "k") {
@@ -58,7 +64,13 @@ export default function Create() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post("/arsip-surat", { forceFormData: true });
+        post("/arsip-surat",
+            // {
+            //     forceFormData: true,
+            //     preserveScroll: true,
+            // }
+        )
+
     };
 
     return (
@@ -75,8 +87,8 @@ export default function Create() {
                             <ArrowLeft className="h-5 w-5 text-gray-500" />
                         </Link>
                         <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Arsip Surat</h1>
-                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip Surat / Tambah Data</h2>
+                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap"> Surat</h1>
+                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip / Surat / Tambah Data</h2>
                         </div>
                     </div>
                 </div>
@@ -263,16 +275,28 @@ export default function Create() {
 
                             {/* File Upload */}
                             <div className="md:col-span-2">
-                                <label htmlFor="file_path" className=" text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <label
+                                    htmlFor="file_path"
+                                    className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+                                >
                                     <Paperclip className="h-4 w-4 text-gray-500" /> File Surat (opsional)
                                 </label>
+
                                 <input
                                     type="file"
                                     id="file_path"
-                                    onChange={e => setData("file_path", e.target.files ? e.target.files[0] : null)}
+                                    onChange={handleFileChange}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
-                                {errors.file_path && <p className="mt-1 text-sm text-red-600">{errors.file_path}</p>}
+
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Format: PDF, JPG, PNG, DOC, DOCX — Maks. 2MB
+                                </p>
+
+                                {errors.file_path && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.file_path}</p>
+                                )}
+
                             </div>
                         </div>
 

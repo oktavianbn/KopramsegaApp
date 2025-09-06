@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ArsipSurat;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,8 +19,8 @@ class ArsipSuratController extends Controller
         $perPage = $request->input('perPage', 10);
         $sortBy = $request->input('sort_by', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
-        $search = $request->input('search','');
-        $filter = $request->input('filter',null);
+        $search = $request->input('search', '');
+        $filter = $request->input('filter', null);
 
         $allowedSorts = ['jumlah', 'tanggal_surat', 'judul_surat', 'pengirim', 'penerima'];
         $allowedDirections = ['asc', 'desc'];
@@ -63,7 +64,7 @@ class ArsipSuratController extends Controller
         return Inertia::render('ArsipSurat/Index', [
             'arsipSurat' => $arsipSurat,
             'filters' => [
-                'search' => $search ,
+                'search' => $search,
                 'sort_by' => $sortBy,
                 'sort_direction' => $sortDirection,
                 'perPage' => $perPage,
@@ -96,9 +97,15 @@ class ArsipSuratController extends Controller
             'keterangan' => 'required|string',
             'file_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx',
         ]);
-
         if ($request->hasFile('file_path')) {
-            $validated['file_path'] = $request->file('file_path')->store('arsip_surats', 'public');
+            // Ambil file yang diupload
+            $uploadedFile = $request->file('file_path');
+
+            // Ambil nama asli file
+            $namaFile = $uploadedFile->getClientOriginalName();
+
+            // Simpan dengan nama asli ke folder 'arsip_surats' (public)
+            $validated['file_path'] = $uploadedFile->storeAs('arsip_surats', $namaFile, 'public');
         }
 
         ArsipSurat::create($validated);
@@ -131,7 +138,6 @@ class ArsipSuratController extends Controller
     public function update(Request $request, $id)
     {
         $arsip = ArsipSurat::findOrFail($id);
-
         $validated = $request->validate([
             'judul_surat' => 'required|string|max:255',
             'nomor_surat' => 'required|string|max:255|unique:arsip_surats,nomor_surat,' . $arsip->id,
@@ -144,7 +150,17 @@ class ArsipSuratController extends Controller
         ]);
 
         if ($request->hasFile('file_path')) {
-            $validated['file_path'] = $request->file('file_path')->store('arsip_surats', 'public');
+            // hapus file lama kalau ada
+            if ($arsip->file_path && Storage::disk('public')->exists($arsip->file_path)) {
+                Storage::disk('public')->delete($arsip->file_path);
+            }
+
+            $uploadedFile = $request->file('file_path');
+            $namaFile = $uploadedFile->getClientOriginalName();
+
+            $validated['file_path'] = $uploadedFile->storeAs('arsip_surats', $namaFile, 'public');
+        } else {
+            unset($validated['file_path']); // ⬅ penting! agar file lama tidak dihapus
         }
 
         $arsip->update($validated);
@@ -152,7 +168,6 @@ class ArsipSuratController extends Controller
         return redirect()->route('arsip-surat.index')
             ->with('success', 'Data arsip surat berhasil diupdate');
     }
-
 
     /**
      * Remove the specified resource from storage.

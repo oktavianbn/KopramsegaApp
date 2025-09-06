@@ -1,7 +1,6 @@
 "use client";
 
-import { ModalDetailArsipSurat } from "@/Components/ModalDetailArsipSurat";
-import ModalPreviewFile from "@/Components/ModalPrifiewFile";
+import { ModalDetailDokumen } from "@/Components/ModalDetailDokumen";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import {
@@ -11,9 +10,9 @@ import {
     ChevronLeft, ChevronRight,
     Download,
     Edit,
+    FileCheck,
     FileText,
     Filter,
-    Mail,
     Plus,
     Search,
     SortAsc, SortDesc,
@@ -22,23 +21,19 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-interface ArsipSurat {
+interface Dokumen {
     id: number;
-    judul_surat: string;
-    nomor_surat: string;
-    jenis: "m" | "k";
-    pengirim?: string;
-    penerima?: string;
-    tanggal_surat: string;
-    keterangan: string;
-    file_path?: string;
+    nama: string;
+    tanggal_dokumen: string;
+    keterangan?: string;
+    file?: string[];
     created_at: string;
     updated_at: string;
 }
 
 interface Props {
-    arsipSurat: {
-        data: ArsipSurat[];
+    dokumen: {
+        data: Dokumen[];
         current_page: number;
         last_page: number;
         per_page: number;
@@ -54,18 +49,17 @@ interface Props {
     };
 }
 
-export default function Index({ arsipSurat, filters }: Props) {
+export default function Index({ dokumen, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "");
     const [sortBy, setSortBy] = useState(filters.sort_by || "created_at");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">(filters.sort_direction || "desc");
-    const [perPage, setPerPage] = useState(arsipSurat.per_page || 10);
+    const [perPage, setPerPage] = useState(dokumen.per_page || 10);
     const [activeFilter, setActiveFilter] = useState<string | null>(filters.filter || null);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [selectedData, setSelectedData] = useState<ArsipSurat | null>(null);
-    const [showPrefiewModal, setShowPrefiewModal] = useState<string | null>(null);
+    const [selectedData, setSelectedData] = useState<Dokumen | null>(null);
 
     const sortDropdownRef = useRef<HTMLDivElement>(null);
     const filterDropdownRef = useRef<HTMLDivElement>(null);
@@ -81,7 +75,7 @@ export default function Index({ arsipSurat, filters }: Props) {
     /** 🔹 utilitas untuk request dengan parameter konsisten */
     const updateQuery = (extra: Record<string, any> = {}) => {
         router.get(
-            "/arsip-surat",
+            "/dokumen",
             {
                 search,
                 sort_by: sortBy,
@@ -142,9 +136,9 @@ export default function Index({ arsipSurat, filters }: Props) {
     };
 
     /** 🔹 CRUD handlers */
-    const handleEdit = (id: number) => router.visit(`/arsip-surat/${id}/edit`);
-    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus data ini?") && router.delete(`/arsip-surat/${id}`);
-    const handleShow = (item: ArsipSurat) => { setSelectedData(item); setShowModal(true); };
+    const handleEdit = (id: number) => router.visit(`/dokumen/${id}/edit`);
+    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus data ini?") && router.delete(`/dokumen/${id}`);
+    const handleShow = (item: Dokumen) => { setSelectedData(item); setShowModal(true); };
 
     /** 🔹 utils */
     const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString("id-ID");
@@ -159,18 +153,18 @@ export default function Index({ arsipSurat, filters }: Props) {
 
     return (
         <AppLayout>
-            <Head title="arsip-surat" />
+            <Head title="dokumen" />
             <div className="min-h-screen bg-gray-50 p-6 overflow-hidden">
                 <div className="mx-auto">
                     {/* Header */}
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
                             <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                <Mail className="h-5 w-5 text-blue-600" />
+                                <FileCheck className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Surat</h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip / Surat / Daftar</h2>
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Dokumen</h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip /Dokumen / Daftar</h2>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -204,7 +198,7 @@ export default function Index({ arsipSurat, filters }: Props) {
                                 )}
                             </div>
                             <Link
-                                href="/arsip-surat/create"
+                                href="/dokumen/create"
                                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                 <Plus className="h-4 w-4" />
                                 Tambah Data
@@ -213,34 +207,7 @@ export default function Index({ arsipSurat, filters }: Props) {
                     </div>
                 </div>
                 <div className="flex gap-4 mb-6 border-b">
-                    <button
-                        onClick={() => handleTab("")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
-                    >
-                        Seluruh Surat{" "}
-                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 ro unded-full">{arsipSurat.total}</span>
-                    </button>
-                    <button
-                        onClick={() => handleTab("m")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "m" ? "border-green-500 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
-                    >
-                        Surat Masuk{" "}
-                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                            {arsipSurat.data.filter((d) => d.jenis === "m").length}
-                        </span>
-                    </button>
-                    <button
-                        onClick={() => handleTab("k")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "k" ? "border-red-500 text-red-600" : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
-                    >
-                        Surat Keluar{" "}
-                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                            {arsipSurat.data.filter((d) => d.jenis === "k").length}
-                        </span>
-                    </button>
+
                 </div>
 
 
@@ -389,28 +356,14 @@ export default function Index({ arsipSurat, filters }: Props) {
                                             className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "jumlah" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
                                                 }`}
                                         >
-                                            <span>Judul Surat</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleSort("pengirim")}
-                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "jumlah" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
-                                                }`}
-                                        >
-                                            <span>Pengirim</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleSort("penerima")}
-                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "jumlah" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
-                                                }`}
-                                        >
-                                            <span>Penerima</span>
+                                            <span>Nama Dokumen</span>
                                         </button>
                                         <button
                                             onClick={() => handleSort("tanggal_surat")}
                                             className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "created_at" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
                                                 }`}
                                         >
-                                            <span>Tanggal Surat</span>
+                                            <span>Tanggal Dokumen</span>
                                         </button>
                                     </div>
                                 </div>
@@ -426,73 +379,66 @@ export default function Index({ arsipSurat, filters }: Props) {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">No.</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Judul Surat</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nomor Surat</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis Surat</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Pengirim</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Penerima</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nama Dokumen</th>
                                     <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tanggal Surat</th>
-                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">File</th>
+                                    <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Keterangan</th>
                                     <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     <th className="whitespace-nowrap px-6 py-3 text-center"></th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200 text-center">
-                                {arsipSurat.data.map((item: ArsipSurat, idx) => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 font-medium text-sm text-gray-900">
-                                            {(arsipSurat.current_page - 1) * arsipSurat.per_page + idx + 1}
-                                        </td>
-                                        <td className="px-6 py-4 font-medium text-sm text-gray-900 max-w-[200px] truncate">{item.judul_surat}</td>
-                                        <td className="px-6 py-4 font-medium text-sm text-gray-900">{item.nomor_surat}</td>
+                                {dokumen.data.length === 0 ? (
+                                    <tr>
                                         <td
-                                            className={`px-6 py-4 font-medium text-sm ${item.jenis === "m" ? "text-green-600" : "text-yellow-600"
-                                                }`}
+                                            colSpan={7}
+                                            className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center text-gray-500"
                                         >
-                                            {item.jenis === "m" ? "Masuk" : "Keluar"}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 font-medium text-sm text-gray-900">{item.pengirim || "-"}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 font-medium text-sm text-gray-900">{item.penerima || "-"}</td>
-                                        <td className="px-6 py-4 font-medium text-sm text-gray-900">{formatDate(item.tanggal_surat)}</td>
-                                        <td className="px-6 py-4 font-medium text-sm ">
-                                            {item.file_path ? (
-                                                <button
-                                                    onClick={() => setShowPrefiewModal(`/storage/${item.file_path}`)}
-                                                    rel="noopener noreferrer"
-                                                    className="hover:underline text-blue-600"
-                                                >
-                                                    Lihat File
-                                                </button>
-                                            ) : (
-                                                <span className="text-gray-600 italic whitespace-nowrap">Tidak Ada File</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 font-medium text-sm flex items-center justify-center gap-2">
-                                            <button
-                                                onClick={() => handleShow(item)}
-                                                className="text-gray-600 hover:text-blue-600"
-                                                title="Lihat Detail"
-                                            >
-                                                <FileText className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleEdit(item.id)}
-                                                className="text-blue-600 hover:text-blue-900"
-                                                title="Edit Surat"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(item.id)}
-                                                className="text-red-600 hover:text-red-900"
-                                                title="Hapus Surat"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
+                                            Tidak ada data dokumen
                                         </td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    dokumen.data.map((item: Dokumen, idx) => (
+                                        <tr key={item.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 font-medium text-sm text-gray-900">
+                                                {(dokumen.current_page - 1) * dokumen.per_page + idx + 1}
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-sm text-gray-900 max-w-[200px] truncate">
+                                                {item.nama}
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-sm text-gray-900">
+                                                {formatDate(item.tanggal_dokumen)}
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-sm text-gray-900 max-w-[200px] truncate">
+                                                {item.keterangan}
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-sm flex items-center justify-center gap-2">
+                                                <button
+                                                    onClick={() => handleShow(item)}
+                                                    className="text-gray-600 hover:text-blue-600"
+                                                    title="Lihat Detail"
+                                                >
+                                                    <FileText className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleEdit(item.id)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                    title="Edit Surat"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(item.id)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                    title="Hapus Surat"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
+
                         </table>
                     </div>
 
@@ -511,16 +457,16 @@ export default function Index({ arsipSurat, filters }: Props) {
                         </div>
                         <div className="flex items-center gap-4">
                             <span className="text-sm text-gray-700 whitespace-nowrap">
-                                {arsipSurat.from}-{arsipSurat.to} dari {arsipSurat.total}
+                                {dokumen.from}-{dokumen.to} dari {dokumen.total}
                             </span>
                             <div className="flex items-center gap-1">
                                 <button
                                     className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                    disabled={arsipSurat.current_page === 1}
+                                    disabled={dokumen.current_page === 1}
                                     onClick={() =>
                                         router.get(
-                                            "/arsip-surat",
-                                            { search, sort_by: sortBy, sort_direction: sortDirection, page: arsipSurat.current_page - 1, perPage },
+                                            "/dokumen",
+                                            { search, sort_by: sortBy, sort_direction: sortDirection, page: dokumen.current_page - 1, perPage },
                                             { preserveState: true }
                                         )
                                     }
@@ -529,11 +475,11 @@ export default function Index({ arsipSurat, filters }: Props) {
                                 </button>
                                 <button
                                     className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                    disabled={arsipSurat.current_page === arsipSurat.last_page}
+                                    disabled={dokumen.current_page === dokumen.last_page}
                                     onClick={() =>
                                         router.get(
-                                            "/arsip-surat",
-                                            { search, sort_by: sortBy, sort_direction: sortDirection, page: arsipSurat.current_page + 1, perPage },
+                                            "/dokumen",
+                                            { search, sort_by: sortBy, sort_direction: sortDirection, page: dokumen.current_page + 1, perPage },
                                             { preserveState: true }
                                         )
                                     }
@@ -545,17 +491,9 @@ export default function Index({ arsipSurat, filters }: Props) {
                     </div>
                 </div>
             </div>
-
-            {showPrefiewModal && (
-                <ModalPreviewFile
-                    showPreviewModal={showPrefiewModal}
-                    setShowPreviewModal={setShowPrefiewModal}
-                    file={showPrefiewModal}
-                />
-            )}
             {/* Modal Show Data */}
             {showModal && selectedData && (
-                <ModalDetailArsipSurat
+                <ModalDetailDokumen
                     isOpen={showModal}
                     onClose={() => setShowModal(false)}
                     data={selectedData}
