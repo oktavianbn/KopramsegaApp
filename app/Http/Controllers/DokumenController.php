@@ -94,15 +94,18 @@ class DokumenController extends Controller
         if ($request->hasFile('file')) {
             foreach ($request->file('file') as $uploadedFile) {
                 // nama asli file
-                $namaAsli = $uploadedFile->getClientOriginalName();
+                $namaFile = $uploadedFile->getClientOriginalName();
 
-                // nama hasil simpan (terenkripsi oleh Laravel)
-                $namaTersimpan = $uploadedFile->store('dokumen', 'public');
+                // simpan dengan nama asli (di folder 'dokumen' disk 'public')
+                $file = $uploadedFile->storeAs(
+                    'dokumen',       // folder tujuan
+                    $namaFile,       // nama file yang dipakai
+                    'public'         // disk
+                );
 
                 // simpan dalam array JSON
                 $files[] = [
-                    'nama_asli' => $namaAsli,
-                    'nama_tersimpan' => $namaTersimpan,
+                    $file
                 ];
             }
         }
@@ -130,17 +133,16 @@ class DokumenController extends Controller
     public function edit(Dokumen $dokumen)
     {
         return Inertia::render('Dokumen/Edit', [
+            'dokumen' => $dokumen,
             // dd($dokumen)
-            'dokumen' => $dokumen
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Dokumen $dokumen, $id)
+    public function update(Request $request, Dokumen $dokumen)
     {
-        $dokumen = Dokumen::findOrFail($id);
 
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
@@ -154,21 +156,25 @@ class DokumenController extends Controller
         if ($request->hasFile('file')) {
             foreach ($request->file('file') as $uploadedFile) {
                 // nama asli file
-                $namaAsli = $uploadedFile->getClientOriginalName();
+                $namaFile = $uploadedFile->getClientOriginalName();
 
-                // nama hasil simpan (terenkripsi oleh Laravel)
-                $namaTersimpan = $uploadedFile->store('dokumen', 'public');
+                // simpan dengan nama asli (di folder 'dokumen' disk 'public')
+                $file = $uploadedFile->storeAs(
+                    'dokumen',       // folder tujuan
+                    $namaFile,       // nama file yang dipakai
+                    'public'         // disk
+                );
 
                 // simpan dalam array JSON
                 $files[] = [
-                    'nama_asli' => $namaAsli,
-                    'nama_tersimpan' => $namaTersimpan,
+                    $file
                 ];
             }
         }
 
-        // Simpan array JSON ke kolom file
         $validated['file'] = $files;
+
+        $dokumen->update($validated);
 
         return redirect()->route('dokumen.index')->with('success', 'Data dokumen berhasil perbarui');
     }
@@ -178,6 +184,7 @@ class DokumenController extends Controller
      */
     public function destroy(Dokumen $dokumen)
     {
+        dd($dokumen);
         $dokumen->delete();
         return redirect()->route('dokumen.index')->with('success', 'Surat berhasil dihapus');
     }

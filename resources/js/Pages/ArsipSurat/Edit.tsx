@@ -1,8 +1,7 @@
 import AppLayout from "@/Layouts/AppLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
-import { table } from "console";
+import { Head, Link, router, useForm } from "@inertiajs/react";
 import { ArrowLeft, ArrowUpDown, Calendar, FileText, Hash, Paperclip, Pen, Save, User, Users } from "lucide-react";
-import { FormEventHandler, useEffect, useState } from "react";
+import { FormEventHandler, useEffect, useRef, useState } from "react";
 
 interface ArsipSurat {
     id: number;
@@ -21,7 +20,7 @@ interface Props {
 }
 
 export default function Edit({ arsipSurat }: Props) {
-    const { data, setData, processing, errors, put } = useForm<ArsipSurat>({
+    const { data, setData, processing, errors, put, post, transform } = useForm<ArsipSurat>({
         id: arsipSurat.id,
         judul_surat: arsipSurat.judul_surat,
         nomor_surat: arsipSurat.nomor_surat,
@@ -30,8 +29,11 @@ export default function Edit({ arsipSurat }: Props) {
         penerima: arsipSurat.penerima,
         tanggal_surat: arsipSurat.tanggal_surat,
         keterangan: arsipSurat.keterangan,
-        file_path: null,
+        file_path: arsipSurat.file_path || null,
     });
+
+    // State untuk tracking apakah user upload file baru
+    const [hasNewFile, setHasNewFile] = useState(false);
 
     // nomor_surat format (hanya untuk keluar)
     const [part1, setPart1] = useState("");
@@ -46,38 +48,92 @@ export default function Edit({ arsipSurat }: Props) {
     ];
     const nomorSuratKeluar = `${part1}.${part2}/${part3}/${part4}/${part5}`;
 
+    // Parse existing nomor_surat jika jenis = keluar
+    useEffect(() => {
+        if (arsipSurat.jenis === "k" && arsipSurat.nomor_surat) {
+            const parts = arsipSurat.nomor_surat.split(/[./]/);
+            if (parts.length === 5) {
+                setPart1(parts[0] || "");
+                setPart2(parts[1] || "");
+                setPart3(parts[2] || "KPSG");
+                setPart4(parts[3] || "");
+                setPart5(parts[4] || "");
+            }
+        }
+    }, [arsipSurat]);
+
+    // Update nomor_surat saat part berubah (untuk surat keluar)
+    useEffect(() => {
+        if (data.jenis === "k" && (part1 || part2 || part4 || part5)) {
+            setData("nomor_surat", `${part1}.${part2}/${part3}/${part4}/${part5}`);
+        }
+    }, [part1, part2, part3, part4, part5, data.jenis]);
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] || null
-        setData("file_path", file)
-    }
+        const file = e.target.files?.[0] || null;
+        setData("file_path", file);
+        setHasNewFile(!!file); // Track bahwa user upload file baru
+    };
 
     // kalau jenis = keluar, auto set pengirim
+    const firstLoad = useRef(true);
+
     useEffect(() => {
+        if (firstLoad.current) {
+            // biarkan data dari props tetap ada
+            firstLoad.current = false;
+            return;
+        }
+
+        // Reset semua field kecuali pengirim/penerima tergantung jenis
         if (data.jenis === "k") {
             setData("pengirim", "Dewan Ambalan Sambernyawa Dewi Sartika");
-            setData("penerima", data.penerima);
+            setData("penerima", "");
             setData("nomor_surat", "");
-            const parts = data.nomor_surat.split(/[./]/).filter(Boolean);
-
-            setPart1(parts[0] || "");
-            setPart2(parts[1] || "");
-            setPart3(parts[2] || "");
-            setPart4(parts[3] || "");
-            setPart5(parts[4] || "");
-
+            // Reset parts juga
+            setPart1("");
+            setPart2("");
+            setPart4("");
+            setPart5("");
         } else if (data.jenis === "m") {
             setData("penerima", "Dewan Ambalan Sambernyawa Dewi Sartika");
-            setData("pengirim", data.pengirim);
+            setData("pengirim", "");
+            setData("nomor_surat", "");
         }
     }, [data.jenis]);
-    const formData = new FormData();
-    if (data.file_path) {
-        formData.append("file_path", data.file_path);
-    }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(`/arsip-surat/${arsipSurat.id}`);
+
+        // Buat FormData untuk handle file upload
+        const formData = new FormData();
+
+        // Append semua field ke FormData
+        formData.append('_method', 'PUT'); // Laravel method spoofing
+        formData.append('id', data.id.toString());
+        formData.append('judul_surat', data.judul_surat);
+        formData.append('nomor_surat', data.nomor_surat);
+        formData.append('jenis', data.jenis);
+        formData.append('pengirim', data.pengirim);
+        formData.append('penerima', data.penerima);
+        formData.append('tanggal_surat', data.tanggal_surat);
+        formData.append('keterangan', data.keterangan);
+
+        // Handle file
+        if (hasNewFile && data.file_path instanceof File) {
+            formData.append('file_path', data.file_path);
+        } else if (!hasNewFile && typeof data.file_path === 'string') {
+            // Jika tidak ada file baru, kirim flag untuk keep existing file
+            formData.append('keep_existing_file', 'true');
+            formData.append('existing_file_path', data.file_path);
+        }
+
+        // Gunakan post dengan method spoofing karena PUT tidak support multipart/form-data dengan baik
+        router.post(`/arsip-surat/${arsipSurat.id}`, formData, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => console.log("Data berhasil diupdate"),
+        });
     };
 
     return (
@@ -94,8 +150,8 @@ export default function Edit({ arsipSurat }: Props) {
                             <ArrowLeft className="h-5 w-5 text-gray-500" />
                         </Link>
                         <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Arsip Surat</h1>
-                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip Surat / Tambah Data</h2>
+                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Surat</h1>
+                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip / Surat / Edit Data</h2>
                         </div>
                     </div>
                 </div>
@@ -289,27 +345,29 @@ export default function Edit({ arsipSurat }: Props) {
                                     <Paperclip className="h-4 w-4 text-gray-500" /> File Surat (opsional)
                                 </label>
 
-                                {/* Tampilkan file lama kalau ada */}
-                                {data?.file_path && (
+                                {/* Tampilkan file lama kalau ada dan belum ada file baru */}
+                                {!hasNewFile && data?.file_path && typeof data.file_path === "string" && (
                                     <div className="mb-2 flex items-center gap-2">
-                                        {typeof data.file_path === "string" ? (
-                                            // ✅ Jika dari database
-                                            <a
-                                                href={`/storage/${data.file_path}`}
-                                                target="_blank"
-                                                className="text-blue-600 underline text-sm"
-                                            >
-                                                {data.file_path.split("/").pop()}
-                                            </a>
-                                        ) : (
-                                            // ✅ Jika file baru diupload
-                                            <span className="text-gray-700 text-sm">
-                                                {data.file_path.name}
-                                            </span>
-                                        )}
+                                        <span className="text-sm text-gray-600">File saat ini: </span>
+                                        <a
+                                            href={`/storage/${data.file_path}`}
+                                            target="_blank"
+                                            className="text-blue-600 underline text-sm"
+                                        >
+                                            {data.file_path.split("/").pop()}
+                                        </a>
                                     </div>
                                 )}
 
+                                {/* Tampilkan nama file baru jika ada */}
+                                {hasNewFile && data.file_path instanceof File && (
+                                    <div className="mb-2 flex items-center gap-2">
+                                        <span className="text-sm text-green-600">File baru: </span>
+                                        <span className="text-gray-700 text-sm">
+                                            {data.file_path.name}
+                                        </span>
+                                    </div>
+                                )}
 
                                 <input
                                     type="file"
@@ -321,6 +379,9 @@ export default function Edit({ arsipSurat }: Props) {
 
                                 <p className="mt-1 text-xs text-gray-500">
                                     Format: PDF, JPG, PNG, DOC, DOCX — Maks. 2MB
+                                    {!hasNewFile && data?.file_path && typeof data.file_path === "string" &&
+                                        " (Pilih file baru untuk mengganti file yang ada)"
+                                    }
                                 </p>
 
                                 {errors.file_path && (
@@ -352,4 +413,3 @@ export default function Edit({ arsipSurat }: Props) {
         </AppLayout>
     );
 }
-

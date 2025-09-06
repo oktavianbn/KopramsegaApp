@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ArsipSurat;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -107,7 +108,6 @@ class ArsipSuratController extends Controller
             $validated['file_path'] = $uploadedFile->storeAs('arsip_surats', $namaFile, 'public');
         }
 
-
         ArsipSurat::create($validated);
 
         return redirect()->route('arsip-surat.index')->with('success', 'Data arsip surat berhasil ditambahkan');
@@ -126,7 +126,6 @@ class ArsipSuratController extends Controller
      */
     public function edit(ArsipSurat $arsipSurat)
     {
-        // dd($arsipSurat);
         return Inertia::render('ArsipSurat/Edit', [
             'arsipSurat' => $arsipSurat
         ]);
@@ -136,47 +135,45 @@ class ArsipSuratController extends Controller
      * Update the specified resource in storage.
      */
 
-public function update(Request $request, $id)
-{
-    $arsip = ArsipSurat::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $arsip = ArsipSurat::findOrFail($id);
+        $validated = $request->validate([
+            'judul_surat' => 'required|string|max:255',
+            'nomor_surat' => 'required|string|max:255|unique:arsip_surats,nomor_surat,' . $arsip->id,
+            'jenis' => 'required|in:m,k',
+            'pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
+            'tanggal_surat' => 'required|date',
+            'keterangan' => 'required|string',
+            'file_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx',
+        ]);
 
-    $validated = $request->validate([
-        'judul_surat' => 'required|string|max:255',
-        'nomor_surat' => 'required|string|max:255|unique:arsip_surats,nomor_surat,' . $arsip->id,
-        'jenis' => 'required|in:m,k',
-        'pengirim' => 'nullable|string|max:255',
-        'penerima' => 'nullable|string|max:255',
-        'tanggal_surat' => 'required|date',
-        'keterangan' => 'required|string',
-        'file_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx',
-    ]);
+        if ($request->hasFile('file_path')) {
+            // hapus file lama kalau ada
+            if ($arsip->file_path && Storage::disk('public')->exists($arsip->file_path)) {
+                Storage::disk('public')->delete($arsip->file_path);
+            }
 
-    if ($request->hasFile('file_path')) {
-        // hapus file lama kalau ada
-        if ($arsip->file_path && Storage::disk('public')->exists($arsip->file_path)) {
-            Storage::disk('public')->delete($arsip->file_path);
+            $uploadedFile = $request->file('file_path');
+            $namaFile = $uploadedFile->getClientOriginalName();
+
+            $validated['file_path'] = $uploadedFile->storeAs('arsip_surats', $namaFile, 'public');
+        } else {
+            unset($validated['file_path']); // ⬅ penting! agar file lama tidak dihapus
         }
 
-        $uploadedFile = $request->file('file_path');
-        $namaFile = $uploadedFile->getClientOriginalName();
+        $arsip->update($validated);
 
-        $validated['file_path'] = $uploadedFile->storeAs('arsip_surats', $namaFile, 'public');
-    } else {
-        unset($validated['file_path']); // ⬅ penting! agar file lama tidak dihapus
+        return redirect()->route('arsip-surat.index')
+            ->with('success', 'Data arsip surat berhasil diupdate');
     }
-
-    $arsip->update($validated);
-
-    return redirect()->route('arsip-surat.index')
-        ->with('success', 'Data arsip surat berhasil diupdate');
-}
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(ArsipSurat $arsipSurat)
     {
-        dd($arsipSurat);
         $arsipSurat->delete();
         return redirect()->route('arsip-surat.index')->with('success', 'Surat berhasil dihapus');
     }

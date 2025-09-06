@@ -21,17 +21,12 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-interface DokumenFile {
-    nama_asli: string;
-    nama_tersimpan: string;
-}
-
 interface Dokumen {
     id: number;
     nama: string;
     tanggal_dokumen: string;
     keterangan?: string;
-    file?: DokumenFile[]; // ubah jadi array of object
+    file?: string[];
     created_at: string;
     updated_at: string;
 }
@@ -142,7 +137,7 @@ export default function Index({ dokumen, filters }: Props) {
 
     /** 🔹 CRUD handlers */
     const handleEdit = (id: number) => router.visit(`/dokumen/${id}/edit`);
-    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus data ini?") && router.delete(`/arisp-surat/${id}`);
+    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus data ini?") && router.delete(`/dokumen/${id}`);
     const handleShow = (item: Dokumen) => { setSelectedData(item); setShowModal(true); };
 
     /** 🔹 utils */

@@ -3,12 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use HasFactory;
 
 class Dokumen extends Model
 {
-
-    protected $table = 'dokumens';
 
     protected $fillable = [
         'nama',

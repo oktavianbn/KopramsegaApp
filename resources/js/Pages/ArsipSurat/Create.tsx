@@ -1,7 +1,6 @@
-import ModalPreviewFile from "@/Components/ModalPrifiewFile";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { ArrowLeft, ArrowUpDown, Calendar, Eye, FileText, Hash, Paperclip, Pen, Save, User, Users } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Calendar, FileText, Hash, Paperclip, Pen, Save, User, Users } from "lucide-react";
 import { FormEventHandler, useEffect, useState } from "react";
 
 interface ArsipSurat {
@@ -65,11 +64,12 @@ export default function Create() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post("/arsip-surat", {
-            forceFormData: true,
-            preserveScroll: true,
-            onError: (err) => console.error("Validation Error:", err),
-        })
+        post("/arsip-surat",
+            // {
+            //     forceFormData: true,
+            //     preserveScroll: true,
+            // }
+        )
 
     };
 
@@ -87,8 +87,8 @@ export default function Create() {
                             <ArrowLeft className="h-5 w-5 text-gray-500" />
                         </Link>
                         <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Arsip Surat</h1>
-                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip Surat / Tambah Data</h2>
+                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap"> Surat</h1>
+                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip / Surat / Tambah Data</h2>
                         </div>
                     </div>
                 </div>

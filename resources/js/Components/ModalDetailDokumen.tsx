@@ -3,18 +3,16 @@
 import { cn } from "@/lib/utils"
 import { Calendar, Camera, Clock, Link as LinkIcon, List, SwitchCamera, X } from "lucide-react"
 import { useState } from "react"
+import ModalPreviewFile from "./ModalPrifiewFile";
 
-interface DokumenFile {
-    nama_asli: string;
-    nama_tersimpan: string;
-}
+
 
 interface ModalDetailDokumen {
     id: number;
     nama: string;
     tanggal_dokumen: string;
     keterangan?: string;
-    file?: DokumenFile[]; // ubah jadi array of object
+    file?: string[]; // ubah jadi array of object
     created_at: string;
     updated_at: string;
 }
@@ -28,7 +26,6 @@ interface ModalDetailDokumenProps {
 export function ModalDetailDokumen({ isOpen, onClose, data }: ModalDetailDokumenProps) {
     const [activeTab, setActiveTab] = useState<"info" | "file">("info")
     const [showPrefiewModal, setShowPrefiewModal] = useState<string | null>(null);
-
     const formatDateTime = (dateString: string) => {
         return new Date(dateString).toLocaleString("id-ID", {
             year: "numeric",
@@ -46,11 +43,6 @@ export function ModalDetailDokumen({ isOpen, onClose, data }: ModalDetailDokumen
             day: "numeric"
         })
     }
-
-    const removeFileExtension = (filename: string) => {
-        return filename.replace(/\.[^/.]+$/, "");
-    };
-
 
     if (!isOpen) return null
 
@@ -141,16 +133,14 @@ export function ModalDetailDokumen({ isOpen, onClose, data }: ModalDetailDokumen
                         <div className="space-y-4">
                             {data.file && data.file.length > 0 ? (
                                 <ol className="list-decimal pl-6 space-y-2">
-                                    {data.file.map((file, index) => (
+                                    {data.file.flat().map((file, index) => (
                                         <li key={index}>
                                             <button
-                                                onClick={() =>
-                                                    setShowPrefiewModal(`/storage/${file.nama_tersimpan}`)
-                                                }
+                                                onClick={() => setShowPrefiewModal(`/storage/${file}`)}
                                                 className="text-blue-600 hover:underline flex items-center gap-2 text-start md:whitespace-nowrap pr-6"
                                             >
                                                 <LinkIcon className="h-4 w-4" />
-                                                {file.nama_asli}
+                                                {file.split("/").pop() || file}
                                             </button>
                                         </li>
                                     ))}
@@ -161,7 +151,6 @@ export function ModalDetailDokumen({ isOpen, onClose, data }: ModalDetailDokumen
                                     <p className="text-gray-500">Tidak ada link dokumen tersedia</p>
                                 </div>
                             )}
-
                         </div>
                     )}
                 </div>
@@ -186,57 +175,11 @@ export function ModalDetailDokumen({ isOpen, onClose, data }: ModalDetailDokumen
             </div>
             {/* Prefiew Modal */}
             {showPrefiewModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-                    <div className="relative max-w-4xl max-h-[90vh] p-4 bg-white rounded-lg">
-                        <button
-                            onClick={() => setShowPrefiewModal(null)}
-                            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75"
-                        >
-                            ✕
-                        </button>
-
-                        {/* Cek tipe file */}
-                        {/\.(jpg|jpeg|png|gif)$/i.test(showPrefiewModal ?? "") ? (
-                            <img
-                                src={showPrefiewModal}
-                                alt="Preview"
-                                className="max-w-full max-h-[80vh] object-contain rounded-lg"
-                            />
-                        ) : /\.(pdf)$/i.test(showPrefiewModal ?? "") ? (
-                            <div className="overflow-x-scroll">
-                                <iframe
-                                    src={showPrefiewModal}
-                                    className="w-[80vw] h-[80vh] rounded-lg"
-                                />
-                            </div>
-                        ) : /\.(docx?|xlsx?)$/i.test(showPrefiewModal ?? "") ? (
-                            <div className="flex flex-col items-start gap-4 mr-10">
-                                {/* Buka di Tab Baru */}
-                                <a
-                                    href={removeFileExtension(showPrefiewModal)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 underline"
-                                >
-                                    Buka di Tab Baru
-                                </a>
-
-                                {/* Unduh dengan nama asli */}
-                                <a
-                                    href={showPrefiewModal}
-                                    download={data.file?.find(f => `/storage/${f.nama_tersimpan}` === showPrefiewModal)?.nama_asli || "dokumen"}
-                                    className="text-green-600 underline"
-                                >
-                                    Unduh
-                                </a>
-                            </div>
-
-                        ) : (
-                            <p className="text-gray-700">Format file tidak didukung</p>
-                        )}
-
-                    </div>
-                </div>
+                <ModalPreviewFile
+                    showPreviewModal={showPrefiewModal}
+                    setShowPreviewModal={setShowPrefiewModal}
+                    file={ data.file }
+                />
             )}
 
         </div>

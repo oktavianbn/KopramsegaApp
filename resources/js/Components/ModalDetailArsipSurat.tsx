@@ -1,6 +1,8 @@
 "use client"
 
-import { Calendar, Clock, FileText, FolderClosed, Hash, Mail, Tag, User, X } from "lucide-react";
+import { Calendar, Clock, FileText, Hash, Mail, Tag, User, X } from "lucide-react";
+import { useState } from "react";
+import ModalPreviewFile from "./ModalPrifiewFile";
 
 interface ModalDetailArsipSuratProps {
     isOpen: boolean;
@@ -41,6 +43,8 @@ export function ModalDetailArsipSurat({ isOpen, onClose, data }: ModalDetailArsi
         })
     }
 
+    const [showPrefiewModal, setShowPrefiewModal] = useState<string | null>(null);
+
     if (!isOpen) return null
 
     return (
@@ -52,7 +56,7 @@ export function ModalDetailArsipSurat({ isOpen, onClose, data }: ModalDetailArsi
                     <div className="flex items-center justify-between p-6 border-b border-gray-200">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-100 rounded-lg">
-                                <FolderClosed className="h-6 w-6 text-blue-600" />
+                                <Mail className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900">Detail Surat</h2>
@@ -124,15 +128,14 @@ export function ModalDetailArsipSurat({ isOpen, onClose, data }: ModalDetailArsi
                             <div>
                                 <label className="text-sm font-medium text-gray-700 mb-2 block">File Surat</label>
                                 {data.file_path ? (
-                                    <a
-                                        href={`/storage/${data.file_path}`}
-                                        target="_blank"
+                                    <button
+                                        onClick={() => setShowPrefiewModal(`/storage/${data.file_path}`)}
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                     >
                                         <FileText className="h-4 w-4" />
                                         Lihat File Surat
-                                    </a>
+                                    </button>
                                 ) : (
                                     <p className="text-gray-500 italic">Tidak ada file</p>
                                 )}
@@ -167,6 +170,13 @@ export function ModalDetailArsipSurat({ isOpen, onClose, data }: ModalDetailArsi
                     </div>
                 </div>
             </div>
+            {showPrefiewModal && (
+                <ModalPreviewFile
+                    showPreviewModal={showPrefiewModal}
+                    setShowPreviewModal={setShowPrefiewModal}
+                    file={showPrefiewModal}
+                />
+            )}
         </div>
     )
 }

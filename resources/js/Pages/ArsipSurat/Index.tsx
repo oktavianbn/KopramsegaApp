@@ -1,6 +1,7 @@
 "use client";
 
 import { ModalDetailArsipSurat } from "@/Components/ModalDetailArsipSurat";
+import ModalPreviewFile from "@/Components/ModalPrifiewFile";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import {
@@ -12,7 +13,7 @@ import {
     Edit,
     FileText,
     Filter,
-    FolderClosed,
+    Mail,
     Plus,
     Search,
     SortAsc, SortDesc,
@@ -64,6 +65,7 @@ export default function Index({ arsipSurat, filters }: Props) {
     const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [selectedData, setSelectedData] = useState<ArsipSurat | null>(null);
+    const [showPrefiewModal, setShowPrefiewModal] = useState<string | null>(null);
 
     const sortDropdownRef = useRef<HTMLDivElement>(null);
     const filterDropdownRef = useRef<HTMLDivElement>(null);
@@ -164,11 +166,11 @@ export default function Index({ arsipSurat, filters }: Props) {
                     <div className="grid gap-2 lg:flex items-center justify-between mb-6">
                         <div className="flex gap-6 items-center">
                             <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                <FolderClosed className="h-5 w-5 text-blue-600" />
+                                <Mail className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Arsip Surat</h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip Surat / Daftar</h2>
+                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Surat</h1>
+                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip / Surat / Daftar</h2>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -454,14 +456,13 @@ export default function Index({ arsipSurat, filters }: Props) {
                                         <td className="px-6 py-4 font-medium text-sm text-gray-900">{formatDate(item.tanggal_surat)}</td>
                                         <td className="px-6 py-4 font-medium text-sm ">
                                             {item.file_path ? (
-                                                <a
-                                                    href={`storage/${item.file_path}`}
-                                                    target="_blank"
+                                                <button
+                                                    onClick={() => setShowPrefiewModal(`/storage/${item.file_path}`)}
                                                     rel="noopener noreferrer"
                                                     className="hover:underline text-blue-600"
                                                 >
                                                     Lihat File
-                                                </a>
+                                                </button>
                                             ) : (
                                                 <span className="text-gray-600 italic whitespace-nowrap">Tidak Ada File</span>
                                             )}
@@ -544,6 +545,14 @@ export default function Index({ arsipSurat, filters }: Props) {
                     </div>
                 </div>
             </div>
+
+            {showPrefiewModal && (
+                <ModalPreviewFile
+                    showPreviewModal={showPrefiewModal}
+                    setShowPreviewModal={setShowPrefiewModal}
+                    file={showPrefiewModal}
+                />
+            )}
             {/* Modal Show Data */}
             {showModal && selectedData && (
                 <ModalDetailArsipSurat
