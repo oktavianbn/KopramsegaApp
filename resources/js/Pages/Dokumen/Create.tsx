@@ -137,11 +137,6 @@ export default function Create() {
                                                         {errors[`file.${index}`]}
                                                     </p>
                                                 )}
-                                                {doc && (
-                                                    <p className="mt-1 text-sm text-gray-600">
-                                                        File terpilih: {doc.name}
-                                                    </p>
-                                                )}
                                             </div>
                                             {data.file.length > 1 && (
                                                 <button
@@ -154,6 +149,9 @@ export default function Create() {
                                             )}
                                         </div>
                                     ))}
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Format: PDF, JPG, PNG, DOC, DOCX — Maks. 2MB
+                                    </p>
                                 </div>
 
                                 {errors.file && (

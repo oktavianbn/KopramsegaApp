@@ -304,7 +304,7 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                     placeholder="Cari rencana berdasarkan nama atau deskripsi"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-10 pr-4 py-2 w-80 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    className="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
                         </div>
