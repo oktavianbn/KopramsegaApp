@@ -85,7 +85,7 @@ export default function Edit({ rencana, roles }: Props) {
                                     onChange={(e) =>
                                         setData("nama_rencana", e.target.value)
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                         errors.nama_rencana
                                             ? "border-red-500"
                                             : "border-gray-300"
@@ -115,7 +115,7 @@ export default function Edit({ rencana, roles }: Props) {
                                         setData("deskripsi", e.target.value)
                                     }
                                     rows={4}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                         errors.deskripsi
                                             ? "border-red-500"
                                             : "border-gray-300"
@@ -151,7 +151,7 @@ export default function Edit({ rencana, roles }: Props) {
                                                 e.target.value
                                             )
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                             errors.tanggal_mulai
                                                 ? "border-red-500"
                                                 : "border-gray-300"
@@ -184,7 +184,7 @@ export default function Edit({ rencana, roles }: Props) {
                                             )
                                         }
                                         min={data.tanggal_mulai}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                             errors.tanggal_selesai
                                                 ? "border-red-500"
                                                 : "border-gray-300"
@@ -222,7 +222,7 @@ export default function Edit({ rencana, roles }: Props) {
                                                 e.target.value as Rencana["status"]
                                             )
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                             errors.status
                                                 ? "border-red-500"
                                                 : "border-gray-300"
@@ -259,7 +259,7 @@ export default function Edit({ rencana, roles }: Props) {
                                         onChange={(e) =>
                                             setData("role_id", Number(e.target.value))
                                         }
-                                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                             errors.role_id
                                                 ? "border-red-500"
                                                 : "border-gray-300"

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Dokumen;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class DokumenController extends Controller
@@ -97,16 +98,10 @@ class DokumenController extends Controller
                 $namaFile = $uploadedFile->getClientOriginalName();
 
                 // simpan dengan nama asli (di folder 'dokumen' disk 'public')
-                $file = $uploadedFile->storeAs(
-                    'dokumen',       // folder tujuan
-                    $namaFile,       // nama file yang dipakai
-                    'public'         // disk
-                );
+                $file = $uploadedFile->storeAs('dokumen', $namaFile, 'public');
 
                 // simpan dalam array JSON
-                $files[] = [
-                    $file
-                ];
+                $files[] = $file;
             }
         }
 
@@ -130,61 +125,86 @@ class DokumenController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Dokumen $dokumen)
+    public function edit(Dokumen $dokumen, $id)
     {
+        $dokumen = Dokumen::findOrFail($id);
+
         return Inertia::render('Dokumen/Edit', [
             'dokumen' => $dokumen,
-            // dd($dokumen)
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Dokumen $dokumen)
+    public function update(Request $request, Dokumen $dokumen,$id)
     {
-
+        $dokumen = Dokumen::findOrFail($id);
+        // dd($request->all(), $dokumen);
+        // dd($dokumen->file);
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'tanggal_dokumen' => 'required|date',
             'keterangan' => 'required|string',
-            'file' => 'nullable|array',
+            'existing_files' => 'nullable|array', // file lama yang tetap dipakai
+            'file' => 'nullable|array',           // file baru yang diupload
             'file.*' => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
+            'replace_keys' => 'nullable|array',   // index file lama yang diganti
         ]);
 
-        $files = [];
+        // Ambil file lama dari DB (array JSON)
+        $oldFiles = $dokumen->file ?? [];
+
+        // Step 1: mulai dengan file lama yang dipertahankan
+        $newFiles = $request->existing_files ?? [];
+
+        // Step 2: proses file baru
         if ($request->hasFile('file')) {
-            foreach ($request->file('file') as $uploadedFile) {
-                // nama asli file
+            foreach ($request->file('file') as $index => $uploadedFile) {
+                $replaceKey = $request->replace_keys[$index] ?? null;
+
+                // kalau ada index pengganti → hapus file lama dari storage
+                if ($replaceKey !== null && isset($oldFiles[$replaceKey])) {
+                    if (Storage::disk('public')->exists($oldFiles[$replaceKey])) {
+                        Storage::disk('public')->delete($oldFiles[$replaceKey]);
+                    }
+                }
+
+                // simpan file baru
                 $namaFile = $uploadedFile->getClientOriginalName();
+                $filePath = $uploadedFile->storeAs('dokumen', $namaFile, 'public');
 
-                // simpan dengan nama asli (di folder 'dokumen' disk 'public')
-                $file = $uploadedFile->storeAs(
-                    'dokumen',       // folder tujuan
-                    $namaFile,       // nama file yang dipakai
-                    'public'         // disk
-                );
-
-                // simpan dalam array JSON
-                $files[] = [
-                    $file
-                ];
+                // masukkan ke array
+                if ($replaceKey !== null) {
+                    // ganti posisi lama
+                    $newFiles[$replaceKey] = $filePath;
+                } else {
+                    // tambahkan baru
+                    $newFiles[] = $filePath;
+                }
             }
         }
 
-        $validated['file'] = $files;
+        // Step 3: rapikan index (0,1,2,...)
+        $newFiles = array_values($newFiles);
 
-        $dokumen->update($validated);
+        // Update DB
+        $dokumen->update([
+            'nama' => $validated['nama'],
+            'tanggal_dokumen' => $validated['tanggal_dokumen'],
+            'keterangan' => $validated['keterangan'],
+            'file' => $newFiles,
+        ]);
 
-        return redirect()->route('dokumen.index')->with('success', 'Data dokumen berhasil perbarui');
+        return redirect()->route('dokumen.index')->with('success', 'Dokumen berhasil diperbarui');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Dokumen $dokumen)
+    public function destroy(Dokumen $dokumen, $id)
     {
-        dd($dokumen);
+        $dokumen = Dokumen::findOrFail($id);
         $dokumen->delete();
         return redirect()->route('dokumen.index')->with('success', 'Surat berhasil dihapus');
     }

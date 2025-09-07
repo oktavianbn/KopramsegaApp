@@ -98,7 +98,7 @@ export default function Edit({ dokumentasi }: Props) {
                                     onChange={(e) =>
                                         setData("judul", e.target.value)
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.judul
+                                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.judul
                                             ? "border-red-500"
                                             : "border-gray-300"
                                         }`}
@@ -143,7 +143,7 @@ export default function Edit({ dokumentasi }: Props) {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`links.${index}`]
+                                                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`links.${index}`]
                                                             ? "border-red-500"
                                                             : "border-gray-300"
                                                         }`}
@@ -192,7 +192,7 @@ export default function Edit({ dokumentasi }: Props) {
                                     onChange={(e) =>
                                         setData("kameramen", e.target.value)
                                     }
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.kameramen
+                                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.kameramen
                                             ? "border-red-500"
                                             : "border-gray-300"
                                         }`}
@@ -216,7 +216,7 @@ export default function Edit({ dokumentasi }: Props) {
                                         setData("keterangan", e.target.value)
                                     }
                                     rows={4}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.keterangan
+                                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.keterangan
                                             ? "border-red-500"
                                             : "border-gray-300"
                                         }`}
