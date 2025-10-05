@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('transaksi_barang', function (Blueprint $table) {
             $table->id();
-            $table->enum('tipe',['t','k']);
-            $table->foreignId('barang_id')->nullable()->after('peminjaman_id')->constrained('barangs')->onDelete('set null');
-            $table->foreignId('spesifikasi_id')->nullable()->after('barang_id')->constrained('spesifikasis')->onDelete('set null');
-            $table->decimal('jumlah',10,2);
+
+            $table->enum('tipe', ['t', 'k']); // t = tambah, k = kurang
+            $table->foreignId('peminjaman_id')->nullable()->constrained('peminjamans')->onDelete('set null');
+            $table->foreignId('barang_id')->nullable()->constrained('barangs')->onDelete('set null');
+            $table->foreignId('spesifikasi_id')->nullable()->constrained('spesifikasis')->onDelete('set null');
+
+            $table->decimal('jumlah', 10, 2);
             $table->string('keterangan');
+
             $table->timestamps();
         });
     }
