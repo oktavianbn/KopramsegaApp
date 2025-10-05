@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Peminjaman;
 use App\Models\DetailPeminjaman;
-use App\Models\Stok;
+use App\Models\Spesifikasi;
 use App\Models\Barang;
 use App\Models\User;
+use App\Models\TransaksiBarang;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -20,7 +21,7 @@ class PeminjamanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Peminjaman::with(['pemberiUser', 'penerimaUser', 'detailPeminjaman.stok.barang', 'detailPeminjaman.stok.spesifikasi']);
+    $query = Peminjaman::with(['pemberiUser', 'penerimaUser', 'detailPeminjaman.barang', 'detailPeminjaman.spesifikasi']);
 
         $perPage = $request->input('perPage', 10);
         $sortBy = $request->input('sort_by', 'created_at');
@@ -94,24 +95,63 @@ class PeminjamanController extends Controller
      */
     public function create()
     {
-        // Get available barang yang boleh dipinjam dan ada stoknya
-        $availableStok = Stok::with(['barang', 'spesifikasi'])
-            ->whereHas('barang', function ($query) {
-                $query->where('boleh_dipinjam', true);
-            })
-            ->where('jumlah', '>', 0)
-            ->get()
-            ->map(function ($stok) {
-                return [
-                    'id' => $stok->id,
-                    'barang_id' => $stok->barang_id,
-                    'barang_nama' => $stok->barang->nama,
-                    'spesifikasi_id' => $stok->spesifikasi_id,
-                    'spesifikasi_key' => $stok->spesifikasi ? $stok->spesifikasi->key : 'Standar',
-                    'spesifikasi_value' => $stok->spesifikasi ? $stok->spesifikasi->value : 'Standar',
-                    'jumlah_tersedia' => $stok->jumlah,
+        // Build available stock from barangs that boleh_dipinjam and aggregate transaksi_barang
+        $availableStok = [];
+
+        $barangs = Barang::where('boleh_dipinjam', true)->get();
+
+        foreach ($barangs as $barang) {
+            // get spesifikasis for this barang (including a 'null' spesifikasi representing default)
+            $spesifikasis = $barang->spesifikasi()->get();
+
+            // include a null spesifikasi option when there are no spesifikasis
+            if ($spesifikasis->isEmpty()) {
+                $variants = [null];
+            } else {
+                $variants = $spesifikasis->pluck('id')->toArray();
+            }
+
+            // if we had spesifikasis, iterate them; otherwise treat as single default (null)
+            $variantIds = $variants === [null] ? [null] : $variants;
+
+            foreach ($variantIds as $spesifikasiId) {
+                $stokMasuk = TransaksiBarang::where('barang_id', $barang->id)
+                    ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
+                        $q->where('spesifikasi_id', $spesifikasiId);
+                    }, function ($q) {
+                        $q->whereNull('spesifikasi_id');
+                    })->where('tipe', 't')->sum('jumlah');
+
+                $stokKeluar = TransaksiBarang::where('barang_id', $barang->id)
+                    ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
+                        $q->where('spesifikasi_id', $spesifikasiId);
+                    }, function ($q) {
+                        $q->whereNull('spesifikasi_id');
+                    })->where('tipe', 'k')->sum('jumlah');
+
+                $jumlahAkhir = $stokMasuk - $stokKeluar;
+
+                if ($jumlahAkhir <= 0) continue;
+
+                // generate a deterministic numeric id for the frontend per barang+spesifikasi
+                $genId = intval($barang->id) * 1000000 + intval($spesifikasiId ?? 0);
+
+                $spesifikasiObj = $spesifikasiId ? Spesifikasi::find($spesifikasiId) : null;
+
+                $availableStok[] = [
+                    'id' => $genId,
+                    'barang_id' => $barang->id,
+                    'barang_nama' => $barang->nama,
+                    'spesifikasi_id' => $spesifikasiId,
+                    'spesifikasi_key' => $spesifikasiObj ? $spesifikasiObj->key : 'Standar',
+                    'spesifikasi_value' => $spesifikasiObj ? $spesifikasiObj->value : 'Standar',
+                    'jumlah_tersedia' => $jumlahAkhir,
                 ];
-            });
+            }
+        }
+
+        // reindex
+        $availableStok = array_values($availableStok);
 
         // Get users for pemberi and penerima
         $users = User::select('id', 'name')->get();
@@ -137,18 +177,40 @@ class PeminjamanController extends Controller
             'waktu_pinjam_mulai' => 'required|date|after_or_equal:today',
             'waktu_pinjam_selesai' => 'required|date|after:waktu_pinjam_mulai',
             'detail_peminjaman' => 'required|array|min:1',
-            'detail_peminjaman.*.stok_id' => 'required|exists:stoks,id',
+            'detail_peminjaman.*.barang_id' => 'required|exists:barangs,id',
+            'detail_peminjaman.*.spesifikasi_id' => 'nullable|exists:spesifikasis,id',
             'detail_peminjaman.*.jumlah' => 'required|integer|min:1',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Check stok availability for validation only (don't reduce stock yet)
+            // Check stok availability by aggregating transaksi_barang (don't reduce stock yet)
             foreach ($validated['detail_peminjaman'] as $detail) {
-                $stok = Stok::find($detail['stok_id']);
-                if ($stok->jumlah < $detail['jumlah']) {
-                    throw new \Exception("Stok tidak mencukupi untuk barang {$stok->barang->nama}");
+                $barangId = $detail['barang_id'];
+                $spesifikasiId = $detail['spesifikasi_id'] ?? null;
+
+                $stokMasuk = TransaksiBarang::where('barang_id', $barangId)
+                    ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
+                        $q->where('spesifikasi_id', $spesifikasiId);
+                    }, function ($q) {
+                        $q->whereNull('spesifikasi_id');
+                    })->where('tipe', 't')->sum('jumlah');
+
+                $stokKeluar = TransaksiBarang::where('barang_id', $barangId)
+                    ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
+                        $q->where('spesifikasi_id', $spesifikasiId);
+                    }, function ($q) {
+                        $q->whereNull('spesifikasi_id');
+                    })->where('tipe', 'k')->sum('jumlah');
+
+                $stokAkhir = $stokMasuk - $stokKeluar;
+
+                if ($stokAkhir < $detail['jumlah']) {
+                    // attempt to get barang name for error message
+                    $barang = Barang::find($barangId);
+                    $namaBarang = $barang ? $barang->nama : $barangId;
+                    throw new \Exception("Stok tidak mencukupi untuk barang {$namaBarang}");
                 }
             }
 
@@ -162,7 +224,8 @@ class PeminjamanController extends Controller
             foreach ($validated['detail_peminjaman'] as $detail) {
                 DetailPeminjaman::create([
                     'peminjaman_id' => $peminjaman->id,
-                    'stok_id' => $detail['stok_id'],
+                    'barang_id' => $detail['barang_id'],
+                    'spesifikasi_id' => $detail['spesifikasi_id'] ?? null,
                     'jumlah' => $detail['jumlah']
                 ]);
             }
@@ -184,8 +247,8 @@ public function show(Peminjaman $peminjaman)
     $peminjaman->load([
         'pemberiUser',
         'penerimaUser',
-        'detailPeminjaman.stok.barang',
-        'detailPeminjaman.stok.spesifikasi'
+        'detailPeminjaman.barang',
+        'detailPeminjaman.spesifikasi'
     ]);
 
     // Default
@@ -249,21 +312,49 @@ public function show(Peminjaman $peminjaman)
 
             $updateData = ['status' => $validated['status']];
 
-            if ($validated['status'] === 'disetujui') {
-                // Kurangi stok saat disetujui
-                foreach ($peminjaman->detailPeminjaman as $detail) {
-                    $stok = Stok::find($detail->stok_id);
-                    if ($stok->jumlah < $detail->jumlah) {
-                        throw new \Exception("Stok tidak mencukupi untuk barang {$stok->barang->nama}");
-                    }
-                    $stok->decrement('jumlah', $detail->jumlah);
-                }
-            }
+            // When status is 'disetujui' we only mark as approved; transaksi keluar will be recorded when admin marks 'sudah_ambil'
 
             if ($validated['status'] === 'sudah_ambil') {
                 // Upload foto barang diambil dan set admin pemberi
                 $updateData['foto_barang_diambil'] = $request->file('foto_barang_diambil')->store('peminjaman/barang_diambil', 'public');
                 $updateData['pemberi'] = $validated['pemberi'];
+
+                // At the moment items are taken, record transaksi keluar (k) for each detail after verifying stock
+                foreach ($peminjaman->detailPeminjaman as $detail) {
+                    $barangId = $detail->barang_id;
+                    $spesifikasiId = $detail->spesifikasi_id ?: null;
+
+                    // Hitung stok saat ini
+                    $stokMasuk = TransaksiBarang::where('barang_id', $barangId)
+                        ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
+                            $q->where('spesifikasi_id', $spesifikasiId);
+                        }, function ($q) {
+                            $q->whereNull('spesifikasi_id');
+                        })->where('tipe', 't')->sum('jumlah');
+
+                    $stokKeluar = TransaksiBarang::where('barang_id', $barangId)
+                        ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
+                            $q->where('spesifikasi_id', $spesifikasiId);
+                        }, function ($q) {
+                            $q->whereNull('spesifikasi_id');
+                        })->where('tipe', 'k')->sum('jumlah');
+
+                    $stokAkhir = $stokMasuk - $stokKeluar;
+
+                    if ($stokAkhir < $detail->jumlah) {
+                        $barang = Barang::find($barangId);
+                        $namaBarang = $barang ? $barang->nama : $barangId;
+                        throw new \Exception("Stok tidak mencukupi untuk barang {$namaBarang}");
+                    }
+
+                    TransaksiBarang::create([
+                        'tipe' => 'k',
+                        'barang_id' => $barangId,
+                        'spesifikasi_id' => $spesifikasiId,
+                        'jumlah' => $detail->jumlah,
+                        'keterangan' => ($peminjaman->jenis === 'sewa' ? 'Sewa' : 'Peminjaman'),
+                    ]);
+                }
             }
 
             if ($validated['status'] === 'sudah_kembali') {
@@ -277,7 +368,7 @@ public function show(Peminjaman $peminjaman)
                 // Upload foto barang kembali
                 $updateData['foto_barang_kembali'] = $request->file('foto_barang_kembali')->store('peminjaman/barang_kembali', 'public');
 
-                // Update detail peminjaman dengan jumlah yang kembali dan kembalikan ke stok
+                // Update detail peminjaman dengan jumlah yang kembali dan catat transaksi masuk (t)
                 foreach ($validated['detail_kembali'] as $detailKembali) {
                     $detailPeminjaman = DetailPeminjaman::find($detailKembali['id']);
 
@@ -286,18 +377,32 @@ public function show(Peminjaman $peminjaman)
                         'jumlah_kembali' => $detailKembali['jumlah_kembali']
                     ]);
 
-                    // Kembalikan stok sesuai jumlah yang kembali
-                    $stok = Stok::find($detailPeminjaman->stok_id);
-                    $stok->increment('jumlah', $detailKembali['jumlah_kembali']);
+                    $barangId = $detailPeminjaman->barang_id;
+                    $spesifikasiId = $detailPeminjaman->spesifikasi_id ?: null;
+
+                    TransaksiBarang::create([
+                        'tipe' => 't',
+                        'barang_id' => $barangId,
+                        'spesifikasi_id' => $spesifikasiId,
+                        'jumlah' => $detailKembali['jumlah_kembali'],
+                        'keterangan' => 'Pengembalian - ' . ($peminjaman->jenis === 'sewa' ? 'Sewa' : 'Peminjaman'),
+                    ]);
                 }
             }
 
             if ($validated['status'] === 'dibatalkan') {
                 // Return stok jika dibatalkan setelah disetujui
                 if ($peminjaman->status === 'disetujui' || $peminjaman->status === 'sudah_ambil') {
-                    foreach ($peminjaman->detailPeminjaman as $detail) {
-                        $stok = Stok::find($detail->stok_id);
-                        $stok->increment('jumlah', $detail->jumlah);
+                        foreach ($peminjaman->detailPeminjaman as $detail) {
+                        $barangId = $detail->barang_id;
+                        $spesifikasiId = $detail->spesifikasi_id ?: null;
+                        TransaksiBarang::create([
+                            'tipe' => 't',
+                            'barang_id' => $barangId,
+                            'spesifikasi_id' => $spesifikasiId,
+                            'jumlah' => $detail->jumlah,
+                            'keterangan' => 'Pembatalan - ' . ($peminjaman->jenis === 'sewa' ? 'Sewa' : 'Peminjaman'),
+                        ]);
                     }
                 }
             }
@@ -321,11 +426,26 @@ public function show(Peminjaman $peminjaman)
         try {
             DB::beginTransaction();
 
-            // Return stok if peminjaman is not completed
+            // Return stok if peminjaman is not completed: create transaksi masuk (t)
             if (!in_array($peminjaman->status, ['sudah_kembali', 'dibatalkan'])) {
                 foreach ($peminjaman->detailPeminjaman as $detail) {
-                    $stok = Stok::find($detail->stok_id);
-                    $stok->increment('jumlah', $detail->jumlah);
+                    // Prefer using barang_id/spesifikasi_id stored on detail_peminjamen.
+                    // Fall back to legacy stok relation only if those are not present.
+                    $barangId = $detail->barang_id ?? ($detail->stok ? $detail->stok->barang_id : null);
+                    $spesifikasiId = $detail->spesifikasi_id ?? ($detail->stok ? $detail->stok->spesifikasi_id : null);
+
+                    if (!$barangId) {
+                        // nothing we can return to transport-wise; skip
+                        continue;
+                    }
+
+                    TransaksiBarang::create([
+                        'tipe' => 't',
+                        'barang_id' => $barangId,
+                        'spesifikasi_id' => $spesifikasiId ?: null,
+                        'jumlah' => $detail->jumlah,
+                        'keterangan' => 'Pengembalian stok karena penghapusan peminjaman',
+                    ]);
                 }
             }
 

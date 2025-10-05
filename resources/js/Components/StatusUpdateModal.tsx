@@ -13,18 +13,16 @@ interface User {
 
 interface DetailPeminjaman {
     id: number;
-    stok_id: number;
     jumlah: number;
     jumlah_kembali?: number;
-    stok: {
-        barang: {
-            nama: string;
-        };
-        spesifikasi?: {
-            key: string;
-            value: string;
-        } | null;
-    };
+    // prefer new relations
+    barang?: {
+        nama: string;
+    } | null;
+    spesifikasi?: {
+        key: string;
+        value: string;
+    } | null;
 }
 
 interface Peminjaman {
@@ -51,14 +49,19 @@ interface StatusUpdateModalProps {
     peminjaman: Peminjaman;
     users: User[];
     onClose: () => void;
+    // optional preselected status when opening the modal (useful for quick actions)
+    initialStatus?: Peminjaman['status'] | null;
 }
 
 export default function StatusUpdateModal({
     peminjaman,
     users,
     onClose,
+    initialStatus = null,
 }: StatusUpdateModalProps) {
-    const [selectedStatus, setSelectedStatus] = useState(peminjaman.status);
+    const [selectedStatus, setSelectedStatus] = useState(
+        initialStatus || peminjaman.status
+    );
     const [selectedPemberi, setSelectedPemberi] = useState(
         peminjaman.pemberi_user?.id || ""
     );
@@ -111,6 +114,20 @@ export default function StatusUpdateModal({
             color: "text-red-600",
         },
     ];
+
+    // Determine allowed transitions from current status
+    const allowedNext = (() => {
+        switch (peminjaman.status) {
+            case 'pending':
+                return ['disetujui', 'dibatalkan'];
+            case 'disetujui':
+                return ['sudah_ambil', 'dibatalkan'];
+            case 'sudah_ambil':
+                return ['sudah_kembali'];
+            default:
+                return [];
+        }
+    })();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -242,6 +259,8 @@ export default function StatusUpdateModal({
                         <div className="space-y-2">
                             {statusOptions.map((option) => {
                                 const IconComponent = option.icon;
+                                // only allow selecting the current status or allowed next statuses
+                                const isAllowed = option.value === peminjaman.status || allowedNext.includes(option.value);
                                 return (
                                     <label
                                         key={option.value}
@@ -249,7 +268,8 @@ export default function StatusUpdateModal({
                                             selectedStatus === option.value
                                                 ? "border-blue-500 bg-blue-50"
                                                 : "border-gray-200 hover:border-gray-300"
-                                        }`}
+                                        } ${!isAllowed ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        aria-disabled={!isAllowed}
                                     >
                                         <input
                                             type="radio"
@@ -264,6 +284,7 @@ export default function StatusUpdateModal({
                                                 )
                                             }
                                             className="sr-only"
+                                            disabled={!isAllowed}
                                         />
                                         <IconComponent
                                             className={`w-5 h-5 mr-3 ${option.color}`}
@@ -378,25 +399,11 @@ export default function StatusUpdateModal({
                                             >
                                                 <div className="flex-1">
                                                     <p className="font-medium">
-                                                        {
-                                                            detail.stok.barang
-                                                                .nama
-                                                        }
+                                                        {detail.barang?.nama}
                                                     </p>
-                                                    {detail.stok
-                                                        .spesifikasi && (
+                                                    {detail.spesifikasi && (
                                                         <p className="text-sm text-gray-500">
-                                                            {
-                                                                detail.stok
-                                                                    .spesifikasi
-                                                                    .key
-                                                            }
-                                                            :{" "}
-                                                            {
-                                                                detail.stok
-                                                                    .spesifikasi
-                                                                    .value
-                                                            }
+                                                            {detail.spesifikasi.key}: {detail.spesifikasi.value}
                                                         </p>
                                                     )}
                                                     <p className="text-sm text-gray-600">

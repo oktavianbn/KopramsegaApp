@@ -1,5 +1,5 @@
 import AppLayout from "@/Layouts/AppLayout";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, router } from "@inertiajs/react";
 import { ArrowLeft, Loader, Package, Save, Settings } from "lucide-react";
 import { FormEventHandler } from "react";
 
@@ -18,34 +18,31 @@ interface Spesifikasi {
     description?: string | null;
 }
 
-interface Stok {
-    id: number;
-    barang_id: number;
-    spesifikasi_id?: number | null;
-    jumlah: number;
-    barang: Barang;
-    spesifikasi?: Spesifikasi | null;
-    created_at: string;
-    updated_at: string;
-}
-
 interface Props {
-    stok: Stok;
     barangs: Barang[];
     spesifikasis: Spesifikasi[];
+    stok: {
+        barang_id: number;
+        spesifikasi_id?: number | null;
+        jumlah: number;
+    };
 }
 
 interface FormData {
     barang_id: string;
     spesifikasi_id: string;
-    jumlah: string;
+    jumlah_sekarang: string;
+    keterangan: string;
 }
 
-export default function Edit({ stok, barangs, spesifikasis }: Props) {
-    const { data, setData, put, processing, errors } = useForm<FormData>({
-        barang_id: stok.barang_id.toString(),
-        spesifikasi_id: stok.spesifikasi_id?.toString() || "",
-        jumlah: stok.jumlah.toString(),
+export default function Edit({ barangs, spesifikasis, stok }: Props) {
+    // Note: the controller returns `stok` prop with current values.
+
+    const { data, setData, processing, errors } = useForm<FormData>({
+        barang_id: stok?.barang_id?.toString() ?? "",
+        spesifikasi_id: stok?.spesifikasi_id ? stok.spesifikasi_id.toString() : "",
+        jumlah_sekarang: stok?.jumlah?.toString() ?? "",
+        keterangan: '',
     });
 
     // Filter spesifikasi berdasarkan barang yang dipilih
@@ -62,9 +59,22 @@ export default function Edit({ stok, barangs, spesifikasis }: Props) {
         });
     };
 
+    const handleSpesifikasiChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setData({ ...data, spesifikasi_id: e.target.value });
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(`/stok/${stok.id}`);
+
+        // Use barang_id as route param (controller does not depend on the id value but resource route expects it)
+        const barangIdForRoute = data.barang_id || stok?.barang_id;
+
+        router.put(`/stok/${barangIdForRoute}`, {
+            barang_id: data.barang_id,
+            spesifikasi_id: data.spesifikasi_id || null,
+            jumlah_sekarang: data.jumlah_sekarang,
+            keterangan: data.keterangan,
+        });
     };
 
     return (
@@ -97,114 +107,61 @@ export default function Edit({ stok, barangs, spesifikasis }: Props) {
                 <div className="bg-white rounded-lg shadow p-6">
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
-                            {/* Barang */}
-                            <div className="max-md:col-span-2">
-                                <label
-                                    htmlFor="barang_id"
-                                    className="flex text-sm items-center gap-1 font-medium text-gray-700 mb-2"
-                                >
-                                    <Package className="w-4 h-4" />
-                                    Barang
-                                    <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    id="barang_id"
-                                    value={data.barang_id}
-                                    onChange={handleBarangChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                                        focus:outline-none focus:ring-2 focus:ring-blue-500
-                                        focus:border-transparent"
-                                    required
-                                >
-                                    <option value="" disabled>
-                                        Pilih Barang
-                                    </option>
-                                    {barangs.map((barang) => (
-                                        <option
-                                            key={barang.id}
-                                            value={barang.id}
-                                        >
-                                            {barang.nama}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.barang_id && (
-                                    <p className="mt-1 text-sm text-red-600">
-                                        {errors.barang_id}
-                                    </p>
-                                )}
-                            </div>
 
-                            {/* Spesifikasi (optional) */}
                             <div className="max-md:col-span-2">
                                 <label
-                                    htmlFor="spesifikasi_id"
-                                    className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2"
+                                    htmlFor="barang_nama"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
                                 >
-                                    <Settings className="w-4 h-4" />
-                                    Spesifikasi
-                                </label>
-                                <select
-                                    id="spesifikasi_id"
-                                    value={data.spesifikasi_id}
-                                    onChange={(e) =>
-                                        setData(
-                                            "spesifikasi_id",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                                        focus:outline-none focus:ring-2 focus:ring-blue-500
-                                        focus:border-transparent"
-                                    disabled={!data.barang_id}
-                                >
-                                    <option value="">
-                                        {!data.barang_id
-                                            ? "Pilih barang terlebih dahulu"
-                                            : "Tanpa spesifikasi"}
-                                    </option>
-                                    {filteredSpesifikasis.map((spec) => (
-                                        <option key={spec.id} value={spec.id}>
-                                            {spec.key}: {spec.value}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.spesifikasi_id && (
-                                    <p className="mt-1 text-sm text-red-600">
-                                        {errors.spesifikasi_id}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Jumlah */}
-                            <div className="max-md:col-span-2">
-                                <label
-                                    htmlFor="jumlah"
-                                    className="flex items-center gap-1 text-sm font-medium text-gray-700 mb-2"
-                                >
-                                    <Loader className="w-4 h-4" />
-                                    Jumlah Stok{" "}
-                                    <span className="text-red-500">*</span>
+                                    Barang <span className="text-red-500">*</span>
                                 </label>
                                 <input
-                                    type="number"
-                                    id="jumlah"
-                                    value={data.jumlah}
-                                    onChange={(e) =>
-                                        setData("jumlah", e.target.value)
-                                    }
-                                    placeholder="0"
-                                    min="0"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg
-                                        focus:outline-none focus:ring-2 focus:ring-blue-500
-                                        focus:border-transparent"
-                                    required
+                                    id="barang_nama"
+                                    type="text"
+                                    value={barangs.find((b) => b.id.toString() === data.barang_id)?.nama || ""}
+                                    disabled
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                                 />
-                                {errors.jumlah && (
-                                    <p className="mt-1 text-sm text-red-600">
-                                        {errors.jumlah}
-                                    </p>
-                                )}
+                            </div>
+
+                            <div className="max-md:col-span-2">
+                                <label
+                                    htmlFor="spesifikasi_nama"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
+                                >
+                                    Spesifikasi (opsional)
+                                </label>
+                                <input
+                                    id="spesifikasi_nama"
+                                    type="text"
+                                    value={
+                                        filteredSpesifikasis.find(
+                                            (s) => s.id.toString() === data.spesifikasi_id
+                                        )
+                                            ? `${filteredSpesifikasis.find(
+                                                (s) => s.id.toString() === data.spesifikasi_id
+                                            )?.key} - ${filteredSpesifikasis.find(
+                                                (s) => s.id.toString() === data.spesifikasi_id
+                                            )?.value
+                                            }`
+                                            : ""
+                                    }
+                                    disabled
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                                />
+                            </div>
+
+
+                            <div className="max-md:col-span-2">
+                                <label htmlFor="jumlah_sekarang" className=" items-center gap-1 text-sm font-medium text-gray-700 mb-2">
+                                    Jumlah Stok Saat Ini <span className="text-red-500">*</span>
+                                </label>
+                                <input type="number" id="jumlah_sekarang" value={data.jumlah_sekarang} onChange={(e) => setData('jumlah_sekarang', e.target.value)} placeholder="0" min="0" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required />
+                                {errors.jumlah_sekarang && (<p className="mt-1 text-sm text-red-600">{errors.jumlah_sekarang}</p>)}
+                            </div>
+                            <div className="max-md:col-span-2">
+                                <label htmlFor="keterangan" className=" items-center gap-1 text-sm font-medium text-gray-700 mb-2">Keterangan (opsional)</label>
+                                <input id="keterangan" value={data.keterangan} onChange={e => setData('keterangan', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                             </div>
                         </div>
 

@@ -10,7 +10,8 @@ class DetailPeminjaman extends Model
 
     protected $fillable = [
         'peminjaman_id',
-        'stok_id',
+        'barang_id',
+        'spesifikasi_id',
         'jumlah',
         'jumlah_kembali'
     ];
@@ -26,14 +27,26 @@ class DetailPeminjaman extends Model
         return $this->belongsTo(Stok::class);
     }
 
+    public function barang()
+    {
+        return $this->belongsTo(Barang::class);
+    }
+
+    public function spesifikasi()
+    {
+        return $this->belongsTo(Spesifikasi::class);
+    }
+
     // Helper method to get barang and spesifikasi through stok
     public function getBarangAttribute()
     {
+        if ($this->barang) return $this->barang;
         return $this->stok ? $this->stok->barang : null;
     }
 
     public function getSpesifikasiAttribute()
     {
+        if ($this->spesifikasi) return $this->spesifikasi;
         return $this->stok && $this->stok->spesifikasi ? $this->stok->spesifikasi : null;
     }
 }

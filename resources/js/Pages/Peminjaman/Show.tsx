@@ -22,22 +22,18 @@ import { useState } from "react";
 
 interface DetailPeminjaman {
     id: number;
-    stok_id: number;
     jumlah: number;
     jumlah_kembali?: number;
-    stok: {
+    barang?: {
         id: number;
-        barang: {
-            id: number;
-            nama: string;
-            foto?: string;
-        };
-        spesifikasi?: {
-            id: number;
-            key: string;
-            value: string;
-        } | null;
-    };
+        nama: string;
+        foto?: string;
+    } | null;
+    spesifikasi?: {
+        id: number;
+        key: string;
+        value: string;
+    } | null;
 }
 
 interface UserInterface {
@@ -86,7 +82,9 @@ interface Props {
 
 export default function Show({ peminjaman, users }: Props) {
     const [showImageModal, setShowImageModal] = useState<string | null>(null);
-    const [showStatusModal, setShowStatusModal] = useState(false);
+    const [showStatusModal, setShowStatusModal] = useState<
+        Peminjaman['status'] | boolean | null
+    >(false);
 
     const getStatusBadge = (status: string, tepatWaktu?: boolean) => {
         const statusConfig = {
@@ -183,13 +181,38 @@ export default function Show({ peminjaman, users }: Props) {
                     </div>
                     {peminjaman.status !== "sudah_kembali" &&
                         peminjaman.status !== "dibatalkan" && (
-                            <button
-                                onClick={openStatusModal}
-                                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                <Edit className="w-4 h-4" />
-                                Update Status
-                            </button>
+                            <div className="flex items-center gap-3">
+                                {/* Quick action: mark as taken (sudah_ambil) */}
+                                {peminjaman.status === 'disetujui' && (
+                                    <button
+                                        onClick={() => setShowStatusModal('sudah_ambil')}
+                                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                                    >
+                                        <Package className="w-4 h-4" />
+                                        Sudah Diambil
+                                    </button>
+                                )}
+
+                                {/* Quick action: mark as returned (sudah_kembali) */}
+                                {peminjaman.status === 'sudah_ambil' && (
+                                    <button
+                                        onClick={() => setShowStatusModal('sudah_kembali')}
+                                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                        <CheckCircle className="w-4 h-4" />
+                                        Sudah Kembali
+                                    </button>
+                                )}
+
+                                {/* Fallback: open modal for other transitions */}
+                                <button
+                                    onClick={() => setShowStatusModal(true)}
+                                    className="flex items-center gap-2 bg-gray-200 text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    Update Status
+                                </button>
+                            </div>
                         )}
                 </div>
                 <div className="flex gap-4 mb-6 border-b py-2">
@@ -387,20 +410,11 @@ export default function Show({ peminjaman, users }: Props) {
                                     >
                                         <div className="flex-1">
                                             <h4 className="font-medium text-gray-900">
-                                                {detail.stok.barang.nama}
+                                                {detail.barang?.nama}
                                             </h4>
-                                            {detail.stok.spesifikasi && (
+                                            {detail.spesifikasi && (
                                                 <p className="text-sm text-gray-600">
-                                                    {
-                                                        detail.stok
-                                                            .spesifikasi.key
-                                                    }
-                                                    :{" "}
-                                                    {
-                                                        detail.stok
-                                                            .spesifikasi
-                                                            .value
-                                                    }
+                                                    {detail.spesifikasi.key}: {detail.spesifikasi.value}
                                                 </p>
                                             )}
                                         </div>
@@ -501,6 +515,7 @@ export default function Show({ peminjaman, users }: Props) {
                         peminjaman={peminjaman}
                         users={users}
                         onClose={() => setShowStatusModal(false)}
+                        initialStatus={typeof showStatusModal === 'string' ? showStatusModal : null}
                     />
                 )}
             </div>

@@ -27,6 +27,8 @@ interface FormData {
     barang_id: string;
     spesifikasi_id: string;
     jumlah: string;
+    tipe: string;
+    keterangan?: string;
 }
 
 export default function Create({ barangs, spesifikasis }: Props) {
@@ -34,6 +36,8 @@ export default function Create({ barangs, spesifikasis }: Props) {
         barang_id: "",
         spesifikasi_id: "",
         jumlah: "",
+        tipe: "t",
+        keterangan: "",
     });
 
     // Filter spesifikasi berdasarkan barang yang dipilih

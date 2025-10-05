@@ -13,7 +13,6 @@ return new class extends Migration {
         Schema::create('detail_peminjamen', function (Blueprint $table) {
             $table->id();
             $table->foreignId('peminjaman_id')->constrained('peminjamen')->onDelete('cascade');
-            $table->foreignId('stok_id')->constrained('stoks')->onDelete('cascade');
             $table->integer('jumlah'); // jumlah yang dipinjam dari stok tersebut
             $table->integer('jumlah_kembali')->nullable(); // jumlah yang dikembalikan
             $table->timestamps();
