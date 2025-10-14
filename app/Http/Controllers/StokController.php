@@ -131,6 +131,7 @@ class StokController extends Controller
         $stokAkhir = $stokMasuk - $stokKeluar;
 
         $stokObj = (object) [
+            
             'barang_id' => $barang->id,
             'spesifikasi_id' => $spesifikasi?->id ?? null,
             'barang' => $barang,

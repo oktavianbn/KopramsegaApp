@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->enum('tipe', ['t', 'k']); // t = tambah, k = kurang
-            $table->foreignId('peminjaman_id')->nullable()->constrained('peminjamans')->onDelete('set null');
+            $table->foreignId('peminjaman_id')->nullable()->constrained('peminjamen')->onDelete('set null');
             $table->foreignId('barang_id')->nullable()->constrained('barangs')->onDelete('set null');
             $table->foreignId('spesifikasi_id')->nullable()->constrained('spesifikasis')->onDelete('set null');
 

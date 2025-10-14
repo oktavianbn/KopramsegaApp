@@ -11,6 +11,7 @@ class TransaksiBarang extends Model
         'tipe', // 't' (tambah/masuk), 'k' (keluar/kurang)
         'barang_id',
         'spesifikasi_id',
+        'peminjaman_id',
         'jumlah',
         'keterangan',
     ];

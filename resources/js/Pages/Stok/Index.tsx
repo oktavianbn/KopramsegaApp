@@ -19,6 +19,7 @@ import {
     Package,
     Warehouse,
     ArrowUpDown,
+    Eye,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -601,6 +602,18 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
                                                             </span>
                                                         </div>
                                                             <div className="flex gap-1 ml-2">
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleEdit(
+                                                                        stok.barang.id,
+                                                                        stok.spesifikasi?.id ?? null
+                                                                    )
+                                                                }
+                                                                className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                                                                title="Lihat"
+                                                            >
+                                                                <Eye className="h-3 w-3" />
+                                                            </button>
                                                             <button
                                                                 onClick={() =>
                                                                     handleEdit(

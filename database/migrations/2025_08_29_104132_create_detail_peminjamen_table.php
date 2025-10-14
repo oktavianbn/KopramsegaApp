@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->foreignId('peminjaman_id')->constrained('peminjamen')->onDelete('cascade');
             $table->integer('jumlah'); // jumlah yang dipinjam dari stok tersebut
             $table->integer('jumlah_kembali')->nullable(); // jumlah yang dikembalikan
+            $table->foreignId('barang_id')->nullable()->constrained('barangs')->onDelete('set null')->after('peminjaman_id');
+            $table->foreignId('spesifikasi_id')->nullable()->constrained('spesifikasis')->onDelete('set null')->after('barang_id');
             $table->timestamps();
         });
     }
