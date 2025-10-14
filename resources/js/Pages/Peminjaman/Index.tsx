@@ -29,6 +29,7 @@ import { useEffect, useRef, useState } from "react";
 interface DetailPeminjaman {
     id: number;
     jumlah: number;
+    jumlah_hilang?: number;
     barang?: {
         id: number;
         nama: string;

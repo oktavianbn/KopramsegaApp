@@ -351,6 +351,7 @@ public function show(Peminjaman $peminjaman)
                         'tipe' => 'k',
                         'barang_id' => $barangId,
                         'spesifikasi_id' => $spesifikasiId,
+                        'peminjaman_id' => $peminjaman->id,
                         'jumlah' => $detail->jumlah,
                         'keterangan' => ($peminjaman->jenis === 'sewa' ? 'Sewa' : 'Peminjaman'),
                     ]);
@@ -384,6 +385,7 @@ public function show(Peminjaman $peminjaman)
                         'tipe' => 't',
                         'barang_id' => $barangId,
                         'spesifikasi_id' => $spesifikasiId,
+                        'peminjaman_id' => $peminjaman->id,
                         'jumlah' => $detailKembali['jumlah_kembali'],
                         'keterangan' => 'Pengembalian - ' . ($peminjaman->jenis === 'sewa' ? 'Sewa' : 'Peminjaman'),
                     ]);

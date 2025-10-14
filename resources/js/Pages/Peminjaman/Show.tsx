@@ -24,6 +24,7 @@ interface DetailPeminjaman {
     id: number;
     jumlah: number;
     jumlah_kembali?: number;
+    jumlah_hilang?: number;
     barang?: {
         id: number;
         nama: string;
@@ -52,7 +53,7 @@ interface Peminjaman {
     waktu_pinjam_mulai: string;
     waktu_pinjam_selesai: string;
     waktu_kembali?: string;
-    total_hari_terlambat?:number;
+    total_hari_terlambat?: number;
     status:
     | "pending"
     | "disetujui"
@@ -155,6 +156,8 @@ export default function Show({ peminjaman, users }: Props) {
         (sum, detail) => sum + detail.jumlah,
         0
     );
+
+    const hilang = true
 
     return (
         <AppLayout>
@@ -405,26 +408,64 @@ export default function Show({ peminjaman, users }: Props) {
                             {peminjaman.detail_peminjaman.map(
                                 (detail, index) => (
                                     <div
-                                        key={index}
-                                        className="flex items-center justify-between p-4 border rounded-lg"
-                                    >
-                                        <div className="flex-1">
-                                            <h4 className="font-medium text-gray-900">
-                                                {detail.barang?.nama}
-                                            </h4>
-                                            {detail.spesifikasi && (
-                                                <p className="text-sm text-gray-600">
-                                                    {detail.spesifikasi.key}: {detail.spesifikasi.value}
+                                        className="flex w-full space-x-4"
+                                        key={index}>
+                                        <div
+                                            className="flex items-center justify-between p-4 border rounded-lg flex-1"
+                                        >
+                                            <div>
+                                                <h4 className="font-medium text-gray-900">
+                                                    {detail.barang?.nama}
+                                                </h4>
+                                                {detail.spesifikasi && (
+                                                    <p className="text-sm text-gray-600">
+                                                        {detail.spesifikasi.key}: {detail.spesifikasi.value}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-lg font-semibold text-gray-900">
+                                                    {detail.jumlah}
+                                                </span>
+                                                <p className="text-sm text-gray-500">
+                                                    Buah / Unit
                                                 </p>
-                                            )}
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <span className="text-lg font-semibold text-gray-900">
-                                                {detail.jumlah}
-                                            </span>
-                                            <p className="text-sm text-gray-500">
-                                                Buah / Unit
-                                            </p>
+                                        <div className="flex items-center justify-between p-4 border rounded-lg space-x-2">
+                                            <div className="text-end">
+                                                <p className="text-sm text-blue-500 font-normal mt-1 text-start">
+                                                    Kembali
+                                                </p>
+                                                <div className="flex space-x-2">
+                                                    <span className="text-lg font-semibold text-gray-900 ">
+                                                        {detail.jumlah}
+                                                    </span>
+                                                    <p className="text-sm text-gray-500 font-normal mt-1">
+                                                        Buah / Unit
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {detail.jumlah_hilang ? (
+                                                <div className="h-full flex space-x-2">
+                                                    <div className="bg-gray-500 h-full w-0.5 rounded-sm"></div>
+                                                    <div className="text-end">
+                                                        <p className="text-sm text-red-500 font-normal mt-1 text-start">
+                                                            Hilang
+                                                        </p>
+                                                        <div className="flex space-x-2">
+                                                            <span className="text-lg font-semibold text-gray-900 ">
+                                                                {detail.jumlah_hilang}
+                                                                {/* jumlah barang hilang */}
+                                                            </span>
+                                                            <p className="text-sm text-gray-500 font-normal mt-1">
+                                                                Buah / Unit
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ):(null)}
+
                                         </div>
                                     </div>
                                 )
