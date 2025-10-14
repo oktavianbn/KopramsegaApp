@@ -18,6 +18,8 @@ import {
     X,
     Package,
     Warehouse,
+    ArrowUpDown,
+    Eye,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -37,29 +39,23 @@ interface Spesifikasi {
     description?: string | null;
 }
 
-interface Stok {
-    id: number;
-    barang_id: number;
+interface StokItem {
+    id?: number;
+    barang_id?: number;
     spesifikasi_id?: number | null;
-    jumlah: number;
     barang: Barang;
     spesifikasi?: Spesifikasi | null;
-    created_at: string;
-    updated_at: string;
-}
-
-interface Props {
-    stoks: Stok[];
+    jumlah: number;
 }
 
 // Group stok by barang
 interface GroupedStok {
     barang: Barang;
-    stoks: Stok[];
+    stoks: StokItem[];
     totalStok: number;
 }
 
-export default function Index({ stoks }: Props) {
+export default function Index({ stoks }: { stoks: StokItem[] }) {
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState("nama");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -82,9 +78,9 @@ export default function Index({ stoks }: Props) {
     ];
 
     // Group stoks by barang
-    const groupedStoks = stoks.reduce((acc, stok) => {
+    const groupedStoks = stoks.reduce((acc: GroupedStok[], stok: StokItem) => {
         const existingGroup = acc.find(
-            (group) => group.barang.id === stok.barang.id
+            (group: GroupedStok) => group.barang.id === stok.barang.id
         );
         if (existingGroup) {
             existingGroup.stoks.push(stok);
@@ -100,31 +96,30 @@ export default function Index({ stoks }: Props) {
     }, [] as GroupedStok[]);
 
     // Filter and search logic
-    const filteredGroups = groupedStoks.filter((group) => {
+    const filteredGroups = groupedStoks.filter((group: GroupedStok) => {
         const matchesSearch = search
             ? group.barang.nama.toLowerCase().includes(search.toLowerCase()) ||
-            group.barang.deskripsi
-                ?.toLowerCase()
-                .includes(search.toLowerCase()) ||
-            group.stoks.some(
-                (stok) =>
-                    stok.spesifikasi?.key
-                        .toLowerCase()
-                        .includes(search.toLowerCase()) ||
-                    stok.spesifikasi?.value
-                        .toLowerCase()
-                        .includes(search.toLowerCase())
-            )
+              group.barang.deskripsi
+                  ?.toLowerCase()
+                  .includes(search.toLowerCase()) ||
+              group.stoks.some((stok: StokItem) =>
+                  stok.spesifikasi?.key
+                      .toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                  stok.spesifikasi?.value
+                      .toLowerCase()
+                      .includes(search.toLowerCase())
+              )
             : true;
 
         const matchesFilter = activeFilter
             ? activeFilter === "low" && group.totalStok < 10
                 ? true
                 : activeFilter === "out" && group.totalStok === 0
-                    ? true
-                    : activeFilter === "available" && group.totalStok > 0
-                        ? true
-                        : false
+                ? true
+                : activeFilter === "available" && group.totalStok > 0
+                ? true
+                : false
             : true;
 
         return matchesSearch && matchesFilter;
@@ -211,10 +206,14 @@ export default function Index({ stoks }: Props) {
     };
 
     /** CRUD handlers */
-    const handleEdit = (id: number) => router.visit(`/stok/${id}/edit`);
-    const handleDelete = (id: number) =>
+    const handleEdit = (barangId: number, spesifikasiId?: number | null) => {
+        const qs = spesifikasiId ? `?spesifikasi_id=${spesifikasiId}` : "";
+        router.visit(`/stok/${barangId}/edit${qs}`);
+    };
+
+    const handleDelete = (barangId: number, spesifikasiId?: number | null) =>
         confirm("Apakah Anda yakin ingin menghapus data ini?") &&
-        router.delete(`/stok/${id}`);
+        router.delete(`/stok`, { data: { barang_id: barangId, spesifikasi_id: spesifikasiId } });
 
     const clearFilters = () => {
         setSearch("");
@@ -226,13 +225,13 @@ export default function Index({ stoks }: Props) {
 
     // Counts for tabs
     const lowStockCount = groupedStoks.filter(
-        (group) => group.totalStok < 10
+        (group: GroupedStok) => group.totalStok < 10
     ).length;
     const outOfStockCount = groupedStoks.filter(
-        (group) => group.totalStok === 0
+        (group: GroupedStok) => group.totalStok === 0
     ).length;
     const availableCount = groupedStoks.filter(
-        (group) => group.totalStok > 0
+        (group: GroupedStok) => group.totalStok > 0
     ).length;
 
     return (
@@ -252,10 +251,10 @@ export default function Index({ stoks }: Props) {
                                 <div className="flex flex-col gap-2">
 
                                     <h1 className="text-2xl font-bold text-gray-700">
-                                        Barang
+                                        Stok
                                     </h1>
                                     <h2 className="text-base font-medium text-gray-700">
-                                        Inventory / Barang / Daftar
+                                        Inventory / Stok / Daftar
                                     </h2>
                                 </div>
                             </div>
@@ -301,13 +300,13 @@ export default function Index({ stoks }: Props) {
                                     </div>
                                 )}
                             </div>
-                            <Link
+                            {/* <Link
                                 href="/stok/create"
                                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
-                                <Plus className="h-4 w-4" />
-                                Tambah Data
-                            </Link>
+                                <ArrowUpDown className="h-4 w-4" />
+                                Penyesuaian Data
+                            </Link> */}
                         </div>
                     </div>
                 </div>
@@ -588,7 +587,7 @@ export default function Index({ stoks }: Props) {
                                             <div className="space-y-2 overflow-y-auto h-32">
                                                 {group.stoks.map((stok) => (
                                                     <div
-                                                        key={stok.id}
+                                                        key={`${stok.barang.id}-${stok.spesifikasi?.id ?? 'none'}`}
                                                         className="flex items-center justify-between p-2 bg-gray-50 rounded border"
                                                     >
                                                         <div className="flex-1 min-w-0">
@@ -602,11 +601,24 @@ export default function Index({ stoks }: Props) {
                                                                 {stok.jumlah}
                                                             </span>
                                                         </div>
-                                                        <div className="flex gap-1 ml-2">
+                                                            <div className="flex gap-1 ml-2">
                                                             <button
                                                                 onClick={() =>
                                                                     handleEdit(
-                                                                        stok.id
+                                                                        stok.barang.id,
+                                                                        stok.spesifikasi?.id ?? null
+                                                                    )
+                                                                }
+                                                                className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                                                                title="Lihat"
+                                                            >
+                                                                <Eye className="h-3 w-3" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleEdit(
+                                                                        stok.barang.id,
+                                                                        stok.spesifikasi?.id ?? null
                                                                     )
                                                                 }
                                                                 className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded transition-colors"
@@ -617,7 +629,8 @@ export default function Index({ stoks }: Props) {
                                                             <button
                                                                 onClick={() =>
                                                                     handleDelete(
-                                                                        stok.id
+                                                                        stok.barang.id,
+                                                                        stok.spesifikasi?.id ?? null
                                                                     )
                                                                 }
                                                                 className="p-1 text-red-600 hover:text-red-900 hover:bg-red-100 rounded transition-colors"

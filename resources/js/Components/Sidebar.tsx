@@ -3,20 +3,28 @@
 import { cn } from "@/lib/utils";
 import { usePage } from "@inertiajs/react";
 import {
+    CalendarDays,
+    CalendarRange,
     ChevronDown,
+    ClipboardCheck,
+    ConciergeBell,
     DollarSign,
     FileCheck,
     FolderClosed,
     Home,
     Layers,
+    ListChecks,
     LogOut,
     Mail,
     Package,
+    ReceiptText,
     SwitchCamera,
     TimerReset,
     User,
     UserCheck,
+    UserLock,
     Users,
+    UtensilsCrossed,
     Warehouse,
     X
 } from "lucide-react";
@@ -62,6 +70,28 @@ const menuItems = [
     },
     { icon: TimerReset, label: "Rencana", href: "/rencana" },
     { icon: SwitchCamera, label: "Dokumentasi", href: "/dokumentasi" },
+    {
+        icon: ReceiptText,
+        label: "Usaha Dana",
+        group: true,
+        children: [
+            { icon: CalendarRange, label: "Sesi Penjualan", href: "/sesi" },
+            { icon: UtensilsCrossed, label: "Menu", href: "/menu" },
+            { icon: ConciergeBell, label: "Transaksi", href: "/transaksi" },
+            { icon: UserLock, label: "Pelanggan", href: "/pelanggan" }
+
+        ]
+    },
+    {
+        icon: ClipboardCheck,
+        label: "Presensi",
+        group: true,
+        children: [
+            { icon: CalendarDays, label: "Hari", href: "/menu" },
+            { icon: Users, label: "Sangga", href: "/sesi" },
+            { icon: ListChecks, label: "Kehadiran", href: "/transaksi" },
+        ]
+    },
     // { icon: BarChart3, label: "Analytics", href: "/analytics" },
     // { icon: FileText, label: "Reports", href: "/reports" },
     // { icon: Settings, label: "Settings", href: "/settings" },
@@ -145,7 +175,13 @@ export function Sidebar({
                 </div>
 
                 {/* Navigation - Flex grow to push user section to bottom */}
-                <nav className="p-4 flex-1">
+                <nav
+                    className="p-4 flex-1 overflow-y-auto"
+                    style={{
+                        scrollbarWidth: "none",      // Firefox
+                        msOverflowStyle: "none",     // IE & Edge lama
+                    }}
+                >
                     <ul className="space-y-1">
                         {menuItems.map((item, index) => {
                             if (item.group && item.children) {

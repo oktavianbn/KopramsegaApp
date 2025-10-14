@@ -13,6 +13,10 @@ use App\Http\Controllers\DokumentasiController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\DokumenController;
 use App\Http\Controllers\PeminjamanController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\SesiController;
+use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\PelangganController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -37,11 +41,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('stok', StokController::class);
     Route::resource('peminjaman', PeminjamanController::class);
     Route::patch('peminjaman/{peminjaman}/status', [PeminjamanController::class, 'updateStatus'])->name('peminjaman.updateStatus');
+    Route::resource('menu', MenuController::class);
+    Route::resource('sesi', SesiController::class);
+    Route::patch('sesi/{sesi}/status', [SesiController::class, 'updateStatusSesi'])->name('sesi.updateStatusSesi');
+    Route::resource('transaksi', TransaksiController::class);
+    Route::resource('Pelanggan', PelangganController::class);
+
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::get('/test', function () {
+    return 'User route';
 });
 
 

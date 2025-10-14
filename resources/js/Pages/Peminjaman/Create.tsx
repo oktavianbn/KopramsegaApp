@@ -28,7 +28,8 @@ interface User {
 }
 
 interface DetailPeminjamanForm {
-    stok_id: number;
+    barang_id: number;
+    spesifikasi_id?: number | null;
     jumlah: number;
     barang_nama: string;
     spesifikasi_key: string;
@@ -57,17 +58,27 @@ export default function Create({ availableStok, users }: Props) {
         waktu_pinjam_mulai: "",
         waktu_pinjam_selesai: "",
         penerima: "",
-        detail_peminjaman: [] as { stok_id: number; jumlah: number }[],
+        detail_peminjaman: [] as { barang_id: number; spesifikasi_id?: number | null; jumlah: number }[],
     });
 
     const addItem = (stok: AvailableStok, jumlah: number) => {
-        // Check if item already exists
-        const existingIndex = detailPeminjaman.findIndex(
-            (item) => item.stok_id === stok.id
+        // Check if item already exists by barang+spesifikasi
+        const existingIndex = detailPeminjaman.findIndex((item) =>
+            item.barang_id === stok.barang_id &&
+            ((item.spesifikasi_id ?? null) === (stok.spesifikasi_id ?? null))
         );
 
+        const newItem = {
+            barang_id: stok.barang_id,
+            spesifikasi_id: stok.spesifikasi_id ?? null,
+            jumlah: Math.min(jumlah, stok.jumlah_tersedia),
+            barang_nama: stok.barang_nama,
+            spesifikasi_key: stok.spesifikasi_key,
+            spesifikasi_value: stok.spesifikasi_value,
+            jumlah_tersedia: stok.jumlah_tersedia,
+        };
+
         if (existingIndex >= 0) {
-            // Update existing item
             const updatedDetail = [...detailPeminjaman];
             updatedDetail[existingIndex].jumlah = Math.min(
                 updatedDetail[existingIndex].jumlah + jumlah,
@@ -75,18 +86,7 @@ export default function Create({ availableStok, users }: Props) {
             );
             setDetailPeminjaman(updatedDetail);
         } else {
-            // Add new item
-            setDetailPeminjaman([
-                ...detailPeminjaman,
-                {
-                    stok_id: stok.id,
-                    jumlah: Math.min(jumlah, stok.jumlah_tersedia),
-                    barang_nama: stok.barang_nama,
-                    spesifikasi_key: stok.spesifikasi_key,
-                    spesifikasi_value: stok.spesifikasi_value,
-                    jumlah_tersedia: stok.jumlah_tersedia,
-                },
-            ]);
+            setDetailPeminjaman([...detailPeminjaman, newItem]);
         }
 
         // Update form data
@@ -97,20 +97,14 @@ export default function Create({ availableStok, users }: Props) {
                 stok.jumlah_tersedia
             );
         } else {
-            formDetails.push({
-                stok_id: stok.id,
-                jumlah: Math.min(jumlah, stok.jumlah_tersedia),
-                barang_nama: stok.barang_nama,
-                spesifikasi_key: stok.spesifikasi_key,
-                spesifikasi_value: stok.spesifikasi_value,
-                jumlah_tersedia: stok.jumlah_tersedia,
-            });
+            formDetails.push(newItem);
         }
 
         setData(
             "detail_peminjaman",
             formDetails.map((item) => ({
-                stok_id: item.stok_id,
+                barang_id: item.barang_id,
+                spesifikasi_id: item.spesifikasi_id ?? null,
                 jumlah: item.jumlah,
             }))
         );
@@ -124,7 +118,8 @@ export default function Create({ availableStok, users }: Props) {
         setData(
             "detail_peminjaman",
             updatedDetail.map((item) => ({
-                stok_id: item.stok_id,
+                barang_id: item.barang_id,
+                spesifikasi_id: item.spesifikasi_id ?? null,
                 jumlah: item.jumlah,
             }))
         );
@@ -140,7 +135,8 @@ export default function Create({ availableStok, users }: Props) {
         setData(
             "detail_peminjaman",
             updatedDetail.map((item) => ({
-                stok_id: item.stok_id,
+                barang_id: item.barang_id,
+                spesifikasi_id: item.spesifikasi_id ?? null,
                 jumlah: item.jumlah,
             }))
         );
@@ -516,9 +512,15 @@ export default function Create({ availableStok, users }: Props) {
                         availableStok={availableStok}
                         onAdd={addItem}
                         onClose={() => setShowAddItemModal(false)}
-                        usedStokIds={detailPeminjaman.map(
-                            (item) => item.stok_id
-                        )}
+                        usedStokIds={availableStok
+                            .filter((stok) =>
+                                detailPeminjaman.some(
+                                    (d) =>
+                                        d.barang_id === stok.barang_id &&
+                                        ((d.spesifikasi_id ?? null) === (stok.spesifikasi_id ?? null))
+                                )
+                            )
+                            .map((s) => s.id)}
                     />
                 )}
             </div>
@@ -541,8 +543,16 @@ function AddItemModal({
     const [selectedStok, setSelectedStok] = useState<AvailableStok | null>(
         null
     );
-    const [jumlah, setJumlah] = useState(1);
+    const [jumlah, setJumlah] = useState<number | string>(1);
     const [search, setSearch] = useState("");
+
+    // reset state when modal closes
+    const handleClose = () => {
+        setSelectedStok(null);
+        setJumlah(1);
+        setSearch("");
+        onClose();
+    };
 
     const filteredStok = availableStok.filter(
         (stok) =>
@@ -551,9 +561,16 @@ function AddItemModal({
     );
 
     const handleAdd = () => {
-        if (selectedStok && jumlah > 0) {
-            onAdd(selectedStok, jumlah);
-        }
+        if (!selectedStok) return;
+
+        // allow empty input; coerce to number
+        let qty = typeof jumlah === 'string' && jumlah === '' ? 1 : Number(jumlah);
+        if (isNaN(qty) || qty <= 0) qty = 1;
+        const finalQty = Math.min(qty, selectedStok.jumlah_tersedia);
+        onAdd(selectedStok, finalQty);
+        // reset selection after add
+        setSelectedStok(null);
+        setJumlah(1);
     };
 
     return (
@@ -562,7 +579,7 @@ function AddItemModal({
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold">Tambah Barang</h3>
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="text-gray-500 hover:text-gray-700"
                     >
                         <X className="w-5 h-5" />
@@ -585,7 +602,9 @@ function AddItemModal({
                     {filteredStok.map((stok) => (
                         <div
                             key={stok.id}
-                            onClick={() => setSelectedStok(stok)}
+                            onClick={() => {
+                                if (!usedStokIds.includes(stok.id)) setSelectedStok(stok);
+                            }}
                             className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedStok?.id === stok.id
                                 ? "border-blue-500 bg-blue-50"
                                 : usedStokIds.includes(stok.id)
@@ -620,17 +639,22 @@ function AddItemModal({
                             min="1"
                             max={selectedStok.jumlah_tersedia}
                             value={jumlah}
-                            onChange={(e) =>
-                                setJumlah(
-                                    Math.max(
-                                        1,
-                                        Math.min(
-                                            parseInt(e.target.value) || 1,
-                                            selectedStok.jumlah_tersedia
-                                        )
-                                    )
-                                )
-                            }
+                            onChange={(e) => {
+                                const raw = e.target.value;
+                                if (raw === "") {
+                                    setJumlah("");
+                                    return;
+                                }
+                                const val = parseInt(raw);
+                                if (isNaN(val)) {
+                                    setJumlah("");
+                                    return;
+                                }
+                                setJumlah(Math.max(1, Math.min(val, selectedStok.jumlah_tersedia)));
+                            }}
+                            onBlur={() => {
+                                if (jumlah === "") setJumlah(1);
+                            }}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
@@ -639,7 +663,7 @@ function AddItemModal({
                 {/* Buttons */}
                 <div className="flex justify-end gap-2">
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                         Batal

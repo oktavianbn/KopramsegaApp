@@ -28,19 +28,16 @@ import { useEffect, useRef, useState } from "react";
 
 interface DetailPeminjaman {
     id: number;
-    stok_id: number;
     jumlah: number;
-    stok: {
-        barang: {
-            id: number;
-            nama: string;
-        };
-        spesifikasi?: {
-            id: number;
-            key: string;
-            value: string;
-        } | null;
-    };
+    barang?: {
+        id: number;
+        nama: string;
+    } | null;
+    spesifikasi?: {
+        id: number;
+        key: string;
+        value: string;
+    } | null;
 }
 
 interface User {
@@ -143,6 +140,30 @@ export default function Index({ peminjaman, filters, users }: Props) {
             { preserveState: true }
         );
     };
+
+    // On initial render, avoid polluting the URL with default query parameters.
+    // If the current filters are the defaults, replace the history state without adding the querystring.
+    useEffect(() => {
+        const defaults = {
+            search: "",
+            sort_by: "created_at",
+            sort_direction: "desc",
+            perPage: 10,
+        };
+
+        const areDefaults =
+            (filters.search || "") === defaults.search &&
+            (filters.sort_by || "created_at") === defaults.sort_by &&
+            (filters.sort_direction || "desc") === defaults.sort_direction &&
+            (peminjaman.per_page || 10) === defaults.perPage;
+
+        if (areDefaults) {
+            // Replace the current history entry with the route without query params
+            router.get('/peminjaman', {}, { preserveState: true, replace: true });
+        }
+        // run once on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // live search debounce
     useEffect(() => {
