@@ -109,10 +109,11 @@ export default function Create({ sesis, sesi_id }: MenuCreateProps) {
     const updateItem = (
         index: number,
         field: keyof MenuItem,
-        value: string
+        value: string | File | null
     ) => {
         const newItems = [...form.data.items];
-        newItems[index][field] = value;
+        // allow assigning different types (string for text fields, File for foto)
+        (newItems[index] as any)[field] = value;
         form.setData("items", newItems);
     };
 
@@ -450,6 +451,7 @@ export default function Create({ sesis, sesi_id }: MenuCreateProps) {
 
                                                         <input
                                                             id={`foto-${index}`}
+                                                            name={`items[${index}][foto]`}
                                                             type="file"
                                                             className="hidden"
                                                             accept="image/png,image/jpg,image/jpeg"
