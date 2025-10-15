@@ -129,7 +129,7 @@ export default function Edit({ barangs, spesifikasis, stok }: Props) {
                                     htmlFor="spesifikasi_nama"
                                     className="block text-sm font-medium text-gray-700 mb-2"
                                 >
-                                    Spesifikasi (opsional)
+                                    Spesifikasi
                                 </label>
                                 <input
                                     id="spesifikasi_nama"

@@ -456,7 +456,6 @@ export default function Show({ peminjaman, users }: Props) {
                                                         <div className="flex space-x-2">
                                                             <span className="text-lg font-semibold text-gray-900 ">
                                                                 {detail.jumlah_hilang}
-                                                                {/* jumlah barang hilang */}
                                                             </span>
                                                             <p className="text-sm text-gray-500 font-normal mt-1">
                                                                 Buah / Unit

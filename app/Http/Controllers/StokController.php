@@ -131,7 +131,6 @@ class StokController extends Controller
         $stokAkhir = $stokMasuk - $stokKeluar;
 
         $stokObj = (object) [
-            
             'barang_id' => $barang->id,
             'spesifikasi_id' => $spesifikasi?->id ?? null,
             'barang' => $barang,
@@ -298,4 +297,32 @@ class StokController extends Controller
     }
 
     // removed legacy destroy(Stok $stok) to keep system transaction-based
+
+    /**
+     * Return JSON list of transaksi for a given barang and optional spesifikasi.
+     * Used by the frontend to show transaksi history for a specific stok row.
+     */
+    public function transactions(Request $request, $barang_id)
+    {
+        $spesifikasi_id = $request->input('spesifikasi_id', null);
+        $barang = Barang::findOrFail($barang_id);
+
+        $query = TransaksiBarang::where('barang_id', $barang->id);
+
+        // If the request explicitly provided the spesifikasi_id parameter,
+        // filter accordingly. Accept the string 'null' or an actual null
+        // to mean spesifikasi IS NULL (i.e. barang without spesifikasi).
+        if ($request->has('spesifikasi_id')) {
+            if (is_null($spesifikasi_id) || $spesifikasi_id === 'null' || $spesifikasi_id === '') {
+                $query->whereNull('spesifikasi_id');
+            } else {
+                $query->where('spesifikasi_id', $spesifikasi_id);
+            }
+        }
+
+        $transactions = $query->orderBy('created_at', 'desc')
+            ->get(['id', 'tipe', 'peminjaman_id', 'jumlah', 'keterangan', 'created_at']);
+
+        return response()->json($transactions);
+    }
 }
