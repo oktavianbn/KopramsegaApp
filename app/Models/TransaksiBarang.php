@@ -25,4 +25,12 @@ class TransaksiBarang extends Model
     {
         return $this->belongsTo(Spesifikasi::class);
     }
+
+    public function peminjaman()
+    {
+        return $this->belongsTo(Peminjaman::class);
+    }
+
+    // ensure model has timestamps enabled (table uses timestamps)
+    public $timestamps = true;
 }

@@ -22,6 +22,7 @@ import {
     Eye,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ModalDaftarTransaksiBarang } from "@/Components/ModalDaftarTransaksiBarang";
 
 interface Barang {
     id: number;
@@ -55,6 +56,15 @@ interface GroupedStok {
     totalStok: number;
 }
 
+interface TransaksiItem {
+    id: number;
+    tipe: 't' | 'k';
+    peminjaman_id?: number | null;
+    jumlah: number;
+    keterangan: string;
+    created_at: string;
+}
+
 export default function Index({ stoks }: { stoks: StokItem[] }) {
     const [search, setSearch] = useState("");
     const [sortBy, setSortBy] = useState("nama");
@@ -65,6 +75,8 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
+    const [txModalOpen, setTxModalOpen] = useState(false);
+    const [txList, setTxList] = useState<TransaksiItem[]>([]);
 
     const sortDropdownRef = useRef<HTMLDivElement>(null);
     const filterDropdownRef = useRef<HTMLDivElement>(null);
@@ -76,6 +88,28 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
         { label: "PDF", href: "/export/pdf" },
         { label: "Word", href: "/export/word" },
     ];
+
+    // fetch transaksi for a given barang and optional spesifikasi, then show modal
+    const lihatTransactions = async (barangId: number, spesifikasiId?: number | null) => {
+        try {
+            let url = `/stok/${barangId}/transactions`;
+            if (spesifikasiId !== undefined) {
+                // send explicit param; if null, send 'null' so backend treats as IS NULL
+                const val = spesifikasiId === null ? 'null' : String(spesifikasiId);
+                url += `?spesifikasi_id=${encodeURIComponent(val)}`;
+            }
+
+            const res = await fetch(url, { headers: { Accept: 'application/json' } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            setTxList(data as TransaksiItem[]);
+            setTxModalOpen(true);
+        } catch (err) {
+            console.error('Gagal memuat transaksi:', err);
+            // Optionally, show a toast or alert
+            alert('Gagal memuat data transaksi.');
+        }
+    };
 
     // Group stoks by barang
     const groupedStoks = stoks.reduce((acc: GroupedStok[], stok: StokItem) => {
@@ -603,12 +637,7 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
                                                         </div>
                                                             <div className="flex gap-1 ml-2">
                                                             <button
-                                                                onClick={() =>
-                                                                    handleEdit(
-                                                                        stok.barang.id,
-                                                                        stok.spesifikasi?.id ?? null
-                                                                    )
-                                                                }
+                                                                onClick={() => lihatTransactions(stok.barang.id, stok.spesifikasi?.id ?? null)}
                                                                 className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
                                                                 title="Lihat"
                                                             >
@@ -689,6 +718,8 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
                         </div>
                     </div>
                 </div>
+                {/* Modal transaksi */}
+                <ModalDaftarTransaksiBarang isOpen={txModalOpen} onClose={() => setTxModalOpen(false)} transactions={txList} />
             </div>
         </AppLayout>
     );

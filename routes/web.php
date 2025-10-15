@@ -39,6 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('dokumentasi', DokumentasiController::class);
     Route::resource('barang', BarangController::class);
     Route::resource('stok', StokController::class);
+    // endpoint to fetch transaksi for a specific barang (optionally with spesifikasi_id)
+    Route::get('stok/{barang}/transactions', [StokController::class, 'transactions'])->name('stok.transactions');
     Route::resource('peminjaman', PeminjamanController::class);
     Route::patch('peminjaman/{peminjaman}/status', [PeminjamanController::class, 'updateStatus'])->name('peminjaman.updateStatus');
     Route::resource('menu', MenuController::class);
