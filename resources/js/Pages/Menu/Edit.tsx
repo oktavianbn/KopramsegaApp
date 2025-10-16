@@ -26,7 +26,10 @@ export default function Edit({ menu, sesis }: Props) {
         stok: menu.stok ?? "",
         foto: null as File | null,
         sesi_id: menu.sesi_id || "",
+        _method: "PATCH",
     });
+
+    const anyForm = form as any;
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(
         menu.foto ? `/storage/${menu.foto}` : null
@@ -34,30 +37,30 @@ export default function Edit({ menu, sesis }: Props) {
 
     useEffect(() => {
         if (menu.sesi_id) {
-            form.setData('sesi_id', String(menu.sesi_id));
+            form.setData((data) => ({ ...data, sesi_id: String(menu.sesi_id) } as any));
         }
     }, [menu]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        form.post(`/menu/${menu.id}`, {
+        // use form.put so Inertia sends proper PUT request with form data
+        anyForm.put(`/menu/${menu.id}`, {
             forceFormData: true,
             preserveState: true,
-            _method: 'PUT'
         });
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            form.setData('foto', file);
+            anyForm.setData('foto', file);
             const url = URL.createObjectURL(file);
             setPreviewUrl(url);
         }
     };
 
     const removePhoto = () => {
-        form.setData('foto', null);
+        anyForm.setData('foto', null);
         setPreviewUrl(menu.foto ? `/storage/${menu.foto}` : null);
         const fileInput = document.getElementById('foto') as HTMLInputElement;
         if (fileInput) {
@@ -85,7 +88,7 @@ export default function Edit({ menu, sesis }: Props) {
                                         Edit Menu
                                     </h1>
                                     <h2 className="text-base font-medium text-gray-700">
-                                        Penjualan / Menu / Edit / {menu.nama}
+                                        Penjualan / Menu / Edit
                                     </h2>
                                 </div>
                             </div>
@@ -107,15 +110,16 @@ export default function Edit({ menu, sesis }: Props) {
                                 </label>
                                 <select
                                     id="sesi_id"
-                                    value={form.data.sesi_id}
+                                        value={anyForm.data.sesi_id}
                                     onChange={(e) =>
-                                        form.setData("sesi_id", e.target.value)
+                                        anyForm.setData("sesi_id", e.target.value)
                                     }
                                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        form.errors.sesi_id
+                                        anyForm.errors.sesi_id
                                             ? "border-red-500"
                                             : "border-gray-300"
                                     }`}
+                                    disabled
                                 >
                                     <option value="">-- Pilih Sesi Penjualan --</option>
                                     {sesis.map((sesi) => (
@@ -124,9 +128,9 @@ export default function Edit({ menu, sesis }: Props) {
                                         </option>
                                     ))}
                                 </select>
-                                {form.errors.sesi_id && (
+                                {anyForm.errors.sesi_id && (
                                     <p className="mt-1 text-sm text-red-600">
-                                        {form.errors.sesi_id}
+                                        {anyForm.errors.sesi_id}
                                     </p>
                                 )}
                             </div>
@@ -148,20 +152,20 @@ export default function Edit({ menu, sesis }: Props) {
                                         <input
                                             type="text"
                                             id="nama"
-                                            value={form.data.nama}
+                                            value={anyForm.data.nama}
                                             onChange={(e) =>
-                                                form.setData("nama", e.target.value)
+                                                anyForm.setData("nama", e.target.value)
                                             }
                                             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                                form.errors.nama
+                                                anyForm.errors.nama
                                                     ? "border-red-500"
                                                     : "border-gray-300"
                                             }`}
                                             placeholder="Masukkan nama menu"
                                         />
-                                        {form.errors.nama && (
+                                        {anyForm.errors.nama && (
                                             <p className="mt-1 text-sm text-red-600">
-                                                {form.errors.nama}
+                                                {anyForm.errors.nama}
                                             </p>
                                         )}
                                     </div>
@@ -178,22 +182,22 @@ export default function Edit({ menu, sesis }: Props) {
                                         <input
                                             type="number"
                                             id="harga"
-                                            value={form.data.harga}
+                                            value={anyForm.data.harga}
                                             onChange={(e) =>
-                                                form.setData("harga", e.target.value)
+                                                anyForm.setData("harga", e.target.value)
                                             }
                                             step="0.01"
                                             min="0"
                                             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                                form.errors.harga
+                                                anyForm.errors.harga
                                                     ? "border-red-500"
                                                     : "border-gray-300"
                                             }`}
                                             placeholder="0.00"
                                         />
-                                        {form.errors.harga && (
+                                        {anyForm.errors.harga && (
                                             <p className="mt-1 text-sm text-red-600">
-                                                {form.errors.harga}
+                                                {anyForm.errors.harga}
                                             </p>
                                         )}
                                     </div>
@@ -210,21 +214,21 @@ export default function Edit({ menu, sesis }: Props) {
                                         <input
                                             type="number"
                                             id="stok"
-                                            value={form.data.stok}
+                                            value={anyForm.data.stok}
                                             onChange={(e) =>
-                                                form.setData("stok", e.target.value)
+                                                anyForm.setData("stok", e.target.value)
                                             }
                                             min="0"
                                             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                                form.errors.stok
+                                                anyForm.errors.stok
                                                     ? "border-red-500"
                                                     : "border-gray-300"
                                             }`}
                                             placeholder="0"
                                         />
-                                        {form.errors.stok && (
+                                        {anyForm.errors.stok && (
                                             <p className="mt-1 text-sm text-red-600">
-                                                {form.errors.stok}
+                                                {anyForm.errors.stok}
                                             </p>
                                         )}
                                     </div>
@@ -239,7 +243,7 @@ export default function Edit({ menu, sesis }: Props) {
 
                                     <div
                                         className={`border rounded-lg p-4 bg-white ${
-                                            form.errors.foto
+                                            anyForm.errors.foto
                                                 ? "border-red-500"
                                                 : "border-gray-300"
                                         }`}
@@ -253,7 +257,7 @@ export default function Edit({ menu, sesis }: Props) {
                                                             alt="Preview"
                                                             className="w-32 h-32 object-cover rounded-lg border border-gray-200"
                                                         />
-                                                        {form.data.foto && (
+                                                        {anyForm.data.foto && (
                                                             <button
                                                                 type="button"
                                                                 onClick={removePhoto}
@@ -265,15 +269,15 @@ export default function Edit({ menu, sesis }: Props) {
                                                     </div>
                                                     <div className="flex-1">
                                                         <p className="text-sm font-medium text-gray-900 mb-1">
-                                                            {form.data.foto
+                                                            {anyForm.data.foto
                                                                 ? "Foto baru dipilih"
                                                                 : "Foto saat ini"}
                                                         </p>
-                                                        {form.data.foto && (
+                                                        {anyForm.data.foto && (
                                                             <p className="text-xs text-gray-500 mb-2">
-                                                                {form.data.foto?.name} (
+                                                                {anyForm.data.foto?.name} (
                                                                 {Math.round(
-                                                                    (form.data.foto?.size || 0) / 1024
+                                                                    (anyForm.data.foto?.size || 0) / 1024
                                                                 )}{" "}
                                                                 KB)
                                                             </p>
@@ -283,7 +287,7 @@ export default function Edit({ menu, sesis }: Props) {
                                                             className="inline-flex items-center gap-2 px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors"
                                                         >
                                                             <Upload className="h-3 w-3" />
-                                                            {form.data.foto ? "Ganti Foto" : "Upload Foto Baru"}
+                                                            {anyForm.data.foto ? "Ganti Foto" : "Upload Foto Baru"}
                                                         </label>
                                                     </div>
                                                 </div>
@@ -312,6 +316,7 @@ export default function Edit({ menu, sesis }: Props) {
 
                                         <input
                                             id="foto"
+                                            name="foto"
                                             type="file"
                                             className="hidden"
                                             accept="image/png,image/jpg,image/jpeg"
@@ -319,9 +324,9 @@ export default function Edit({ menu, sesis }: Props) {
                                         />
                                     </div>
 
-                                    {form.errors.foto && (
+                                    {anyForm.errors.foto && (
                                         <p className="mt-2 text-sm text-red-600">
-                                            {form.errors.foto}
+                                            {anyForm.errors.foto}
                                         </p>
                                     )}
                                     <p className="mt-2 text-xs text-gray-500">
@@ -341,11 +346,11 @@ export default function Edit({ menu, sesis }: Props) {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={form.processing}
+                                    disabled={anyForm.processing}
                                     className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <Save className="h-4 w-4" />
-                                    {form.processing ? "Menyimpan..." : "Simpan Perubahan"}
+                                    {anyForm.processing ? "Menyimpan..." : "Simpan Perubahan"}
                                 </button>
                             </div>
                         </form>
