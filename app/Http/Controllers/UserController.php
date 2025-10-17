@@ -18,7 +18,7 @@ class UserController extends Controller
         $query = User::query();
 
         $perPage = $request->input('perPage', 10);
-        $sortBy = $request->input('sort_by', 'created_at');
+        $sortBy = $request->input('sort_by', default: 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
         $search = $request->input('search', '');
         $filter = $request->input('filter', null);

@@ -43,8 +43,9 @@ export default function Edit({ menu, sesis }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // use form.put so Inertia sends proper PUT request with form data
-        anyForm.put(`/menu/${menu.id}`, {
+        // Some servers (and Inertia) handle multipart more reliably when using POST with _method override
+        // ensure _method is present (useForm initialized it) and send as FormData
+        anyForm.post(`/menu/${menu.id}`, {
             forceFormData: true,
             preserveState: true,
         });

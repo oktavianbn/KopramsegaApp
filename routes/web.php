@@ -47,7 +47,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sesi', SesiController::class);
     Route::patch('sesi/{sesi}/status', [SesiController::class, 'updateStatusSesi'])->name('sesi.updateStatusSesi');
     Route::resource('transaksi', TransaksiController::class);
-    Route::resource('Pelanggan', PelangganController::class);
+    Route::resource('pelanggan', PelangganController::class);
+
+
+    // Pelanggan web routes (read, change status, delete)
+    Route::get('/pelanggan', [App\Http\Controllers\PelangganController::class, 'index'])->name('pelanggan.index');
+    Route::patch('/pelanggan/{pelanggan}/status', [App\Http\Controllers\PelangganController::class, 'updateStatus'])->name('pelanggan.updateStatus');
+    Route::delete('/pelanggan/{pelanggan}', [App\Http\Controllers\PelangganController::class, 'destroy'])->name('pelanggan.destroy');
+    
+
 
 });
 Route::middleware('auth')->group(function () {
