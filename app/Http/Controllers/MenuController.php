@@ -138,7 +138,7 @@ class MenuController extends Controller
 
     public function update(Request $request, Menu $menu)
     {
-        dd($request->all());
+        // Handle update request (expect form-data with optional _method override)
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'harga' => 'nullable|numeric',
