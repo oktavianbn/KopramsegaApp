@@ -439,14 +439,17 @@ export default function Show({ peminjaman, users }: Props) {
                                                 </p>
                                                 <div className="flex space-x-2">
                                                     <span className="text-lg font-semibold text-gray-900 ">
-                                                        {detail.jumlah}
+                                                        {/* show jumlah_kembali only when peminjaman is returned, otherwise show 0 or dash */}
+                                                        {peminjaman.status === 'sudah_kembali' ? (detail.jumlah_kembali ?? 0) : '-'}
                                                     </span>
                                                     <p className="text-sm text-gray-500 font-normal mt-1">
                                                         Buah / Unit
                                                     </p>
                                                 </div>
                                             </div>
-                                            {detail.jumlah_hilang ? (
+
+                                            {/* show hilang only when peminjaman is returned and jumlah_hilang > 0 */}
+                                            {(peminjaman.status === 'sudah_kembali' && detail.jumlah_hilang && detail.jumlah_hilang > 0) ? (
                                                 <div className="h-full flex space-x-2">
                                                     <div className="bg-gray-500 h-full w-0.5 rounded-sm"></div>
                                                     <div className="text-end">
@@ -463,7 +466,7 @@ export default function Show({ peminjaman, users }: Props) {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            ):(null)}
+                                            ) : null}
 
                                         </div>
                                     </div>

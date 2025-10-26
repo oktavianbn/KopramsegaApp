@@ -59,35 +59,39 @@ class DetailPeminjaman extends Model
      */
     public function getJumlahHilangAttribute()
     {
-        // Get peminjaman_id
-        $peminjamanId = $this->peminjaman_id;
-        $barangId = $this->barang_id;
-        $spesifikasiId = $this->spesifikasi_id;
+        // Only calculate 'hilang' after the peminjaman has been marked returned.
+        // If peminjaman not loaded, try to load it to check status.
+        if (! $this->relationLoaded('peminjaman')) {
+            $this->load('peminjaman');
+        }
 
-        // Get sum of keluar for this detail's barang+spesifikasi in this peminjaman
-        $jumlahKeluar = \App\Models\TransaksiBarang::where('peminjaman_id', $peminjamanId)
-            ->where('barang_id', $barangId)
-            ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
-                $q->where('spesifikasi_id', $spesifikasiId);
-            }, function ($q) {
-                $q->whereNull('spesifikasi_id');
-            })
-            ->where('tipe', 'k')
-            ->sum('jumlah');
+        // If the peminjaman hasn't been completed (returned), don't show any hilang.
+        if (! $this->peminjaman || $this->peminjaman->status !== 'sudah_kembali') {
+            return 0;
+        }
 
-        // Get sum of masuk (returns) for this detail's barang+spesifikasi in this peminjaman
-        $jumlahMasuk = \App\Models\TransaksiBarang::where('peminjaman_id', $peminjamanId)
-            ->where('barang_id', $barangId)
-            ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
-                $q->where('spesifikasi_id', $spesifikasiId);
-            }, function ($q) {
-                $q->whereNull('spesifikasi_id');
-            })
-            ->where('tipe', 't')
-            ->sum('jumlah');
+        // Prefer the stored jumlah_kembali on the detail record, if available.
+        $jumlahDipinjam = $this->jumlah ?? 0;
+        $jumlahKembali = $this->jumlah_kembali;
 
-        // Hilang = keluar - masuk
-        $hilang = $jumlahKeluar - $jumlahMasuk;
+        if (is_null($jumlahKembali)) {
+            // Fallback: sum transaksi masuk (t) for this peminjaman+item
+            $peminjamanId = $this->peminjaman_id;
+            $barangId = $this->barang_id;
+            $spesifikasiId = $this->spesifikasi_id;
+
+            $jumlahKembali = TransaksiBarang::where('peminjaman_id', $peminjamanId)
+                ->where('barang_id', $barangId)
+                ->when($spesifikasiId, function ($q) use ($spesifikasiId) {
+                    $q->where('spesifikasi_id', $spesifikasiId);
+                }, function ($q) {
+                    $q->whereNull('spesifikasi_id');
+                })
+                ->where('tipe', 't')
+                ->sum('jumlah');
+        }
+
+        $hilang = $jumlahDipinjam - ($jumlahKembali ?? 0);
         return $hilang < 0 ? 0 : $hilang;
     }
 }
