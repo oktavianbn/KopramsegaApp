@@ -33,7 +33,7 @@ interface user {
     id: number;
     name: string;
     email: string;
-    role: Role;
+    role?: Role | null;
     created_at: string;
     updated_at: string;
 }
@@ -654,7 +654,7 @@ export default function Index({ users, filters, roles }: Props) {
                                                 {item.email}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                {item.role.name ?? "Tidak ada"}
+                                                {item.role?.name ?? "Tidak ada"}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                                 {formatDate(item.created_at)}

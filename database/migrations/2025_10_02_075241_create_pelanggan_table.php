@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('no_hp')->unique();
-            $table->string('password')->nullable();
+            // $table->string('password')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

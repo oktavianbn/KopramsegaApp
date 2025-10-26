@@ -26,68 +26,55 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-interface DetailPeminjaman {
-    id: number;
-    jumlah: number;
-    jumlah_hilang?: number;
-    barang?: {
-        id: number;
-        nama: string;
-    } | null;
-    spesifikasi?: {
-        id: number;
-        key: string;
-        value: string;
-    } | null;
-}
-
-interface User {
+interface Pelanggan {
     id: number;
     name: string;
+    no_hp: string;
 }
 
-interface Peminjaman {
+interface SesiPenjualan {
     id: number;
-    nama_peminjam: string;
-    alamat: string;
-    no_telp: string;
-    asal: string;
-    foto_identitas: string;
-    jenis: "pinjam" | "sewa";
-    waktu_pinjam_mulai: string;
-    waktu_pinjam_selesai: string;
-    waktu_kembali?: string;
+    name: string;
+    status: boolean;
+}
+
+interface DetailItem {
+    id: number;
+    jumlah: number;
+    harga_satuan?: number;
+    barang?: { nama?: string } | null;
+}
+
+// Transaksi model interface matching transaksi_usdan table
+interface Transaksi {
+    id: number;
+    alamat?: string;
+    diantar: boolean;
+    tujuan?: string;
+    sesi_penjualan_id?: number | null;
+    pelanggan?: { id: number; name: string; no_hp?: string } | null;
     status:
-    | "pending"
-    | "disetujui"
+    | "verifikasi"
+    | "proses"
+    | "sudah_siap"
     | "sudah_ambil"
-    | "sudah_kembali"
     | "dibatalkan";
-    tepat_waktu?: boolean;
-    foto_barang_diambil: string;
-    foto_barang_kembali?: string;
-    pemberi_user?: {
-        id: number;
-        name: string;
-    };
-    penerima_user?: {
-        id: number;
-        name: string;
-    };
-    detail_peminjaman: DetailPeminjaman[];
+    total_harga?: number;
+    catatan?: string | null;
+    detail?: DetailItem[];
     created_at: string;
     updated_at: string;
 }
 
 interface Props {
-    peminjaman: {
-        data: Peminjaman[];
+    transaksi: {
+        data: Transaksi[];
         current_page: number;
         last_page: number;
         per_page: number;
         total: number;
-        from: number;
-        to: number;
+        from: number | null;
+        to: number | null;
     };
     filters: {
         search?: string;
@@ -95,16 +82,20 @@ interface Props {
         sort_direction?: "asc" | "desc";
         filter?: string;
     };
-    users: User[];
+    users: Pelanggan[];
 }
 
-export default function Index({ peminjaman, filters, users }: Props) {
+export default function Index({ transaksi, filters, users }: Props) {
+    // compatibility alias: existing UI code uses `peminjaman` variable names
+    // keep `peminjaman` to avoid rewriting every template reference immediately
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const peminjaman = transaksi as any;
     const [search, setSearch] = useState(filters.search || "");
     const [sortBy, setSortBy] = useState(filters.sort_by || "created_at");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
         filters.sort_direction || "desc"
     );
-    const [perPage, setPerPage] = useState(peminjaman.per_page || 10);
+    const [perPage, setPerPage] = useState(transaksi.per_page || 10);
     const [activeFilter, setActiveFilter] = useState<string | null>(
         filters.filter || null
     );
@@ -113,7 +104,7 @@ export default function Index({ peminjaman, filters, users }: Props) {
     const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [selectedPeminjaman, setSelectedPeminjaman] =
-        useState<Peminjaman | null>(null);
+        useState<Transaksi | null>(null);
 
     const sortDropdownRef = useRef<HTMLDivElement>(null);
     const filterDropdownRef = useRef<HTMLDivElement>(null);
@@ -129,7 +120,7 @@ export default function Index({ peminjaman, filters, users }: Props) {
     /** 🔹 utilitas untuk request dengan parameter konsisten */
     const updateQuery = (extra: Record<string, any> = {}) => {
         router.get(
-            "/peminjaman",
+            "/transaksi",
             {
                 search,
                 sort_by: sortBy,
@@ -156,11 +147,11 @@ export default function Index({ peminjaman, filters, users }: Props) {
             (filters.search || "") === defaults.search &&
             (filters.sort_by || "created_at") === defaults.sort_by &&
             (filters.sort_direction || "desc") === defaults.sort_direction &&
-            (peminjaman.per_page || 10) === defaults.perPage;
+            (transaksi.per_page || 10) === defaults.perPage;
 
         if (areDefaults) {
             // Replace the current history entry with the route without query params
-            router.get('/peminjaman', {}, { preserveState: true, replace: true });
+            router.get('/transaksi', {}, { preserveState: true, replace: true });
         }
         // run once on mount
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -250,49 +241,22 @@ export default function Index({ peminjaman, filters, users }: Props) {
     };
 
     const getStatusBadge = (status: string, tepatWaktu?: boolean) => {
-        const statusConfig = {
-            pending: {
-                color: "bg-yellow-100 text-yellow-800",
-                icon: Clock,
-                text: "Pending",
-            },
-            disetujui: {
-                color: "bg-blue-100 text-blue-800",
-                icon: CheckCircle,
-                text: "Disetujui",
-            },
-            sudah_ambil: {
-                color: "bg-green-100 text-green-800",
-                icon: Package,
-                text: "Sudah Diambil",
-            },
-            sudah_kembali: {
-                color:
-                    tepatWaktu === false
-                        ? "bg-red-100 text-red-800"
-                        : "bg-green-100 text-green-800",
-                icon: CheckCircle,
-                text:
-                    tepatWaktu === false
-                        ? "Kembali Terlambat"
-                        : "Sudah Kembali",
-            },
-            dibatalkan: {
-                color: "bg-red-100 text-red-800",
-                icon: XCircle,
-                text: "Dibatalkan",
-            },
+        const statusConfig: Record<string, { color: string; icon: any; text: string }> = {
+            verifikasi: { color: "bg-yellow-100 text-yellow-800", icon: Clock, text: "Verifikasi" },
+            proses: { color: "bg-blue-100 text-blue-800", icon: CheckCircle, text: "Proses" },
+            sudah_siap: { color: "bg-indigo-100 text-indigo-800", icon: CheckCircle, text: "Sudah Siap" },
+            sudah_ambil: { color: "bg-green-100 text-green-800", icon: Package, text: "Sudah Diambil" },
+            dibatalkan: { color: "bg-red-100 text-red-800", icon: XCircle, text: "Dibatalkan" },
         };
 
-        const config = statusConfig[status as keyof typeof statusConfig];
-        const IconComponent = config.icon;
+        const fallback = { color: "bg-gray-100 text-gray-800", icon: Clock, text: "Unknown" };
+        const cfg = statusConfig[status] || fallback;
+        const IconComponent = cfg.icon || Clock;
 
         return (
-            <span
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${config.color}`}
-            >
+            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${cfg.color}`}>
                 <IconComponent className="w-3 h-3" />
-                {config.text}
+                {cfg.text}
             </span>
         );
     };
@@ -309,21 +273,28 @@ export default function Index({ peminjaman, filters, users }: Props) {
             </span>
         );
     };
+    const getDiantarBadge = (diantar?: boolean) => {
+        return (
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${diantar ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}`}>
+                {diantar ? "Diantar" : "Ambil"}
+            </span>
+        );
+    };
 
     const handleDelete = (id: number) => {
-        if (confirm("Apakah Anda yakin ingin menghapus data peminjaman ini?")) {
-            router.delete(`/peminjaman/${id}`);
+        if (confirm("Apakah Anda yakin ingin menghapus data transaksi ini?")) {
+            router.delete(`/transaksi/${id}`);
         }
     };
 
-    const openStatusModal = (peminjamanData: Peminjaman) => {
-        setSelectedPeminjaman(peminjamanData);
+    const openStatusModal = (transaksiData: Transaksi) => {
+        setSelectedPeminjaman(transaksiData);
         setShowStatusModal(true);
     };
 
     return (
         <AppLayout>
-            <Head title="Data Peminjaman" />
+            <Head title="Data Transaksi" />
 
             <div className="p-6">
                 {/* Header */}
@@ -334,10 +305,10 @@ export default function Index({ peminjaman, filters, users }: Props) {
                         </div>
                         <div className="flex flex-col gap-2">
                             <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
-                                Data Peminjaman
+                                Data Transaksi
                             </h1>
                             <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                Inventory / Peminjaman/ Daftar
+                                Inventory / Transaksi / Daftar
                             </h2>
                         </div>
                     </div>
@@ -383,13 +354,6 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                 </div>
                             )}
                         </div>
-                        <Link
-                            href="/peminjaman/create"
-                            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Tambah Peminjaman
-                        </Link>
                     </div>
                 </div>
                 <div className="flex gap-4 mb-6 border-b">
@@ -402,31 +366,31 @@ export default function Index({ peminjaman, filters, users }: Props) {
                     >
                         Seluruh Data{" "}
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 ro unded-full">
-                            {peminjaman.total}
+                            {transaksi.total}
                         </span>
                     </button>
                     <button
-                        onClick={() => handleTab("pinjam")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "pinjam"
+                        onClick={() => handleTab("diantar")}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "diantar"
                             ? "border-blue-700 text-blue-800"
                             : "border-transparent text-gray-500 hover:text-gray-700"
                             }`}
                     >
-                        Peminjaman{" "}
+                        Diantar
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                            {peminjaman.data.filter((d) => d.jenis === "pinjam").length}
+                            {transaksi.data.filter((d: Transaksi) => d.diantar).length}
                         </span>
                     </button>
                     <button
-                        onClick={() => handleTab("sewa")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "sewa"
+                        onClick={() => handleTab("ambil")}
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "ambil"
                             ? "border-purple-700 text-purple-800"
                             : "border-transparent text-gray-500 hover:text-gray-700"
                             }`}
                     >
-                        Penyewaan{" "}
+                        Ambil
                         <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                            {peminjaman.data.filter((d) => d.jenis === "sewa").length}
+                            {transaksi.data.filter((d: Transaksi) => !d.diantar).length}
                         </span>
                     </button>
                 </div>
@@ -446,14 +410,14 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                 )}
                                 {activeFilter && (
                                     <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                                        {activeFilter === "pending"
-                                            ? "Menunggu Persetujuan"
-                                            : activeFilter === "disetujui"
-                                                ? "Disetujui"
-                                                : activeFilter === "sudah_ambil"
-                                                    ? "Sudah Diambil"
-                                                    : activeFilter === "sudah_kembali"
-                                                        ? "Sudah Kembali"
+                                        {activeFilter === "verifikasi"
+                                            ? "Menunggu Verifikasi"
+                                            : activeFilter === "proses"
+                                                ? "Proses"
+                                                : activeFilter === "sudah_siap"
+                                                    ? "Sudah Siap"
+                                                    : activeFilter === "sudah_ambil"
+                                                        ? "Sudah Diambil"
                                                         : activeFilter === "dibatalkan"
                                                             ? "Dibatalkan"
                                                             : activeFilter === "pinjam"
@@ -531,16 +495,16 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                                     label: "Tanggal Dibuat",
                                                 },
                                                 {
-                                                    value: "nama_peminjam",
-                                                    label: "Nama Peminjam",
+                                                    value: "nama",
+                                                    label: "Nama",
                                                 },
                                                 {
-                                                    value: "waktu_pinjam_mulai",
-                                                    label: "Waktu Mulai",
+                                                    value: "created_at",
+                                                    label: "Waktu Dibuat",
                                                 },
                                                 {
-                                                    value: "waktu_pinjam_selesai",
-                                                    label: "Waktu Selesai",
+                                                    value: "updated_at",
+                                                    label: "Waktu Terakhir",
                                                 },
                                                 {
                                                     value: "status",
@@ -599,20 +563,20 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                             </button>
                                             {[
                                                 {
-                                                    value: "pending",
-                                                    label: "Pending",
+                                                    value: "verifikasi",
+                                                    label: "Menunggu Verifikasi",
                                                 },
                                                 {
-                                                    value: "disetujui",
-                                                    label: "Disetujui",
+                                                    value: "proses",
+                                                    label: "Proses",
+                                                },
+                                                {
+                                                    value: "sudah_siap",
+                                                    label: "Sudah Siap",
                                                 },
                                                 {
                                                     value: "sudah_ambil",
                                                     label: "Sudah Diambil",
-                                                },
-                                                {
-                                                    value: "sudah_kembali",
-                                                    label: "Sudah Kembali",
                                                 },
                                                 {
                                                     value: "dibatalkan",
@@ -655,8 +619,6 @@ export default function Index({ peminjaman, filters, users }: Props) {
                     </div>
                 </div>
 
-
-
                 {/* Table */}
                 <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
                     <div className="overflow-x-auto">
@@ -667,19 +629,19 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                         No.
                                     </th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Peminjam
+                                        Pembeli
                                     </th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Jenis & Status
+                                        No Telephone
                                     </th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Waktu Pinjam
+                                        Pengiriman
                                     </th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Admin
+                                        Status
                                     </th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total Barang
+                                        Pembelian/Total Harga
                                     </th>
                                     <th className="px-6 py-3 text-center  text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Aksi
@@ -687,7 +649,7 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {peminjaman.data.map((item, idx) => (
+                                {peminjaman.data.map((item: Transaksi, idx: number) => (
                                     <tr
                                         key={item.id}
                                         className="hover:bg-gray-50"
@@ -701,116 +663,55 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div>
                                                 <div className="text-sm font-medium text-gray-900">
-                                                    {item.nama_peminjam}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {item.asal}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {item.no_telp}
+                                                    {item.pelanggan?.name || "-"}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className=" gap-2 flex items-center">
-                                                {getJenisBadge(item.jenis)}
-                                                {getStatusBadge(
-                                                    item.status,
-                                                    item.tepat_waktu
-                                                )}
-                                            </div>
+                                            {item.pelanggan?.no_hp || "-"}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
-                                                <div>
-                                                    {new Date(
-                                                        item.waktu_pinjam_mulai
-                                                    ).toLocaleDateString(
-                                                        "id-ID"
-                                                    )}
+                                            <div className="flex items-center justify-center">
+                                                {getDiantarBadge(item.diantar)}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap ">
+                                            <div className="flex items-center justify-center">
+                                                {getStatusBadge(item.status)}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap flex  items-center justify-center">
+                                            <div className="justify-start flex-col">
+                                                <div className="text-sm text-gray-900">
+                                                    {item.detail?.reduce((total: number, detail: DetailItem) => total + (detail.jumlah || 0), 0) || 0} {" "}
+                                                    item
                                                 </div>
-                                                <div className="text-gray-500">
-                                                    s/d{" "}
-                                                    {new Date(
-                                                        item.waktu_pinjam_selesai
-                                                    ).toLocaleDateString(
-                                                        "id-ID"
-                                                    )}
+                                                <div className="text-sm text-gray-500 ">
+                                                    {item.detail ? item.detail.length : 0} {" "}
+                                                    jenis barang
                                                 </div>
-                                                {item.waktu_kembali && (
-                                                    <div className="text-blue-600">
-                                                        Kembali:{" "}
-                                                        {new Date(
-                                                            item.waktu_kembali
-                                                        ).toLocaleDateString(
-                                                            "id-ID"
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
-                                                {item.pemberi_user && (
-                                                    <div>
-                                                        Pemberi:{" "}
-                                                        {item.pemberi_user.name}
-                                                    </div>
-                                                )}
-                                                {item.penerima_user && (
-                                                    <div className="text-gray-500">
-                                                        Penerima:{" "}
-                                                        {
-                                                            item.penerima_user
-                                                                .name
-                                                        }
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">
-                                                {item.detail_peminjaman.reduce(
-                                                    (total, detail) =>
-                                                        total + detail.jumlah,
-                                                    0
-                                                )}{" "}
-                                                item
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                                {item.detail_peminjaman.length}{" "}
-                                                jenis barang
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex items-center justify-end gap-2">
+                                            <div className="flex items-center justify-center gap-2">
                                                 <Link
-                                                    href={`/peminjaman/${item.id}`}
+                                                    href={`/transaksi/${item.id}`}
                                                     className="text-blue-600 hover:text-blue-900"
                                                     title="Lihat Detail"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </Link>
-                                                {item.status !==
-                                                    "sudah_kembali" &&
-                                                    item.status !==
-                                                    "dibatalkan" && (
-                                                        <button
-                                                            onClick={() =>
-                                                                openStatusModal(
-                                                                    item
-                                                                )
-                                                            }
-                                                            className="text-green-600 hover:text-green-900"
-                                                            title="Update Status"
-                                                        >
-                                                            <Edit className="w-4 h-4" />
-                                                        </button>
-                                                    )}
+                                                {item.status !== "sudah_ambil" && item.status !== "dibatalkan" && (
+                                                    <button
+                                                        onClick={() => openStatusModal(item)}
+                                                        className="text-green-600 hover:text-green-900"
+                                                        title="Update Status"
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                                 <button
-                                                    onClick={() =>
-                                                        handleDelete(item.id)
-                                                    }
+                                                    onClick={() => handleDelete(item.id)}
                                                     className="text-red-600 hover:text-red-900"
                                                     title="Hapus"
                                                 >
@@ -839,21 +740,21 @@ export default function Index({ peminjaman, filters, users }: Props) {
                         </div>
                         <div className="flex items-center gap-4">
                             <span className="text-sm text-gray-700 whitespace-nowrap">
-                                {peminjaman.from}-{peminjaman.to} dari{" "}
-                                {peminjaman.total}
+                                {transaksi.from}-{transaksi.to} dari{" "}
+                                {transaksi.total}
                             </span>
                             <div className="flex items-center gap-1">
                                 <button
                                     className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                    disabled={peminjaman.current_page === 1}
+                                    disabled={transaksi.current_page === 1}
                                     onClick={() =>
                                         router.get(
-                                            "/peminjaman",
+                                            "/transaksi",
                                             {
                                                 search,
                                                 sort_by: sortBy,
                                                 sort_direction: sortDirection,
-                                                page: peminjaman.current_page - 1,
+                                                page: transaksi.current_page - 1,
                                                 perPage,
                                             },
                                             { preserveState: true }
@@ -865,17 +766,17 @@ export default function Index({ peminjaman, filters, users }: Props) {
                                 <button
                                     className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
                                     disabled={
-                                        peminjaman.current_page ===
-                                        peminjaman.last_page
+                                        transaksi.current_page ===
+                                        transaksi.last_page
                                     }
                                     onClick={() =>
                                         router.get(
-                                            "/peminjaman",
+                                            "/transaksi",
                                             {
                                                 search,
                                                 sort_by: sortBy,
                                                 sort_direction: sortDirection,
-                                                page: peminjaman.current_page + 1,
+                                                page: transaksi.current_page + 1,
                                                 perPage,
                                             },
                                             { preserveState: true }
@@ -892,7 +793,7 @@ export default function Index({ peminjaman, filters, users }: Props) {
                 {/* Status Update Modal */}
                 {showStatusModal && selectedPeminjaman && (
                     <StatusUpdateModal
-                        peminjaman={selectedPeminjaman}
+                        peminjaman={selectedPeminjaman as any}
                         users={users}
                         onClose={() => {
                             setShowStatusModal(false);

@@ -12,12 +12,34 @@ class TransaksiUsdan extends Model
     protected $table = 'transaksi_usdan';
 
     protected $fillable = [
-        'nama',
-        'no_telp',
+        'pelanggan_id',
+        'sesi_penjualan_id',
         'diantar',
         'tujuan',
         'status',
         'total_harga',
         'catatan',
     ];
+
+    protected $casts = [
+        'diantar' => 'boolean',
+        'total_harga' => 'decimal:2',
+    ];
+
+    // Relations
+    public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
+    }
+
+    public function sesiPenjualan()
+    {
+        return $this->belongsTo(Sesi::class, 'sesi_penjualan_id');
+    }
+
+    public function detail()
+    {
+        return $this->hasMany(DetailTransaksiUsdan::class, 'transaksi_usdan_id');
+    }
 }
+

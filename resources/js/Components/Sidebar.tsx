@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { usePage } from "@inertiajs/react";
 import {
+    Blocks,
     CalendarDays,
     CalendarRange,
     ChevronDown,
@@ -13,12 +14,16 @@ import {
     FolderClosed,
     Home,
     Layers,
+    Layers2Icon,
+    List,
     ListChecks,
     LogOut,
     Mail,
     Package,
+    Pen,
     ReceiptText,
     SwitchCamera,
+    Tag,
     TimerReset,
     User,
     UserCheck,
@@ -26,7 +31,7 @@ import {
     Users,
     UtensilsCrossed,
     Warehouse,
-    X
+    X,
 } from "lucide-react";
 import { useState } from "react";
 import Dropdown from "./Dropdown";
@@ -65,8 +70,8 @@ const menuItems = [
         group: true,
         children: [
             { icon: Mail, label: "Surat", href: "/arsip-surat" },
-            { icon: FileCheck, label: "Dokumen", href: "/dokumen" }
-        ]
+            { icon: FileCheck, label: "Dokumen", href: "/dokumen" },
+        ],
     },
     { icon: TimerReset, label: "Rencana", href: "/rencana" },
     { icon: SwitchCamera, label: "Dokumentasi", href: "/dokumentasi" },
@@ -78,19 +83,33 @@ const menuItems = [
             { icon: CalendarRange, label: "Sesi Penjualan", href: "/sesi" },
             { icon: UtensilsCrossed, label: "Menu", href: "/menu" },
             { icon: ConciergeBell, label: "Transaksi", href: "/transaksi" },
-            { icon: UserLock, label: "Pelanggan", href: "/pelanggan" }
-
-        ]
+            { icon: UserLock, label: "Pelanggan", href: "/pelanggan" },
+        ],
     },
     {
         icon: ClipboardCheck,
         label: "Presensi",
         group: true,
         children: [
-            { icon: CalendarDays, label: "Hari", href: "/menu" },
-            { icon: Users, label: "Sangga", href: "/sesi" },
-            { icon: ListChecks, label: "Kehadiran", href: "/transaksi" },
-        ]
+            { icon: ListChecks, label: "Kehadiran", href: "/kehadiran" },
+            { icon: CalendarDays, label: "Rekap", href: "/rekap-absensi" },
+        ],
+    },
+    {
+        icon: Blocks,
+        label: "CMS",
+        group: true,
+        children: [
+            { icon: List, label: "Kategori", href: "/menu" },
+            { icon: Tag, label: "Tag", href: "/sesi" },
+            { icon: Pen, label: "Post", href: "/transaksi" },
+        ],
+    },
+    {
+        icon: Layers2Icon,
+        label: "MASTER DATA",
+        group: true,
+        children: [{ icon: User, label: "Sangga", href: "/sangga" }],
     },
     // { icon: BarChart3, label: "Analytics", href: "/analytics" },
     // { icon: FileText, label: "Reports", href: "/reports" },
@@ -126,7 +145,6 @@ const isActiveRoute = (href: string, currentUrl: string): boolean => {
     // Match prefix hanya kalau diikuti slash (sub route)
     return normalizedCurrentUrl.startsWith(normalizedHref + "/");
 };
-
 
 export function Sidebar({
     className,
@@ -178,8 +196,8 @@ export function Sidebar({
                 <nav
                     className="p-4 flex-1 overflow-y-auto"
                     style={{
-                        scrollbarWidth: "none",      // Firefox
-                        msOverflowStyle: "none",     // IE & Edge lama
+                        scrollbarWidth: "none", // Firefox
+                        msOverflowStyle: "none", // IE & Edge lama
                     }}
                 >
                     <ul className="space-y-1">

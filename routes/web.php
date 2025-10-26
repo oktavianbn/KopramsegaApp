@@ -17,15 +17,14 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\SesiController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\SanggaController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
-
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -54,9 +53,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pelanggan', [App\Http\Controllers\PelangganController::class, 'index'])->name('pelanggan.index');
     Route::patch('/pelanggan/{pelanggan}/status', [App\Http\Controllers\PelangganController::class, 'updateStatus'])->name('pelanggan.updateStatus');
     Route::delete('/pelanggan/{pelanggan}', [App\Http\Controllers\PelangganController::class, 'destroy'])->name('pelanggan.destroy');
-    
 
 
+    // sangga
+    Route::resource('sangga', SanggaController::class);
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
