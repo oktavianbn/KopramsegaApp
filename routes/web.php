@@ -16,8 +16,9 @@ use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\SesiController;
 use App\Http\Controllers\TransaksiController;
-use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\SanggaController;
+use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\KehadiranController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -48,15 +49,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('transaksi', TransaksiController::class);
     Route::resource('pelanggan', PelangganController::class);
 
-
     // Pelanggan web routes (read, change status, delete)
-    Route::get('/pelanggan', [App\Http\Controllers\PelangganController::class, 'index'])->name('pelanggan.index');
-    Route::patch('/pelanggan/{pelanggan}/status', [App\Http\Controllers\PelangganController::class, 'updateStatus'])->name('pelanggan.updateStatus');
-    Route::delete('/pelanggan/{pelanggan}', [App\Http\Controllers\PelangganController::class, 'destroy'])->name('pelanggan.destroy');
+    Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
+    Route::patch('/pelanggan/{pelanggan}/status', [PelangganController::class, 'updateStatus'])->name('pelanggan.updateStatus');
+    Route::delete('/pelanggan/{pelanggan}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
 
 
     // sangga
     Route::resource('sangga', SanggaController::class);
+
+    // Kehadiran
+    // web.php
+    Route::get('/kehadiran', [KehadiranController::class, 'pilihHari'])->name('kehadiran.index');
+    Route::get('/kehadiran/{hari}', [KehadiranController::class, 'pilihKelompok'])->name('kehadiran.day');
+    Route::get('/kehadiran/{hari}/{kelompok}', [KehadiranController::class, 'formKehadiran'])->name('kehadiran.form');
+    Route::post('/kehadiran/{hari}/{kelompok}', [KehadiranController::class, 'simpanKehadiran'])->name('kehadiran.store');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

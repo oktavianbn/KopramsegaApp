@@ -107,7 +107,7 @@ const menuItems = [
     },
     {
         icon: Layers2Icon,
-        label: "MASTER DATA",
+        label: "Master Data",
         group: true,
         children: [{ icon: User, label: "Sangga", href: "/sangga" }],
     },
