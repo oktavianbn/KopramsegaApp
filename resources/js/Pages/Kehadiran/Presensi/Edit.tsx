@@ -1,6 +1,7 @@
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { CheckCheckIcon, DollarSign, ChevronLeft } from "lucide-react";
+import { CheckCheckIcon, ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
 
 interface Siswa {
     id: number;
@@ -75,7 +76,13 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(`/kehadiran/${date}/${sangga.id}`);
+        post(`/kehadiran/${date}/${sangga.id}`, {
+            onSuccess: () => {
+                toast.success("Kehadiran berhasil diperbarui", {
+                    description: `Data kehadiran sangga ${sangga.nama_sangga} telah berhasil diperbarui.`,
+                });
+            },
+        });
     };
     return (
         <AppLayout>
@@ -102,14 +109,32 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                                     Kehadiran
                                 </h1>
                                 <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                    Hari dan Tanggal / Sangga / Edit Presensi Sangga{" "}
-                                    {sangga.nama_sangga}
+                                    Hari dan Tanggal / Sangga / Edit Presensi
+                                    Sangga {sangga.nama_sangga}
                                 </h2>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-4 mb-6 border-b"></div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-3 mb-4">
+                    <button
+                        type="button"
+                        onClick={setAllHadir}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    >
+                        <CheckCheckIcon className="w-4 h-4" />
+                        Check all hadir
+                    </button>
+                    <button
+                        onClick={submit}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                        Simpan Kehadiran
+                    </button>
+                </div>
 
                 {/* Table */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -125,12 +150,6 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                                             Nama Siswa
                                         </th>
                                         <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Kelas/Jurusan
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Jenis Kelamin
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                                             Kehadiran
                                         </th>
                                     </tr>
@@ -144,17 +163,18 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                                             <td className="px-6 py-4 text-sm text-gray-900 ">
                                                 {idx + 1}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900 ">
-                                                {item.nama}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900 ">
-                                                {item.kelas +
-                                                    " " +
-                                                    item.jurusan +
-                                                    " " +
-                                                    (item.rombel
-                                                        ? item.rombel
-                                                        : "")}
+                                            <td className="px-6 flex flex-col text-start items-start py-4 text-sm text-gray-900 ">
+                                                <p>{item.nama}</p>
+                                                <p>
+                                                    {" "}
+                                                    {item.kelas +
+                                                        " " +
+                                                        item.jurusan +
+                                                        " " +
+                                                        (item.rombel
+                                                            ? item.rombel
+                                                            : "")}
+                                                </p>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-900 ">
                                                 <div className="flex items-center justify-center gap-2">
@@ -218,23 +238,6 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                                     ))}
                                 </tbody>
                             </table>
-                            <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-end">
-                                <button
-                                    type="button"
-                                    onClick={setAllHadir}
-                                    disabled={processing}
-                                    className="mr-2 px-4 py-2 bg-green-600 text-white rounded"
-                                >
-                                    Check all hadir
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded"
-                                >
-                                    Simpan Kehadiran
-                                </button>
-                            </div>
                         </form>
                     </div>
                 </div>
