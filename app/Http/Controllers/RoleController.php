@@ -17,6 +17,7 @@ class RoleController extends Controller
         $sortBy = $request->input('sort_by', 'name');
         $sortDirection = $request->input('sort_direction', 'asc');
         $search = $request->input('search', '');
+        $allowedSorts = ['name', 'id', 'guard_name'];
 
         // Search by name
         if ($search) {
@@ -24,7 +25,6 @@ class RoleController extends Controller
         }
 
         // Sorting
-        $allowedSorts = ['name', 'id', 'guard_name'];
         $allowedDirections = ['asc', 'desc'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'name';

@@ -89,7 +89,8 @@ class RencanaController extends Controller
         $request->validate([
             'nama_rencana' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'tanggal_mulai' => 'required|date',
+            // tanggal_mulai must be today or in the future (cannot pick yesterday)
+            'tanggal_mulai' => 'required|date|after_or_equal:today',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
             'status' => 'required|in:belum_dimulai,sedang_dilaksanakan,selesai',
             'role_id' => 'required|exists:roles,id',
@@ -129,7 +130,8 @@ class RencanaController extends Controller
         $validated = $request->validate([
             'nama_rencana' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'tanggal_mulai' => 'required|date',
+            // tanggal_mulai must be today or in the future (cannot pick yesterday)
+            'tanggal_mulai' => 'required|date|after_or_equal:today',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
             'status' => 'required|in:belum_dimulai,sedang_dilaksanakan,selesai',
             'role_id' => 'required|exists:roles,id',
