@@ -57,6 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // sangga
     Route::resource('sangga', SanggaController::class);
+    Route::resource('siswa', App\Http\Controllers\SiswaController::class);
 
     // Kehadiran
     // web.php
