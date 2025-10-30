@@ -106,9 +106,6 @@ export default function Create({ siswa, sangga, date }: Props) {
                                             Kelas/Jurusan
                                         </th>
                                         <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Jenis Kelamin
-                                        </th>
-                                        <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                                             Kehadiran
                                         </th>
                                     </tr>
@@ -133,11 +130,6 @@ export default function Create({ siswa, sangga, date }: Props) {
                                                     (item.rombel
                                                         ? item.rombel
                                                         : "")}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900 ">
-                                                {item.jenis_kelamin === "l"
-                                                    ? "Laki-laki"
-                                                    : "Perempuan"}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-900 ">
                                                 <div className="flex items-center justify-center gap-2">

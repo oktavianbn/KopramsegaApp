@@ -157,11 +157,6 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                                                         : "")}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-900 ">
-                                                {item.jenis_kelamin === "l"
-                                                    ? "Laki-laki"
-                                                    : "Perempuan"}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900 ">
                                                 <div className="flex items-center justify-center gap-2">
                                                     <button
                                                         type="button"
