@@ -12,7 +12,7 @@ import {
     Edit,
     FileText,
     Plus,
-    Trash2
+    Trash2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -50,9 +50,10 @@ interface Props {
         sort_direction?: "asc" | "desc";
         filter?: string;
     };
+    sangga: Sangga[];
 }
 
-export default function Index({ siswa, filters }: Props) {
+export default function Index({ siswa, filters, sangga }: Props) {
     const [search, setSearch] = useState(filters.search || "");
     const [sortBy, setSortBy] = useState(filters.sort_by || "created_at");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
@@ -178,6 +179,8 @@ export default function Index({ siswa, filters }: Props) {
         setActiveFilter(null);
         updateQuery({ filter: undefined, page: 1 });
     };
+    console.log(sangga);
+
 
     return (
         <AppLayout>
@@ -222,10 +225,14 @@ export default function Index({ siswa, filters }: Props) {
                                 : [],
                         }}
                         onClearFilters={clearFilters}
-                        filterOptions={[{ id: "", label: "Semua" }]}
+                        filterOptions={sangga.map((s) => ({
+                            id: s.id.toString(),
+                            label: s.nama_sangga,
+                        }))}
                         onFilterSelect={(id: string) => handleTab(id)}
                         selectedFilters={activeFilter ? [activeFilter] : []}
                         sortOptions={[
+                            { id: "nama", label: "Nama Siswa" },
                             { id: "created_at", label: "Dibuat Pada" },
                         ]}
                         onSortSelect={(field: string) => handleSort(field)}
@@ -325,7 +332,7 @@ export default function Index({ siswa, filters }: Props) {
                     </div>
 
                     {/* Pagination */}
-                    <div className="bg-white px-4 py-3 border-t border-gray-200">
+                    <div className="bg-white border-t border-gray-200">
                         <Pagination
                             currentPage={siswa.current_page}
                             lastPage={siswa.last_page}

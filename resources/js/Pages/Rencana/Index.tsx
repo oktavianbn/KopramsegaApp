@@ -233,7 +233,11 @@ export default function Index({ rencanas, filters, roles }: Props) {
                                     : [],
                             }}
                             onClearFilters={clearFilters}
-                            filterOptions={[{ id: "", label: "Semua" }]}
+                            filterOptions={[{ id: "", label: "Semua" },
+                                { id: "belum_dimulai", label: "Belum Dimulai" },
+                                { id: "sedang_dilaksanakan", label: "Berlangsung" },
+                                { id: "selesai", label: "Selesai"}
+                            ]}
                             onFilterSelect={(id: string) => handleTab(id)}
                             selectedFilters={activeTab ? [activeTab] : []}
                             sortOptions={[
