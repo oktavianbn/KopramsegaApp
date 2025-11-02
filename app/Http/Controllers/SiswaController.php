@@ -12,10 +12,14 @@ class SiswaController extends Controller
     public function index(Request $request)
     {
         $query = Siswa::with('sangga');
-
+        // request params
+        $filter = $request->input('filter', null);
         $perPage = $request->input('perPage', 10);
         $search = $request->input('search', '');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
 
+        // search
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
@@ -24,19 +28,32 @@ class SiswaController extends Controller
             });
         }
 
-        $siswa = $query->orderBy('nama')->paginate($perPage)->withQueryString();
+        // filter by sangga_id when filter is provided (frontend sends sangga id)
+        if ($filter) {
+            if (is_numeric($filter)) {
+                $query->where('sangga_id', $filter);
+            }
+        }
 
-        // transform to include sangga name
-        $siswa->getCollection()->transform(function ($item) {
-            $item->sangga = $item->sangga ? $item->sangga->nama_sangga : null;
-            return $item;
-        });
+        // guard allowed sort columns to prevent arbitrary SQL injection
+        $allowedSorts = ['nama', 'created_at', 'nis'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+
+        $siswa = $query->orderBy($sortBy, $sortDirection)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return Inertia::render('Siswa/Index', [
             'siswa' => $siswa,
             'filters' => [
                 'search' => $search,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+                'filter' => $filter,
             ],
+            'sangga' => Sangga::all(),
         ]);
     }
 
