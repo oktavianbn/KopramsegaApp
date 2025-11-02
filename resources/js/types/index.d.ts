@@ -5,7 +5,13 @@ export interface User {
     name: string;
     email: string;
     email_verified_at?: string;
-    role:string;
+    role: Role | string | null;
+}
+
+interface Role {
+    id: number;
+    name: string;
+    description: string;
 }
 
 export type PageProps<

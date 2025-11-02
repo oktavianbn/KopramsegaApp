@@ -52,8 +52,6 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         attendances: initialAttend,
     });
-    console.log("log 1", attendances);
-    console.log("log2", attendances ? attendances[0].status : "data kosong");
 
     const handleStatusChange = (index: number, status: string) => {
         const copy = [...data.attendances];

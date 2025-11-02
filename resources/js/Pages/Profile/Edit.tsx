@@ -6,6 +6,7 @@ import UpdatePasswordForm from "./Partials/UpdatePasswordForm";
 import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationForm";
 import AppLayout from "@/Layouts/AppLayout";
 import { Download, User } from "lucide-react";
+import { PageHeader } from "@/Components/ui/page-header";
 
 export default function Edit({
     mustVerifyEmail,
@@ -16,26 +17,11 @@ export default function Edit({
             <Head title="Profile" />
             <div className="p-6">
                 {/* Header */}
-
-                <div className="grid gap-2 md:flex items-center justify-between mb-6">
-                    <div className="flex gap-6 items-center">
-                        <Link
-                            href="/role"
-                            className="p-2 h-max bg-blue-200 rounded-lg flex justify-center items-center"
-                        >
-                            <User className="h-5 w-5 text-blue-500" />
-                        </Link>
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
-                                Profile
-                            </h1>
-                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                Informasi Tentang Profile Akun Anda
-                            </h2>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex gap-4 mb-6 border-b"></div>
+                <PageHeader
+                    title="Profile"
+                    subtitle="Kelola informasi profil akun Anda dan ubah kata sandi Anda di sini."
+                    icon={User}
+                />
 
                 <div className=" max-w-7xl space-y-6">
                     <div className="lg:grid lg:grid-cols-3 gap-8">
