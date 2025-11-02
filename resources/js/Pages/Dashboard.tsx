@@ -1,5 +1,3 @@
-import { Head } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
 import {
     Card,
     CardContent,
@@ -12,31 +10,35 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/Components/ui/chart";
+import { PageHeader } from "@/Components/ui/page-header";
+import AppLayout from "@/Layouts/AppLayout";
+import { Head } from "@inertiajs/react";
 import {
-    BarChart,
+    Calendar,
+    CreditCard,
+    DollarSign,
+    HomeIcon,
+    PiggyBank,
+    Target,
+    TrendingDown,
+    TrendingUp,
+    Wallet,
+} from "lucide-react";
+import {
+    Area,
+    AreaChart,
     Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Line,
+    LineChart,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
     XAxis,
     YAxis,
-    CartesianGrid,
-    ResponsiveContainer,
-    LineChart,
-    Line,
-    PieChart,
-    Pie,
-    Cell,
-    AreaChart,
-    Area,
 } from "recharts";
-import {
-    TrendingUp,
-    TrendingDown,
-    DollarSign,
-    Wallet,
-    CreditCard,
-    PiggyBank,
-    Calendar,
-    Target,
-} from "lucide-react";
 
 // Sample data - replace with real data from your backend
 const monthlyData = [
@@ -108,6 +110,13 @@ export default function Dashboard() {
             <Head title="Dashboard" />
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+                <PageHeader
+                    title="Dashboard"
+                    subtitle="Ringkasan Dari Seluruh Data"
+                    icon={HomeIcon}
+                    iconBackground="bg-blue-100"
+                    iconClassName="h-5 w-5 text-blue-600"
+                />
                 <div className="mx-auto max-w-7xl space-y-6">
                     <p>Dalam Pengembangan</p>
                 </div>

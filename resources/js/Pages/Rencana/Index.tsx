@@ -1,109 +1,86 @@
-"use client"
+"use client";
 
-import AppLayout from "@/Layouts/AppLayout"
-import { Head, Link, router } from "@inertiajs/react"
-import { useState, useEffect, useRef } from "react"
-import {
-    Calendar,
-    CheckCircle,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    Download,
-    Edit,
-    FileText,
-    Filter,
-    Plus,
-    Search,
-    SortAsc,
-    SortDesc,
-    TimerReset,
-    Trash2,
-    UserPlus,
-    X,
-} from "lucide-react"
-import { ModalDetailRencana } from "@/Components/ModalDetailRencana"
+import { ModalDetailRencana } from "@/Components/ModalDetailRencana";
+import { PageHeader } from "@/Components/ui/page-header";
+import Pagination from "@/Components/ui/pagination";
+import { SearchToolbar } from "@/Components/ui/search-toolbar";
+import AppLayout from "@/Layouts/AppLayout";
+import { Head, router } from "@inertiajs/react";
+import { Calendar, Download, Edit, FileText, Plus, TimerReset, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface Role {
-    id: number
-    name: string
+    id: number;
+    name: string;
 }
 
 interface Rencana {
-    id: number
-    nama_rencana: string
-    deskripsi?: string
-    tanggal_mulai: string
-    tanggal_selesai?: string
-    status: "belum_dimulai" | "sedang_dilaksanakan" | "selesai"
-    role_id: number
-    role: Role
-    created_at: string
-    updated_at: string
+    id: number;
+    nama_rencana: string;
+    deskripsi?: string;
+    tanggal_mulai: string;
+    tanggal_selesai?: string;
+    status: "belum_dimulai" | "sedang_dilaksanakan" | "selesai";
+    role_id: number;
+    role: Role;
+    created_at: string;
+    updated_at: string;
 }
 
 interface Props {
     rencanas: {
-        data: Rencana[]
-        current_page: number
-        last_page: number
-        per_page: number
-        total: number
-        from: number
-        to: number
-    }
+        data: Rencana[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number;
+        to: number;
+    };
     filters: {
-        search?: string
-        status?: string
-        sort_by?: string
-        sort_direction?: "asc" | "desc"
-        role_id?: string
-        filter?: string
-    }
-    roles: Role[]
+        search?: string;
+        status?: string;
+        sort_by?: string;
+        sort_direction?: "asc" | "desc";
+        role_id?: string;
+        filter?: string;
+    };
+    roles: Role[];
 }
 
 export default function Index({ rencanas, filters, roles }: Props) {
-    // 🔹 State konsisten dengan Arsip & Dokumentasi
-    const [search, setSearch] = useState("")
-    const [sortBy, setSortBy] = useState("created_at")
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc">(filters.sort_direction || "desc")
-    const [perPage, setPerPage] = useState(rencanas.per_page || 8)
-    const [activeFilter, setActiveFilter] = useState<string | null>(filters.filter || null)
-    const [roleFilter, setRoleFilter] = useState(filters.role_id || "")
-    const [activeTab, setActiveTab] = useState(filters.status || "")
-    const [showModal, setShowModal] = useState(false)
-    const [selectedData, setSelectedData] = useState<Rencana | null>(null)
-    const [showDownloadDropdown, setShowDownloadDropdown] = useState(false)
-    const [showFilterDropdown, setShowFilterDropdown] = useState(false)
-    const [showSortDropdown, setShowSortDropdown] = useState(false)
+    const [search, setSearch] = useState(filters.search || "");
+    const [sortBy, setSortBy] = useState(filters.sort_by || "created_at");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
+        filters.sort_direction || "desc"
+    );
+    const [perPage, setPerPage] = useState(rencanas.per_page || 8);
+    const [activeFilter, setActiveFilter] = useState<string | null>(
+        filters.filter || null
+    );
+    const [roleFilter, setRoleFilter] = useState(filters.role_id || "");
+    const [activeTab, setActiveTab] = useState(filters.status || "");
+    const [showModal, setShowModal] = useState(false);
+    const [selectedData, setSelectedData] = useState<Rencana | null>(null);
+    const [showDownloadDropdown, setShowDownloadDropdown] = useState(false);
 
-    // 🔹 Ref
-    const downloadDropdownRef = useRef<HTMLDivElement>(null)
-    const filterDropdownRef = useRef<HTMLDivElement>(null)
-    const sortDropdownRef = useRef<HTMLDivElement>(null)
+    const downloadDropdownRef = useRef<HTMLDivElement>(null);
 
     const downloadOptions = [
         { label: "Excel", href: "/export/excel" },
         { label: "CSV", href: "/export/excel?format=csv" },
         { label: "PDF", href: "/export/pdf" },
         { label: "Word", href: "/export/word" },
-    ]
+    ];
 
-    // Update status handler
     const handleStatusUpdate = (id: number, newStatus: string) => {
         router.patch(
             `/rencana/${id}/status`,
-            {
-                status: newStatus,
-            },
-            {
-                preserveState: true,
-            },
-        )
-    }
+            { status: newStatus },
+            { preserveState: true }
+        );
+    };
 
-    /** 🔹 Update Query */
     const updateQuery = (extra: Record<string, any> = {}) => {
         router.get(
             "/rencana",
@@ -117,246 +94,164 @@ export default function Index({ rencanas, filters, roles }: Props) {
                 role_id: roleFilter || undefined,
                 ...extra,
             },
-            { preserveState: true },
-        )
-    }
+            { preserveState: true }
+        );
+    };
 
-    /** 🔹 Live search debounce */
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (search !== filters.search) updateQuery({ page: 1 })
-        }, 500)
-        return () => clearTimeout(timeoutId)
-    }, [search])
+        const t = setTimeout(() => updateQuery({ page: 1, search }), 500);
+        return () => clearTimeout(t);
+    }, [search]);
 
-    /** 🔹 Close dropdown di luar */
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            const target = event.target as Node
-            if (filterDropdownRef.current && !filterDropdownRef.current.contains(target)) setShowFilterDropdown(false)
-            if (sortDropdownRef.current && !sortDropdownRef.current.contains(target)) setShowSortDropdown(false)
-            if (downloadDropdownRef.current && !downloadDropdownRef.current.contains(target)) setShowDownloadDropdown(false)
-        }
-        document.addEventListener("mousedown", handleClickOutside)
-        return () => document.removeEventListener("mousedown", handleClickOutside)
-    }, [])
+        const onDoc = (e: MouseEvent) => {
+            if (
+                downloadDropdownRef.current &&
+                !downloadDropdownRef.current.contains(e.target as Node)
+            ) {
+                setShowDownloadDropdown(false);
+            }
+        };
+        document.addEventListener("mousedown", onDoc);
+        return () => document.removeEventListener("mousedown", onDoc);
+    }, []);
 
-    /** 🔹 Handler */
-    const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = parseInt(e.target.value)
-        setPerPage(value)
-        updateQuery({ perPage: value, page: 1 })
-    }
-
-    const handleSort = (field: string) => {
-        const newDirection = sortBy === field && sortDirection === "asc" ? "desc" : "asc"
-        setSortBy(field)
-        setSortDirection(newDirection)
-        updateQuery({ sort_by: field, sort_direction: newDirection })
-        setShowSortDropdown(false)
-    }
+    const formatDate = (d: string) => new Date(d).toLocaleDateString();
 
     const handleTab = (tab: string) => {
-        setActiveTab(tab)
-        updateQuery({ status: tab, page: 1 })
-    }
+        setActiveTab(tab);
+        updateQuery({ page: 1, status: tab || undefined });
+    };
+
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            const newDir = sortDirection === "asc" ? "desc" : "asc";
+            setSortDirection(newDir);
+            updateQuery({ sort_by: field, sort_direction: newDir });
+        } else {
+            setSortBy(field);
+            setSortDirection("asc");
+            updateQuery({ sort_by: field, sort_direction: "asc" });
+        }
+    };
+
+    const handlePerPageChange = (val: any) => {
+        const v =
+            typeof val === "number" ? val : Number(val.target?.value ?? val);
+        setPerPage(v);
+        updateQuery({ perPage: v });
+    };
 
     const clearFilters = () => {
-        setSearch("")
-        setRoleFilter("")
-        setActiveTab("")
-        setActiveFilter(null)
-        setSortBy("created_at")
-        setSortDirection("desc")
-        updateQuery({ page: 1 })
-    }
+        setSearch("");
+        setRoleFilter("");
+        setActiveFilter(null);
+        setActiveTab("");
+        updateQuery({
+            page: 1,
+            search: undefined,
+            role_id: undefined,
+            status: undefined,
+            filter: undefined,
+        });
+    };
 
-    const handleShow = (item: Rencana) => { setSelectedData(item); setShowModal(true) }
-    const handleEdit = (id: number) => router.visit(`/rencana/${id}/edit`)
-    const handleDelete = (id: number) => confirm("Apakah Anda yakin ingin menghapus rencana ini?") && router.delete(`/rencana/${id}`)
+    const handleShow = (data: Rencana) => {
+        setSelectedData(data);
+        setShowModal(true);
+    };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("id-ID", {
-            weekday: "short",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        })
-    }
+    const handleEdit = (id: number) => router.visit(`/rencana/${id}/edit`);
 
-    const getTotalByStatus = (statusFilter: string) => {
-        if (statusFilter === "") return rencanas.total
-        return rencanas.data.filter((item) => item.status === statusFilter).length
-    }
+    const handleDelete = (id: number) => {
+        if (confirm("Yakin ingin menghapus rencana ini?")) {
+            router.delete(`/rencana/${id}`, { preserveState: true });
+        }
+    };
+
+    const getTotalByStatus = (status: string) =>
+        rencanas.data.filter((r) => r.status === status).length;
 
     return (
         <AppLayout>
             <Head title="Rencana" />
-            <div className="min-h-screen bg-gray-50 p-6">
-                <div className="mx-auto">
-                    {/* Header */}
-                    <div className="grid gap-2 lg:flex items-center justify-between mb-6">
-                        <div className="flex gap-6 items-center">
-                            <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                <TimerReset className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Rencana</h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Rencana / Daftar</h2>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            {/* Download Dropdown */}
-                            <div className="relative inline-block text-left" ref={downloadDropdownRef}>
-                                <button
-                                    onClick={() => setShowDownloadDropdown(!showDownloadDropdown)}
-                                    className="inline-flex justify-center items-center px-4 py-2 bg-white text-black rounded-lg border border-black hover:bg-gray-200 text-left"
-                                >
-                                    <Download className="mr-2 h-5 w-5" />
-                                    Download Data
-                                    <ChevronDown className="ml-2 h-4 w-4" />
-                                </button>
-                                {showDownloadDropdown && (
-                                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50">
-                                        {downloadOptions.map((opt) => (
-                                            <Link
-                                                key={opt.label}
-                                                href={opt.href}
-                                                method="get"
-                                                as="button"
-                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                                                onClick={() => setShowDownloadDropdown(false)}
-                                            >
-                                                <FileText className="h-4 w-4" />
-                                                {opt.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <Link
-                                href="/rencana/create"
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Tambah Rencana
-                            </Link>
-                        </div>
+
+            <div className="py-6">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <PageHeader
+                        title="Rencana"
+                        subtitle="Rencana / Daftar"
+                        icon={TimerReset}
+                        iconClassName="h-5 w-5 text-blue-600"
+                        iconBackground="bg-blue-100"
+                        tabs={[
+                            { id: "", label: "Semua ", count: rencanas.total },
+                            {
+                                id: "belum_dimulai",
+                                label: "Belum Dimulai",
+                                count: getTotalByStatus("belum_dimulai"),
+                            },
+                            {
+                                id: "sedang_dilaksanakan",
+                                label: "Berlangsung ",
+                                count: getTotalByStatus("sedang_dilaksanakan"),
+                            },
+                            {
+                                id: "selesai",
+                                label: "Selesai ",
+                                count: getTotalByStatus("selesai"),
+                            },
+                        ]}
+                        activeTab={activeTab}
+                        onTabChange={(tab: string) => handleTab(tab)}
+                        actions={[
+                            {
+                                label: "Download",
+                                icon: Download,
+                                onClick: () =>
+                                    setShowDownloadDropdown(
+                                        !showDownloadDropdown
+                                    ),
+                            },
+                            {
+                                label: "Tambah Rencana",
+                                icon: Plus,
+                                onClick: () => router.visit("/rencana/create"),
+                            },
+                        ]}
+                    />
+
+                    <div className="mt-4">
+                        <SearchToolbar
+                            searchValue={search}
+                            onSearchChange={(val: string) => setSearch(val)}
+                            searchPlaceholder="Cari rencana berdasarkan nama atau deskripsi"
+                            activeFilters={{
+                                search: search,
+                                filters: activeTab
+                                    ? [{ id: activeTab, label: activeTab }]
+                                    : [],
+                            }}
+                            onClearFilters={clearFilters}
+                            filterOptions={[{ id: "", label: "Semua" }]}
+                            onFilterSelect={(id: string) => handleTab(id)}
+                            selectedFilters={activeTab ? [activeTab] : []}
+                            sortOptions={[
+                                { id: "nama_rencana", label: "Nama" },
+                                { id: "tanggal_mulai", label: "Tanggal Mulai" },
+                                {
+                                    id: "tanggal_selesai",
+                                    label: "Tanggal Selesai",
+                                },
+                                { id: "created_at", label: "Dibuat Pada" },
+                            ]}
+                            onSortSelect={(field: string) => handleSort(field)}
+                            currentSortField={sortBy}
+                            sortDirection={sortDirection}
+                        />
                     </div>
 
-                    {/* Tabs */}
-                    <div className="mb-6 flex gap-4 border-b overflow-x-auto">
-                        <button
-                            onClick={() => handleTab("")}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-                        >
-                            Semua{" "}
-                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">{rencanas.total}</span>
-                        </button>
-                        <button
-                            onClick={() => handleTab("belum_dimulai")}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "belum_dimulai" ? "border-gray-500 text-gray-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-                        >
-                            Belum Dimulai{" "}
-                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">{getTotalByStatus("belum_dimulai")}</span>
-                        </button>
-                        <button
-                            onClick={() => handleTab("sedang_dilaksanakan")}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "sedang_dilaksanakan" ? "border-yellow-500 text-yellow-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-                        >
-                            Berlangsung{" "}
-                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">{getTotalByStatus("sedang_dilaksanakan")}</span>
-                        </button>
-                        <button
-                            onClick={() => handleTab("selesai")}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "selesai" ? "border-green-500 text-green-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-                        >
-                            Selesai{" "}
-                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">{getTotalByStatus("selesai")}</span>
-                        </button>
-                    </div>
-
-                    {/* Filter Aktif */}
-                    {(search || roleFilter || activeTab) && (
-                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
-                                    <Filter className="h-4 w-4" />
-                                    <span>Filter aktif:</span>
-                                    {search && <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-blue-200"><Search className="h-3 w-3" /> Pencarian: "{search}"</span>}
-                                    {activeTab && <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-blue-200">Status: {activeTab==="belum_dimulai"?"Belum Dimulai":activeTab==="selesai"?"Selesai":"Berlangsung"}</span>}
-                                    {roleFilter && <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-blue-200"><UserPlus className="h-3 w-3" /> Role: {roles.find(r => r.id.toString() === roleFilter)?.name}</span>}
-                                </div>
-                                <button onClick={clearFilters} className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg text-sm">
-                                    <X className="h-3 w-3" /> Clear All
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Search & Filter */}
-                    <div className="bg-white rounded-lg shadow-sm border p-4 mb-6 grid gap-2 lg:flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Cari rencana berdasarkan nama atau deskripsi"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-                        {/* Filter & Sort */}
-                        <div className="flex items-center gap-2">
-                            <div className="relative" ref={filterDropdownRef}>
-                                <button
-                                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                                    className={`flex items-center gap-2 px-4 py-2 border rounded-lg ${showFilterDropdown ? "border-blue-500 bg-blue-50 text-blue-600" : "border-gray-300 bg-white hover:bg-gray-50"}`}>
-                                    <Filter className="h-4 w-4" /> Filter
-                                    {(roleFilter || activeTab) && <span className="bg-blue-500 w-2 h-2 rounded-full"></span>}
-                                    <ChevronDown className={`h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""}`} />
-                                </button>
-                                {showFilterDropdown && (
-                                    <div className="absolute left-0 mt-2 w-72 bg-white border rounded-lg shadow-lg z-20">
-                                        <div className="p-4 space-y-4">
-                                            <div className="border-b pb-3"><h3 className="text-sm font-semibold text-gray-700 mb-2">Filter by Role</h3></div>
-                                            <select
-                                                value={roleFilter}
-                                                onChange={(e) => { setRoleFilter(e.target.value); setTimeout(updateQuery, 100) }}
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            >
-                                                <option value="">Semua Role</option>
-                                                {roles.map(role => (<option key={role.id} value={role.id}>{role.name}</option>))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="relative" ref={sortDropdownRef}>
-                                <button
-                                    onClick={() => setShowSortDropdown(!showSortDropdown)}
-                                    className={`flex items-center gap-2 px-4 py-2 border rounded-lg ${showSortDropdown ? "border-blue-500 bg-blue-50 text-blue-600" : "border-gray-300 bg-white hover:bg-gray-50"}`}>
-                                    Sort {sortDirection === "asc" ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-                                    <ChevronDown className={`h-4 w-4 transition-transform ${showSortDropdown ? "rotate-180" : ""}`} />
-                                </button>
-                                {showSortDropdown && (
-                                    <div className="absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-20">
-                                        <div className="p-2">
-                                            <button onClick={() => handleSort("nama_rencana")} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded">Nama Rencana</button>
-                                            <button onClick={() => handleSort("tanggal_mulai")} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded">Tanggal Mulai</button>
-                                            <button onClick={() => handleSort("tanggal_selesai")} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded">Tanggal Selesai</button>
-                                            <button onClick={() => handleSort("status")} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded">Status</button>
-                                            <button onClick={() => handleSort("created_at")} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded">Dibuat Pada</button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Cards Grid */}
+{/* Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 ">
                         {rencanas.data.map((item: Rencana, idx) => (
                             <div
@@ -486,62 +381,35 @@ export default function Index({ rencanas, filters, roles }: Props) {
 
                     </div>
 
-                    {/* Pagination */}
-                    {rencanas.data.length > 0 && (
-                        <div className="bg-white rounded-lg shadow-sm border px-4 py-3 mt-6">
-                            <div className="flex items-center justify-between">
-                                {/* Per Page */}
-                                <div className="flex items-center gap-2">
-                                    <select
-                                        className="border rounded px-2 py-1 text-sm"
-                                        value={perPage}
-                                        onChange={handlePerPageChange}
-                                    >
-                                        <option value={8}>8 data per halaman</option>
-                                        <option value={16}>16 data per halaman</option>
-                                        <option value={40}>40 data per halaman</option>
-                                    </select>
-                                </div>
-
-                                {/* Info + Navigasi */}
-                                <div className="flex items-center gap-4">
-                                    <span className="text-sm text-gray-700">
-                                        {rencanas.from}-{rencanas.to} dari {rencanas.total}
-                                    </span>
-                                    <div className="flex items-center gap-1">
-                                        <button
-                                            disabled={rencanas.current_page === 1}
-                                            onClick={() => updateQuery({ page: rencanas.current_page - 1 })}
-                                            className={`p-2 rounded hover:bg-gray-100 ${rencanas.current_page === 1
-                                                    ? "opacity-50 cursor-not-allowed"
-                                                    : ""
-                                                }`}
-                                        >
-                                            <ChevronLeft className="h-4 w-4" />
-                                        </button>
-                                        <button
-                                            disabled={rencanas.current_page === rencanas.last_page}
-                                            onClick={() => updateQuery({ page: rencanas.current_page + 1 })}
-                                            className={`p-2 rounded hover:bg-gray-100 ${rencanas.current_page === rencanas.last_page
-                                                    ? "opacity-50 cursor-not-allowed"
-                                                    : ""
-                                                }`}
-                                        >
-                                            <ChevronRight className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
+                    <div className="mt-6">
+                        <Pagination
+                            currentPage={rencanas.current_page}
+                            lastPage={rencanas.last_page}
+                            perPage={perPage}
+                            total={rencanas.total}
+                            from={rencanas.from}
+                            to={rencanas.to}
+                            onPageChange={(page: number) =>
+                                updateQuery({ page })
+                            }
+                            onPerPageChange={(n: number) => {
+                                setPerPage(n);
+                                updateQuery({ perPage: n });
+                            }}
+                            variant="card"
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* Modal */}
             {showModal && selectedData && (
-                <ModalDetailRencana data={selectedData} onClose={() => setShowModal(false)} isOpen={showModal} />
+                <ModalDetailRencana
+                    data={selectedData}
+                    onClose={() => setShowModal(false)}
+                    isOpen={showModal}
+                />
             )}
         </AppLayout>
-    )
+    );
 }

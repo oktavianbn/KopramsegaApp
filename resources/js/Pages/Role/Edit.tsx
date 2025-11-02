@@ -1,3 +1,4 @@
+import { PageHeader } from "@/Components/ui/page-header";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { ArrowLeft, Save } from "lucide-react";
@@ -38,22 +39,12 @@ export default function Edit({ role }: Props) {
             <Head title="Edit Data Role" />
             <div className="p-6">
                 {/* Header */}
-                <div className="grid gap-2 md:flex items-center justify-between mb-6">
-                    <div className="flex gap-6 items-center">
-                        <Link
-                            href="/role"
-                            className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center">
-                            <ArrowLeft className="h-5 w-5 text-gray-500" />
-                        </Link>
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Role</h1>
-                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Role / Edit Data</h2>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex gap-4 mb-6 border-b">
-
-                </div>
+                <PageHeader
+                    title="Role"
+                    subtitle={`Daftar / Edit Data ${role.name}`}
+                    backHref="/role"
+                    backIcon={ArrowLeft}
+                />
 
                 {/* Form */}
                 <div className="bg-white rounded-lg shadow p-6">

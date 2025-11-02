@@ -12,18 +12,13 @@ import {
     DollarSign,
     FileCheck,
     FolderClosed,
-    Group,
     Home,
     Layers,
     Layers2Icon,
-    Layers3Icon,
-    LayoutDashboard,
     List,
     ListChecks,
     LogOut,
-    LucideLayers,
     LucideLayers2,
-    LucideLayers3,
     Mail,
     Package,
     Pen,
@@ -39,7 +34,7 @@ import {
     Users2,
     UtensilsCrossed,
     Warehouse,
-    X,
+    X
 } from "lucide-react";
 import { useState } from "react";
 import Dropdown from "./Dropdown";

@@ -1,3 +1,4 @@
+import { PageHeader } from "@/Components/ui/page-header";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, router, useForm } from "@inertiajs/react";
 import { ArrowLeft, ArrowUpDown, Calendar, FileText, Hash, Paperclip, Pen, Save, User, Users } from "lucide-react";
@@ -142,23 +143,13 @@ export default function Edit({ arsipSurat }: Props) {
 
             <div className="p-6">
                 {/* Header */}
-                <div className="grid gap-2 md:flex items-center justify-between mb-6">
-                    <div className="flex gap-6 items-center">
-                        <Link
-                            href="/arsip-surat"
-                            className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center">
-                            <ArrowLeft className="h-5 w-5 text-gray-500" />
-                        </Link>
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Surat</h1>
-                            <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Arsip / Surat / Edit Data</h2>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex gap-4 mb-6 border-b">
-
-                </div>
+                {/* Header */}
+                <PageHeader
+                    title="Arsip Surat"
+                    subtitle={`Daftar / Edit Data ${arsipSurat.judul_surat}`}
+                    backHref="/arsip-surat"
+                    backIcon={ArrowLeft}
+                />
 
                 {/* Form Arsip Surat */}
                 <div className="bg-white rounded-lg shadow p-6">

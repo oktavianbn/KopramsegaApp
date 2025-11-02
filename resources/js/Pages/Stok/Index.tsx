@@ -1,28 +1,20 @@
 "use client";
 
+import { ModalDaftarTransaksiBarang } from "@/Components/ModalDaftarTransaksiBarang";
+import { PageHeader } from "@/Components/ui/page-header";
+import Pagination from "@/Components/ui/pagination";
+import { SearchToolbar } from "@/Components/ui/search-toolbar";
 import AppLayout from "@/Layouts/AppLayout";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import {
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
     Download,
     Edit,
-    FileText,
-    Filter,
-    Plus,
-    Search,
-    SortAsc,
-    SortDesc,
-    Trash2,
-    X,
-    Package,
-    Warehouse,
-    ArrowUpDown,
     Eye,
+    Package,
+    Trash2,
+    Warehouse
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ModalDaftarTransaksiBarang } from "@/Components/ModalDaftarTransaksiBarang";
 
 interface Barang {
     id: number;
@@ -58,7 +50,7 @@ interface GroupedStok {
 
 interface TransaksiItem {
     id: number;
-    tipe: 't' | 'k';
+    tipe: "t" | "k";
     peminjaman_id?: number | null;
     jumlah: number;
     keterangan: string;
@@ -90,24 +82,30 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
     ];
 
     // fetch transaksi for a given barang and optional spesifikasi, then show modal
-    const lihatTransactions = async (barangId: number, spesifikasiId?: number | null) => {
+    const lihatTransactions = async (
+        barangId: number,
+        spesifikasiId?: number | null
+    ) => {
         try {
             let url = `/stok/${barangId}/transactions`;
             if (spesifikasiId !== undefined) {
                 // send explicit param; if null, send 'null' so backend treats as IS NULL
-                const val = spesifikasiId === null ? 'null' : String(spesifikasiId);
+                const val =
+                    spesifikasiId === null ? "null" : String(spesifikasiId);
                 url += `?spesifikasi_id=${encodeURIComponent(val)}`;
             }
 
-            const res = await fetch(url, { headers: { Accept: 'application/json' } });
+            const res = await fetch(url, {
+                headers: { Accept: "application/json" },
+            });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setTxList(data as TransaksiItem[]);
             setTxModalOpen(true);
         } catch (err) {
-            console.error('Gagal memuat transaksi:', err);
+            console.error("Gagal memuat transaksi:", err);
             // Optionally, show a toast or alert
-            alert('Gagal memuat data transaksi.');
+            alert("Gagal memuat data transaksi.");
         }
     };
 
@@ -136,13 +134,14 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
               group.barang.deskripsi
                   ?.toLowerCase()
                   .includes(search.toLowerCase()) ||
-              group.stoks.some((stok: StokItem) =>
-                  stok.spesifikasi?.key
-                      .toLowerCase()
-                      .includes(search.toLowerCase()) ||
-                  stok.spesifikasi?.value
-                      .toLowerCase()
-                      .includes(search.toLowerCase())
+              group.stoks.some(
+                  (stok: StokItem) =>
+                      stok.spesifikasi?.key
+                          .toLowerCase()
+                          .includes(search.toLowerCase()) ||
+                      stok.spesifikasi?.value
+                          .toLowerCase()
+                          .includes(search.toLowerCase())
               )
             : true;
 
@@ -247,7 +246,9 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
 
     const handleDelete = (barangId: number, spesifikasiId?: number | null) =>
         confirm("Apakah Anda yakin ingin menghapus data ini?") &&
-        router.delete(`/stok`, { data: { barang_id: barangId, spesifikasi_id: spesifikasiId } });
+        router.delete(`/stok`, {
+            data: { barang_id: barangId, spesifikasi_id: spesifikasiId },
+        });
 
     const clearFilters = () => {
         setSearch("");
@@ -273,280 +274,96 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
             <Head title="Stok" />
             <div className="min-h-screen bg-gray-50 p-6 overflow-hidden">
                 <div className="mx-auto">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-6 items-center">
-                                <Link
-                                    href={"/stok"}
-                                    className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                    <Warehouse className="h-5 w-5 text-blue-600" />
-                                </Link>
-                                <div className="flex flex-col gap-2">
-
-                                    <h1 className="text-2xl font-bold text-gray-700">
-                                        Stok
-                                    </h1>
-                                    <h2 className="text-base font-medium text-gray-700">
-                                        Inventory / Stok / Daftar
-                                    </h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            {/* Dropdown Download */}
-                            <div
-                                className="relative inline-block text-left"
-                                ref={downloadDropdownRef}
-                            >
-                                <button
-                                    onClick={() =>
-                                        setShowDownloadDropdown(
-                                            !showDownloadDropdown
-                                        )
-                                    }
-                                    className="inline-flex justify-center items-center px-4 py-2 bg-white text-black rounded-lg border border-black hover:bg-gray-200 text-left"
-                                >
-                                    <Download className="mr-2 h-5 w-5" />
-                                    Download Data
-                                    <ChevronDown className="ml-2 h-4 w-4" />
-                                </button>
-
-                                {showDownloadDropdown && (
-                                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50">
-                                        {downloadOptions.map((opt) => (
-                                            <Link
-                                                key={opt.label}
-                                                href={opt.href}
-                                                method="get"
-                                                as="button"
-                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                                                onClick={() =>
-                                                    setShowDownloadDropdown(
-                                                        false
-                                                    )
-                                                }
-                                            >
-                                                <FileText className="h-4 w-4" />
-                                                {opt.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            {/* <Link
-                                href="/stok/create"
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                <ArrowUpDown className="h-4 w-4" />
-                                Penyesuaian Data
-                            </Link> */}
-                        </div>
-                    </div>
+                    <PageHeader
+                        title="Stok"
+                        subtitle="Inventory / Stok / Daftar"
+                        icon={Warehouse}
+                        actions={[
+                            {
+                                label: "Download Data",
+                                href: "/export/excel",
+                                icon: Download,
+                            },
+                        ]}
+                        tabs={[
+                            {
+                                id: null as any,
+                                label: "Semua Barang",
+                                count: groupedStoks.length,
+                            },
+                            {
+                                id: "available",
+                                label: "Tersedia",
+                                count: availableCount,
+                            },
+                            {
+                                id: "low",
+                                label: "Stok Rendah",
+                                count: lowStockCount,
+                            },
+                            {
+                                id: "out",
+                                label: "Habis",
+                                count: outOfStockCount,
+                            },
+                        ]}
+                        activeTab={activeFilter || ""}
+                        onTabChange={(tabId) =>
+                            handleTab(tabId === "null" ? null : (tabId as any))
+                        }
+                    />
                 </div>
-                <div className="flex gap-4 mb-6 border-b">
-                    <button
-                        onClick={() => handleTab(null)}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === null
-                            ? "border-blue-500 text-blue-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
-                    >
-                        Semua Barang{" "}
-                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                            {groupedStoks.length}
-                        </span>
-                    </button>
-                    <button
-                        onClick={() => handleTab("available")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "available"
-                            ? "border-green-500 text-green-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
-                    >
-                        Tersedia{" "}
-                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                            {availableCount}
-                        </span>
-                    </button>
-                    <button
-                        onClick={() => handleTab("low")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "low"
-                            ? "border-yellow-500 text-yellow-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
-                    >
-                        Stok Rendah{" "}
-                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                            {lowStockCount}
-                        </span>
-                    </button>
-                    <button
-                        onClick={() => handleTab("out")}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "out"
-                            ? "border-red-500 text-red-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700"
-                            }`}
-                    >
-                        Habis{" "}
-                        <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                            {outOfStockCount}
-                        </span>
-                    </button>
-                </div>
-                {/* Filter Status */}
-                {(search || activeFilter) && (
-                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
-                                <Filter className="h-4 w-4" />
-                                <span>Filter aktif:</span>
-                                {search && (
-                                    <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                                        <Search className="h-3 w-3" />
-                                        Cari: "{search}"
-                                    </span>
-                                )}
-                                {activeFilter && (
-                                    <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                                        {activeFilter === "available"
-                                            ? "Tersedia"
-                                            : activeFilter === "low"
-                                                ? "Stok Rendah"
-                                                : "Habis"}
-                                    </span>
-                                )}
-                            </div>
-                            <button
-                                onClick={clearFilters}
-                                className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
-                            >
-                                <X className="h-3 w-3" />
-                                Clear All
-                            </button>
-                        </div>
-                    </div>
-                )}
-                {/* Search & Sort */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 grid gap-2 lg:flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1 w-full">
-                        <div className="relative ">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Cari berdasarkan nama barang atau spesifikasi"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-10 pr-6 py-2 border md:w-80 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        {/* Filter Dropdown */}
-                        <div className="relative" ref={filterDropdownRef}>
-                            <button
-                                onClick={() =>
-                                    setShowFilterDropdown(!showFilterDropdown)
-                                }
-                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showFilterDropdown
-                                    ? "border-blue-500 bg-blue-50 text-blue-600"
-                                    : "border-gray-300 bg-white hover:bg-gray-50"
-                                    }`}
-                            >
-                                Filter
-                                <ChevronDown
-                                    className={`h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""
-                                        }`}
-                                />
-                            </button>
-                            {showFilterDropdown && (
-                                <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-                                    <div className="p-2 flex flex-col">
-                                        <span className="px-3 py-1 text-xs font-semibold text-gray-500">
-                                            Status Stok
-                                        </span>
-                                        <button
-                                            onClick={() =>
-                                                handleTab("available")
-                                            }
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "available"
-                                                ? "bg-blue-50 text-blue-600 font-medium"
-                                                : ""
-                                                }`}
-                                        >
-                                            Tersedia
-                                        </button>
-                                        <button
-                                            onClick={() => handleTab("low")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "low"
-                                                ? "bg-blue-50 text-blue-600 font-medium"
-                                                : ""
-                                                }`}
-                                        >
-                                            Stok Rendah (&lt; 10)
-                                        </button>
-                                        <button
-                                            onClick={() => handleTab("out")}
-                                            className={`px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${activeFilter === "out"
-                                                ? "bg-blue-50 text-blue-600 font-medium"
-                                                : ""
-                                                }`}
-                                        >
-                                            Habis
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        <div className="relative" ref={sortDropdownRef}>
-                            <button
-                                onClick={() =>
-                                    setShowSortDropdown(!showSortDropdown)
-                                }
-                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${showSortDropdown
-                                    ? "border-blue-500 bg-blue-50 text-blue-600"
-                                    : "border-gray-300 bg-white hover:bg-gray-50"
-                                    }`}
-                            >
-                                Urutkan
-                                {sortDirection === "asc" ? (
-                                    <SortAsc className="h-4 w-4" />
-                                ) : (
-                                    <SortDesc className="h-4 w-4" />
-                                )}
-                                <ChevronDown
-                                    className={`h-4 w-4 transition-transform ${showSortDropdown ? "rotate-180" : ""
-                                        }`}
-                                />
-                            </button>
-                            {showSortDropdown && (
-                                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-                                    <div className="p-2">
-                                        <button
-                                            onClick={() => handleSort("nama")}
-                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "nama"
-                                                ? "bg-blue-50 text-blue-600 font-medium"
-                                                : "text-gray-700"
-                                                }`}
-                                        >
-                                            <span>Nama Barang</span>
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                handleSort("total_stok")
-                                            }
-                                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-50 ${sortBy === "total_stok"
-                                                ? "bg-blue-50 text-blue-600 font-medium"
-                                                : "text-gray-700"
-                                                }`}
-                                        >
-                                            <span>Total Stok</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                <div className="mt-4">
+                    <SearchToolbar
+                        searchValue={search}
+                        onSearchChange={(val) => setSearch(val)}
+                        searchPlaceholder={
+                            "Cari berdasarkan nama barang atau spesifikasi"
+                        }
+                        activeFilters={{
+                            search: search || undefined,
+                            filters: activeFilter
+                                ? [
+                                      {
+                                          id: activeFilter,
+                                          label:
+                                              activeFilter === "available"
+                                                  ? "Tersedia"
+                                                  : activeFilter === "low"
+                                                  ? "Stok Rendah"
+                                                  : "Habis",
+                                      },
+                                  ]
+                                : [],
+                        }}
+                        onClearFilters={clearFilters}
+                        filterOptions={[
+                            {
+                                id: "available",
+                                label: "Tersedia",
+                                section: "Status Stok",
+                            },
+                            {
+                                id: "low",
+                                label: "Stok Rendah (< 10)",
+                                section: "Status Stok",
+                            },
+                            {
+                                id: "out",
+                                label: "Habis",
+                                section: "Status Stok",
+                            },
+                        ]}
+                        onFilterSelect={(id) => handleTab(id as any)}
+                        selectedFilters={activeFilter ? [activeFilter] : []}
+                        sortOptions={[
+                            { id: "nama", label: "Nama Barang" },
+                            { id: "total_stok", label: "Total Stok" },
+                        ]}
+                        onSortSelect={(id) => handleSort(id)}
+                        currentSortField={sortBy}
+                        sortDirection={sortDirection}
+                    />
                 </div>
                 {/* Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2  gap-6 mb-6">
@@ -621,7 +438,12 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
                                             <div className="space-y-2 overflow-y-auto h-32">
                                                 {group.stoks.map((stok) => (
                                                     <div
-                                                        key={`${stok.barang.id}-${stok.spesifikasi?.id ?? 'none'}`}
+                                                        key={`${
+                                                            stok.barang.id
+                                                        }-${
+                                                            stok.spesifikasi
+                                                                ?.id ?? "none"
+                                                        }`}
                                                         className="flex items-center justify-between p-2 bg-gray-50 rounded border"
                                                     >
                                                         <div className="flex-1 min-w-0">
@@ -635,9 +457,19 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
                                                                 {stok.jumlah}
                                                             </span>
                                                         </div>
-                                                            <div className="flex gap-1 ml-2">
+                                                        <div className="flex gap-1 ml-2">
                                                             <button
-                                                                onClick={() => lihatTransactions(stok.barang.id, stok.spesifikasi?.id ?? null)}
+                                                                onClick={() =>
+                                                                    lihatTransactions(
+                                                                        stok
+                                                                            .barang
+                                                                            .id,
+                                                                        stok
+                                                                            .spesifikasi
+                                                                            ?.id ??
+                                                                            null
+                                                                    )
+                                                                }
                                                                 className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
                                                                 title="Lihat"
                                                             >
@@ -646,8 +478,13 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
                                                             <button
                                                                 onClick={() =>
                                                                     handleEdit(
-                                                                        stok.barang.id,
-                                                                        stok.spesifikasi?.id ?? null
+                                                                        stok
+                                                                            .barang
+                                                                            .id,
+                                                                        stok
+                                                                            .spesifikasi
+                                                                            ?.id ??
+                                                                            null
                                                                     )
                                                                 }
                                                                 className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded transition-colors"
@@ -658,8 +495,13 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
                                                             <button
                                                                 onClick={() =>
                                                                     handleDelete(
-                                                                        stok.barang.id,
-                                                                        stok.spesifikasi?.id ?? null
+                                                                        stok
+                                                                            .barang
+                                                                            .id,
+                                                                        stok
+                                                                            .spesifikasi
+                                                                            ?.id ??
+                                                                            null
                                                                     )
                                                                 }
                                                                 className="p-1 text-red-600 hover:text-red-900 hover:bg-red-100 rounded transition-colors"
@@ -683,43 +525,26 @@ export default function Index({ stoks }: { stoks: StokItem[] }) {
                     ))}
                 </div>
                 {/* Pagination */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <select
-                            className="border border-gray-300 rounded px-2 py-1 text-sm"
-                            value={perPage}
-                            onChange={handlePerPageChange}
-                        >
-                            <option value={12}>12 data per halaman</option>
-                            <option value={24}>24 data per halaman</option>
-                            <option value={48}>48 data per halaman</option>
-                        </select>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-700 whitespace-nowrap">
-                            {startIndex + 1}-{Math.min(endIndex, totalItems)}{" "}
-                            dari {totalItems}
-                        </span>
-                        <div className="flex items-center gap-1">
-                            <button
-                                className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(currentPage - 1)}
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </button>
-                            <button
-                                className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                disabled={currentPage === totalPages}
-                                onClick={() => setCurrentPage(currentPage + 1)}
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <Pagination
+                    currentPage={currentPage}
+                    lastPage={totalPages}
+                    perPage={perPage}
+                    total={totalItems}
+                    from={startIndex + 1}
+                    to={Math.min(endIndex, totalItems)}
+                    onPageChange={(p) => setCurrentPage(p)}
+                    onPerPageChange={(p) => {
+                        setPerPage(p);
+                        setCurrentPage(1);
+                    }}
+                    variant="table"
+                />
                 {/* Modal transaksi */}
-                <ModalDaftarTransaksiBarang isOpen={txModalOpen} onClose={() => setTxModalOpen(false)} transactions={txList} />
+                <ModalDaftarTransaksiBarang
+                    isOpen={txModalOpen}
+                    onClose={() => setTxModalOpen(false)}
+                    transactions={txList}
+                />
             </div>
         </AppLayout>
     );

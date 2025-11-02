@@ -1,6 +1,7 @@
+import { PageHeader } from "@/Components/ui/page-header";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, useForm } from "@inertiajs/react";
-import { CheckCheckIcon, ChevronLeft } from "lucide-react";
+import { ArrowLeft, CheckCheckIcon, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 
 interface Siswa {
@@ -92,34 +93,15 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                 ).toLocaleDateString("id-ID")}`}
             />
             <div className="min-h-screen bg-gray-50 p-6 overflow-hidden">
-                <div className="mx-auto">
-                    {/* Header */}
-                    <div className="grid gap-2 lg:flex items-center justify-between mb-6">
-                        <div className="flex gap-4 items-center">
-                            <button
-                                type="button"
-                                onClick={() => window.history.back()}
-                                className="p-2 h-max bg-slate-100 rounded-lg flex items-center justify-center hover:bg-slate-200"
-                                aria-label="Kembali"
-                            >
-                                <ChevronLeft className="h-5 w-5 text-slate-700" />
-                            </button>
-                            <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
-                                    Kehadiran
-                                </h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">
-                                    Hari dan Tanggal / Sangga / Edit Presensi
-                                    Sangga {sangga.nama_sangga}
-                                </h2>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex gap-4 mb-6 border-b"></div>
+                <PageHeader
+                    title="Kehadiran"
+                    subtitle={`Hari dan Tanggal / Sangga / Edit Presensi ${sangga.nama_sangga}`}
+                    backHref={`/kehadiran/${date}`}
+                    backIcon={ArrowLeft}
+                />
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-3 mb-4">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 gap-2 flex items-center justify-end">
                     <button
                         type="button"
                         onClick={setAllHadir}
@@ -147,7 +129,7 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                                             No.
                                         </th>
                                         <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                                            Nama Siswa
+                                            Nama Siswa dan Kelas
                                         </th>
                                         <th className="whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                                             Kehadiran
@@ -165,7 +147,7 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                                             </td>
                                             <td className="px-6 flex flex-col text-start items-start py-4 text-sm text-gray-900 ">
                                                 <p>{item.nama}</p>
-                                                <p>
+                                                <p className="text-xs text-gray-500">
                                                     {" "}
                                                     {item.kelas +
                                                         " " +
