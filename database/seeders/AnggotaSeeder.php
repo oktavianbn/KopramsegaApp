@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\Sangga;
+use App\Models\Siswa;
+use Carbon\Carbon;
 
 class AnggotaSeeder extends Seeder
 {
@@ -12,80 +15,85 @@ class AnggotaSeeder extends Seeder
      */
     public function run(): void
     {
-        $file = base_path('public/data/anggota.csv');
+        $csvFile = public_path('/data/anggotaplain.csv');
 
-        if (!file_exists($file)) {
-            $this->command?->error("CSV file not found: {$file}");
+        if (!file_exists($csvFile)) {
+            $this->command->error("File CSV tidak ditemukan: {$csvFile}");
             return;
         }
 
-        if (($handle = fopen($file, 'r')) === false) {
-            $this->command?->error("Unable to open CSV file: {$file}");
-            return;
-        }
+        $file = fopen($csvFile, 'r');
 
-        $header = fgetcsv($handle);
-        if ($header === false) {
-            $this->command?->error('CSV appears empty or malformed.');
-            fclose($handle);
-            return;
-        }
+        // Skip header row
+        fgetcsv($file, 0, ';');
 
-        $insertRows = [];
-        $chunkSize = 500;
+        $chunk = [];
+        $chunkSize = 100;
+        $processedCount = 0;
 
-        while (($data = fgetcsv($handle)) !== false) {
-            // skip empty lines
-            if (count($data) === 1 && trim($data[0]) === '') {
+        while (($row = fgetcsv($file, 0, ';')) !== false) {
+            // Skip empty rows
+            if (empty(array_filter($row))) {
                 continue;
             }
 
-            // map header -> value and normalize empty strings to null
-            $row = array_combine($header, $data);
-            foreach ($row as $k => $v) {
-                $row[$k] = $v === '' ? null : $v;
-            }
-
-            // resolve sangga by name (case-insensitive LIKE). CSV stores the sangga name.
-            $sanggaId = null;
-            if (!empty($row['sangga_id'])) {
-                $sanggaName = trim($row['sangga_id']);
-                // use LOWER(...) LIKE ? for case-insensitive matching
-                $sanggaId = DB::table('sangga')
-                    ->whereRaw('LOWER(nama_sangga) LIKE ?', ['%' . strtolower($sanggaName) . '%'])
-                    ->value('id');
-            }
-
-            $jenisKelamin = null;
-            if (!empty($row['jenis_kelamin'])) {
-                $j = strtolower($row['jenis_kelamin']);
-                $jenisKelamin = in_array($j, ['l', 'p']) ? $j : null;
-            }
-
-            $insertRows[] = [
-                'nis' => $row['nis'] ?? null,
-                'nta' => $row['nta'] ?? null,
-                'nama' => $row['nama'] ?? null,
-                'kelas' => 'X',
-                'jurusan' => $row['jurusan'] ?? null,
-                'rombel' => $row['rombel'] ?? null,
-                'jenis_kelamin' => $jenisKelamin,
-                'sangga_id' => $sanggaId,
-                'created_at' => now(),
-                'updated_at' => now(),
+            $chunk[] = [
+                'nama' => trim($row[0] ?? ''),
+                'jurusan' => trim($row[1] ?? ''),
+                'rombel' => !empty(trim($row[2] ?? '')) ? trim($row[2]) : null,
+                'jenis_kelamin' => strtolower(trim($row[3] ?? '')),
+                'sangga_nama' => trim($row[4] ?? ''),
             ];
 
-            if (count($insertRows) >= $chunkSize) {
-                DB::table('siswa')->insert($insertRows);
-                $insertRows = [];
+            // Process chunk when it reaches the chunk size
+            if (count($chunk) >= $chunkSize) {
+                $this->processChunk($chunk);
+                $processedCount += count($chunk);
+                $this->command->info("Diproses: {$processedCount} data");
+                $chunk = [];
             }
         }
 
-        if (!empty($insertRows)) {
-            DB::table('siswa')->insert($insertRows);
+        // Process remaining data
+        if (!empty($chunk)) {
+            $this->processChunk($chunk);
+            $processedCount += count($chunk);
         }
 
-        fclose($handle);
-        $this->command?->info('Imported anggota from CSV.');
+        fclose($file);
+
+        $this->command->info("Selesai! Total data yang diproses: {$processedCount}");
+    }
+
+    private function processChunk(array $chunk): void
+    {
+        $now = Carbon::now();
+
+        foreach ($chunk as $data) {
+            // Cari sangga_id berdasarkan nama menggunakan LIKE
+            $sanggaId = null;
+            if (!empty($data['sangga_nama'])) {
+                $sangga = Sangga::where('nama_sangga', 'LIKE', '%' . $data['sangga_nama'] . '%')->first();
+                $sanggaId = $sangga?->id;
+            }
+
+            // Insert atau update data siswa menggunakan firstOrCreate
+            Siswa::firstOrCreate(
+                [
+                    'nama' => $data['nama'],
+                    'kelas' => 'X',
+                    'jurusan' => $data['jurusan'],
+                ],
+                [
+                    'nis' => null,
+                    'nta' => null,
+                    'rombel' => $data['rombel'],
+                    'jenis_kelamin' => $data['jenis_kelamin'],
+                    'sangga_id' => $sanggaId,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+        }
     }
 }
