@@ -1,20 +1,18 @@
 "use client";
 
+import { PageHeader } from "@/Components/ui/page-header";
+import Pagination from "@/Components/ui/pagination";
+import { SearchToolbar } from "@/Components/ui/search-toolbar";
 import AppLayout from "@/Layouts/AppLayout";
 import { cn } from "@/lib/utils";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import {
     ArrowUpDown,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
     Download,
     Edit,
     FileText,
-    Filter,
     Package,
     Plus,
-    Search,
     Trash2,
     X
 } from "lucide-react";
@@ -215,208 +213,92 @@ export default function Index({ barangs, filters }: Props) {
             <Head title="Barang" />
             <div className="min-h-screen bg-gray-50 p-6">
                 <div className="mx-auto">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-6 items-center">
-                                <div className="p-2 h-max bg-blue-100 rounded-lg flex justify-center items-center">
-                                    <Package className="h-5 w-5 text-blue-600" />
-                                </div>
-                                <div className="flex flex-col gap-2">
+                    <PageHeader
+                        title="Barang"
+                        subtitle="Inventory / Barang / Daftar"
+                        icon={Package}
+                        actions={[
+                            {
+                                label: "Download Data",
+                                href: "/export/excel",
+                                icon: Download,
+                            },
+                            {
+                                label: "Tambah Barang",
+                                href: "/barang/create",
+                                icon: Plus,
+                                className:
+                                    "bg-blue-500 text-white hover:bg-blue-700",
+                            },
+                        ]}
+                        tabs={[
+                            { id: "", label: "Semua", count: barangs.total },
+                            {
+                                id: "true",
+                                label: "Dapat Dipinjam",
+                                count: barangs.data.filter(
+                                    (d) => d.boleh_dipinjam === true
+                                ).length,
+                            },
+                            {
+                                id: "false",
+                                label: "Tidak Dapat Dipinjam",
+                                count: barangs.data.filter(
+                                    (d) => d.boleh_dipinjam === false
+                                ).length,
+                            },
+                        ]}
+                        activeTab={activeFilter || ""}
+                        onTabChange={(tabId) => handleTab(tabId)}
+                    />
 
-                                    <h1 className="text-2xl font-bold text-gray-700">
-                                        Barang
-                                    </h1>
-                                    <h2 className="text-base font-medium text-gray-700">
-                                        Inventory / Barang / Daftar
-                                    </h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            {/* Dropdown Download */}
-                            <div
-                                className="relative inline-block text-left"
-                                ref={downloadDropdownRef}
-                            >
-                                <button
-                                    onClick={() =>
-                                        setShowDownloadDropdown(
-                                            !showDownloadDropdown
-                                        )
-                                    }
-                                    className="inline-flex justify-center items-center px-4 py-2 bg-white text-black rounded-lg border border-black hover:bg-gray-200 text-left"
-                                >
-                                    <Download className="mr-2 h-5 w-5" />
-                                    Download Data
-                                    <ChevronDown className="ml-2 h-4 w-4" />
-                                </button>
-
-                                {showDownloadDropdown && (
-                                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50">
-                                        {downloadOptions.map((opt) => (
-                                            <Link
-                                                key={opt.label}
-                                                href={opt.href}
-                                                method="get"
-                                                as="button"
-                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                                                onClick={() =>
-                                                    setShowDownloadDropdown(
-                                                        false
-                                                    )
-                                                }
-                                            >
-                                                <FileText className="h-4 w-4" />
-                                                {opt.label}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <Link
-                                href="/barang/create"
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Tambah Barang
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="flex gap-4 mb-6 border-b">
-                        <button
-                            onClick={() => handleTab("")}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === null
-                                ? "border-blue-500 text-blue-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700"
-                                }`}
-                        >
-                            Semua Barang{" "}
-                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                                {barangs.total}
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => handleTab(true)}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "true"
-                                ? "border-green-500 text-green-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700"
-                                }`}
-                        >
-                            Dapat Dipinjam
-                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                                {barangs.data.filter((d) => d.boleh_dipinjam === true).length}
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => handleTab(false)}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeFilter === "false"
-                                ? "border-red-500 text-red-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700"
-                                }`}
-                        >
-                            Tidak Dapat Dipinjam
-                            <span className="ml-1 px-2 py-1 text-xs bg-gray-100 rounded-full">
-                                {barangs.data.filter((d) => d.boleh_dipinjam === false).length}
-                            </span>
-                        </button>
-                    </div>
-
-                    {/* Filter Status */}
-                    {(search || activeFilter) && (
-                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
-                                    <Filter className="h-4 w-4" />
-                                    <span>Filter aktif:</span>
-                                    {search && (
-                                        <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                                            <Search className="h-3 w-3" />
-                                            Cari: "{search}"
-                                        </span>
-                                    )}
-                                    {activeFilter && (
-                                        <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                                            {activeFilter === "true" ? "Dapat Dipinjam" : "Tidak Dapat Dipinjam"}
-                                        </span>
-                                    )}
-                                </div>
-                                <button
-                                    onClick={clearFilters}
-                                    className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
-                                >
-                                    <X className="h-3 w-3" />
-                                    Clear All
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Search and Filter */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 flex-1">
-                                {/* Search */}
-                                <div className="relative flex-1 max-w-md">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                                    <input
-                                        type="text"
-                                        placeholder="Cari barang..."
-                                        value={search}
-                                        onChange={(e) =>
-                                            setSearch(e.target.value)
-                                        }
-                                        className="pl-10 pr-6 py-2 border md:w-80 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Sort Dropdown */}
-                            <div className="relative" ref={sortDropdownRef}>
-                                <button
-                                    onClick={() =>
-                                        setShowSortDropdown(!showSortDropdown)
-                                    }
-                                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
-                                >
-                                    <ArrowUpDown className="h-4 w-4" />
-                                    Urutkan
-                                    <ChevronDown className="h-4 w-4" />
-                                </button>
-                                {showSortDropdown && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                                        <div className="py-1">
-                                            <button
-                                                onClick={() =>
-                                                    handleSort("nama")
-                                                }
-                                                className={cn(
-                                                    "w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center justify-between",
-                                                    sortBy === "nama" &&
-                                                    "bg-blue-50 text-blue-700"
-                                                )}
-                                            >
-                                                Nama
-                                                {getSortIcon("nama")}
-                                            </button>
-                                            <button
-                                                onClick={() =>
-                                                    handleSort("created_at")
-                                                }
-                                                className={cn(
-                                                    "w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center justify-between",
-                                                    sortBy === "created_at" &&
-                                                    "bg-blue-50 text-blue-700"
-                                                )}
-                                            >
-                                                Tanggal Dibuat
-                                                {getSortIcon("created_at")}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                    <div className="mt-4">
+                        <SearchToolbar
+                            searchValue={search}
+                            onSearchChange={(val) => setSearch(val)}
+                            searchPlaceholder={"Cari barang..."}
+                            activeFilters={{
+                                search: search || undefined,
+                                filters: activeFilter
+                                    ? [
+                                          {
+                                              id: String(activeFilter),
+                                              label:
+                                                  activeFilter === "true"
+                                                      ? "Dapat Dipinjam"
+                                                      : "Tidak Dapat Dipinjam",
+                                          },
+                                      ]
+                                    : [],
+                            }}
+                            onClearFilters={clearFilters}
+                            filterOptions={[
+                                {
+                                    id: "true",
+                                    label: "Dapat Dipinjam",
+                                    section: "Status",
+                                },
+                                {
+                                    id: "false",
+                                    label: "Tidak Dapat Dipinjam",
+                                    section: "Status",
+                                },
+                            ]}
+                            onFilterSelect={(id) => {
+                                setActiveFilter(id as any);
+                                updateQuery({ filter: id, page: 1 });
+                            }}
+                            selectedFilters={
+                                activeFilter ? [String(activeFilter)] : []
+                            }
+                            sortOptions={[
+                                { id: "nama", label: "Nama" },
+                                { id: "created_at", label: "Tanggal Dibuat" },
+                            ]}
+                            onSortSelect={(id) => handleSort(id)}
+                            currentSortField={sortBy}
+                            sortDirection={sortDirection as "asc" | "desc"}
+                        />
                     </div>
 
                     {/* Table */}
@@ -476,7 +358,8 @@ export default function Index({ barangs, filters }: Props) {
                                                 className="hover:bg-gray-50"
                                             >
                                                 <td className="px-6 py-4 text-center text-sm text-gray-900 ">
-                                                    {(barangs.current_page - 1) *
+                                                    {(barangs.current_page -
+                                                        1) *
                                                         barangs.per_page +
                                                         idx +
                                                         1}
@@ -523,10 +406,11 @@ export default function Index({ barangs, filters }: Props) {
                                                 </td>
                                                 <td className="px-6 py-4 text-center whitespace-nowrap">
                                                     <span
-                                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${barang.boleh_dipinjam
-                                                            ? "bg-green-100 text-green-800"
-                                                            : "bg-red-100 text-red-800"
-                                                            }`}
+                                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                            barang.boleh_dipinjam
+                                                                ? "bg-green-100 text-green-800"
+                                                                : "bg-red-100 text-red-800"
+                                                        }`}
                                                     >
                                                         {barang.boleh_dipinjam
                                                             ? "Dapat Dipinjam"
@@ -583,68 +467,20 @@ export default function Index({ barangs, filters }: Props) {
                         </div>
 
                         {/* Pagination */}
-                        <div className="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <select
-                                    className="border border-gray-300 rounded px-2 py-1 text-sm"
-                                    value={perPage}
-                                    onChange={handlePerPageChange}
-                                >
-                                    <option value={10}>10 data per halaman</option>
-                                    <option value={20}>20 data per halaman</option>
-                                    <option value={50}>50 data per halaman</option>
-                                </select>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-700 whitespace-nowrap">
-                                    {barangs.from}-{barangs.to} dari{" "}
-                                    {barangs.total}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                        disabled={barangs.current_page === 1}
-                                        onClick={() =>
-                                            router.get(
-                                                "/barangs",
-                                                {
-                                                    search,
-                                                    sort_by: sortBy,
-                                                    sort_direction: sortDirection,
-                                                    page: barangs.current_page - 1,
-                                                    perPage,
-                                                },
-                                                { preserveState: true }
-                                            )
-                                        }
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                        className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
-                                        disabled={
-                                            barangs.current_page ===
-                                            barangs.last_page
-                                        }
-                                        onClick={() =>
-                                            router.get(
-                                                "/barangs",
-                                                {
-                                                    search,
-                                                    sort_by: sortBy,
-                                                    sort_direction: sortDirection,
-                                                    page: barangs.current_page + 1,
-                                                    perPage,
-                                                },
-                                                { preserveState: true }
-                                            )
-                                        }
-                                    >
-                                        <ChevronRight className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <Pagination
+                            currentPage={barangs.current_page}
+                            lastPage={barangs.last_page}
+                            perPage={perPage}
+                            total={barangs.total}
+                            from={barangs.from}
+                            to={barangs.to}
+                            onPageChange={(page) => updateQuery({ page })}
+                            onPerPageChange={(p) => {
+                                setPerPage(p);
+                                updateQuery({ perPage: p, page: 1 });
+                            }}
+                            variant="table"
+                        />
                     </div>
 
                     {showModal && selectedBarang && (
@@ -759,7 +595,7 @@ export default function Index({ barangs, filters }: Props) {
                                     {activeTab === "spec" && (
                                         <div className="space-y-4">
                                             {selectedBarang.spesifikasi &&
-                                                selectedBarang.spesifikasi.length >
+                                            selectedBarang.spesifikasi.length >
                                                 0 ? (
                                                 <div className="space-y-3">
                                                     {selectedBarang.spesifikasi.map(

@@ -1,3 +1,4 @@
+import { PageHeader } from "@/Components/ui/page-header";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
@@ -50,23 +51,13 @@ export default function Create() {
 
             <div className="py-6">
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="grid gap-2 md:flex items-center justify-between mb-6">
-                        <div className="flex gap-6 items-center">
-                            <Link
-                                href="/dokumentasi"
-                                className="p-2 h-max bg-gray-200 rounded-lg flex justify-center items-center">
-                                <ArrowLeft className="h-5 w-5 text-gray-500" />
-                            </Link>
-                            <div className="flex flex-col gap-2">
-                                <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">Dokumentasi</h1>
-                                <h2 className="text-base font-medium text-gray-700 whitespace-nowrap">Dokumentasi / Tambah Data</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex gap-4 mb-6 border-b">
-
-                    </div>
+                {/* Header */}
+                <PageHeader
+                    title="Dokumentasi"
+                    subtitle="Daftar / Tambah Data"
+                    backHref="/dokumentasi"
+                    backIcon={ArrowLeft}
+                />
 
                     {/* Form */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

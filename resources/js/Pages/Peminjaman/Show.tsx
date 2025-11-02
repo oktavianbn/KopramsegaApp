@@ -165,7 +165,6 @@ export default function Show({ peminjaman, users }: Props) {
 
             <div className="p-6">
                 {/* Header */}
-                {/* Header */}
                 <div className="grid gap-2 md:flex items-center justify-between mb-6">
                     <div className="flex gap-6 items-center">
                         <Link

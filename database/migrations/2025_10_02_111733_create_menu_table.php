@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nama');
             $table->foreignId('sesi_id')->constrained('sesi_penjualan')->onDelete('cascade');
             $table->decimal('harga', 10, 2)->nullable();
-            $table->integer('stok')->nullable()->default(0);
+            // $table->integer('stok')->nullable()->default(0);
             $table->string('foto')->nullable();
             $table->timestamps();
         });

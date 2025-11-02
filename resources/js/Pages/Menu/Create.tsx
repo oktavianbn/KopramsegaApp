@@ -15,6 +15,7 @@ import {
     Image
 } from "lucide-react";
 import AppLayout from "@/Layouts/AppLayout";
+import { PageHeader } from "@/Components/ui/page-header";
 
 interface MenuItem {
     nama: string;
@@ -122,27 +123,13 @@ export default function Create({ sesis, sesi_id }: MenuCreateProps) {
             <Head title="Tambah Menu" />
 
                 <div className="p-6">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-6 items-center">
-                                <button
-                                    onClick={() => window.history.back()}
-                                    className="p-2 h-max bg-gray-100 rounded-lg flex justify-center items-center hover:bg-gray-200 transition-colors"
-                                >
-                                    <ArrowLeft className="h-5 w-5 text-gray-600" />
-                                </button>
-                                <div className="flex flex-col gap-2">
-                                    <h1 className="text-2xl font-bold text-gray-700">
-                                        Menu
-                                    </h1>
-                                    <h2 className="text-base font-medium text-gray-700">
-                                        Penjualan / Menu / Tambah Data
-                                    </h2>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                {/* Header */}
+                <PageHeader
+                    title="Menu"
+                    subtitle="Daftar / Tambah Data"
+                    backHref="/menu"
+                    backIcon={ArrowLeft}
+                />
 
                     {/* Form */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
