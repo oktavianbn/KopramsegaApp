@@ -89,7 +89,7 @@ class MenuController extends Controller
                 'items' => 'required|array|min:1',
                 'items.*.nama' => 'required|string|max:255',
                 'items.*.harga' => 'nullable|numeric',
-                'items.*.stok' => 'nullable|integer',
+                // 'items.*.stok' => 'nullable|integer',
                 'items.*.foto' => 'nullable|file|image|max:2048',
             ]);
 
@@ -99,7 +99,7 @@ class MenuController extends Controller
                     'sesi_id' => $validated['sesi_id'],
                     'nama' => $it['nama'],
                     'harga' => $it['harga'] ?? null,
-                    'stok' => $it['stok'] ?? 0,
+                    // 'stok' => $it['stok'] ?? 0,
                     'foto' => null,
                 ];
 
@@ -122,7 +122,7 @@ class MenuController extends Controller
             'sesi_id' => 'required|exists:sesi_penjualan,id',
             'nama' => 'required|string|max:255',
             'harga' => 'nullable|numeric',
-            'stok' => 'nullable|integer',
+            // 'stok' => 'nullable|integer',
             'foto' => 'nullable|image|max:2048',
         ]);
 
@@ -142,7 +142,7 @@ class MenuController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'harga' => 'nullable|numeric',
-            'stok' => 'nullable|integer',
+            // 'stok' => 'nullable|integer',
             'foto' => 'nullable|image|max:2048',
         ]);
 

@@ -36,7 +36,7 @@ export default function Create({ sesis, sesi_id }: MenuCreateProps) {
             {
                 nama: "",
                 harga: "",
-                stok: "0",
+                // stok: "0",
                 foto: null as File | null,
             },
         ] as MenuItem[],
@@ -295,7 +295,7 @@ export default function Create({ sesis, sesi_id }: MenuCreateProps) {
                                                     </div>
 
                                                     {/* Stok */}
-                                                    <div>
+                                                    {/* <div>
                                                         <label
                                                             htmlFor={`stok-${index}`}
                                                             className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
@@ -330,7 +330,7 @@ export default function Create({ sesis, sesi_id }: MenuCreateProps) {
                                                                 }
                                                             </p>
                                                         )}
-                                                    </div>
+                                                    </div> */}
                                                 </div>
 
                                                 {/* Right Column - Foto */}

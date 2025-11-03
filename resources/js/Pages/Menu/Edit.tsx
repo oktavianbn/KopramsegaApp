@@ -24,7 +24,7 @@ export default function Edit({ menu, sesis }: Props) {
     const form = useForm({
         nama: menu.nama || "",
         harga: menu.harga ?? "",
-        stok: menu.stok ?? "",
+        // stok: menu.stok ?? "",
         foto: null as File | null,
         sesi_id: menu.sesi_id || "",
         _method: "PATCH",
@@ -191,7 +191,7 @@ export default function Edit({ menu, sesis }: Props) {
                                     </div>
 
                                     {/* Stok */}
-                                    <div>
+                                    {/* <div>
                                         <label
                                             htmlFor="stok"
                                             className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
@@ -219,7 +219,7 @@ export default function Edit({ menu, sesis }: Props) {
                                                 {anyForm.errors.stok}
                                             </p>
                                         )}
-                                    </div>
+                                    </div> */}
                                 </div>
 
                                 {/* Right Column - Foto */}
