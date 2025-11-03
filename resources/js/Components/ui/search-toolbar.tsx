@@ -207,8 +207,8 @@ export function SearchToolbar({
                                     />
                                 </button>
                                 {showFilterDropdown && (
-                                    <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-                                        <div className="p-2 flex flex-col">
+                                    <div className="absolute md:-left-10 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                                        <div className="p-2 flex flex-col max-h-60 overflow-y-auto">
                                             {Object.entries(
                                                 groupedFilters || {}
                                             ).map(([section, filters]) => (
@@ -271,7 +271,7 @@ export function SearchToolbar({
                                 )}
                             </button>
                             {showSortDropdown && (
-                                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                                <div className="absolute lg:right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                                     <div className="p-2">
                                         {sortOptions.map((option) => (
                                             <button

@@ -33,7 +33,14 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                // Share a plain array for user and include the role name explicitly.
+                // This avoids surprises where relations may not serialize as expected.
+                'user' => $request->user()
+                    ? array_merge(
+                        $request->user()->toArray(),
+                        ['role' => $request->user()->role ? $request->user()->role->name : null]
+                    )
+                    : null,
             ],
             'ziggy' => fn() => [
                 ...(new Ziggy)->toArray(),

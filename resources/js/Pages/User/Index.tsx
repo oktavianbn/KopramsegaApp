@@ -261,6 +261,7 @@ export default function Index({ users, filters, roles }: Props) {
                             }}
                             selectedFilters={roleFilter ? [roleFilter] : []}
                             sortOptions={[
+                                { id: "name", label: "Nama" },
                                 { id: "created_at", label: "Dibuat Pada" },
                             ]}
                             onSortSelect={handleSort}

@@ -1,28 +1,19 @@
 "use client";
 
+import { PageHeader } from "@/Components/ui/page-header";
+import Pagination from "@/Components/ui/pagination";
+import { SearchToolbar } from "@/Components/ui/search-toolbar";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import {
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    DollarSign,
     Download,
     Edit,
     FileText,
-    Filter,
     Plus,
     Presentation,
-    Search,
-    SortAsc,
-    SortDesc,
     Trash2,
-    X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { PageHeader } from "@/Components/ui/page-header";
-import { SearchToolbar } from "@/Components/ui/search-toolbar";
-import Pagination from "@/Components/ui/pagination";
 
 interface Sangga {
     id: number;
@@ -51,11 +42,13 @@ interface Props {
 export default function Index({ sangga, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "");
     // Sorting is fixed to nama_sangga; UI for changing sort removed per request
-    const [sortBy] = useState("nama_sangga");
-    const [sortDirection] = useState<"asc" | "desc">("asc");
     const [perPage, setPerPage] = useState(sangga.per_page || 10);
     const [activeFilter, setActiveFilter] = useState<string | null>(
         filters.filter || null
+    );
+    const [sortBy, setSortBy] = useState(filters.sort_by || "created_at");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
+        filters.sort_direction || "desc"
     );
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -131,6 +124,17 @@ export default function Index({ sangga, filters }: Props) {
     };
 
     /** 🔹 sorting */
+    const handleSort = (field: string) => {
+        if (sortBy === field) {
+            const newDir = sortDirection === "asc" ? "desc" : "asc";
+            setSortDirection(newDir);
+            updateQuery({ sort_by: field, sort_direction: newDir });
+        } else {
+            setSortBy(field);
+            setSortDirection("asc");
+            updateQuery({ sort_by: field, sort_direction: "asc" });
+        }
+    };
     // no client-side sort handler (sorting fixed server-side by nama_sangga)
 
     /** 🔹 perPage */
@@ -188,33 +192,6 @@ export default function Index({ sangga, filters }: Props) {
                         ]}
                     />
 
-                    {/* hidden dropdown preserved in DOM for backward compatibility */}
-                    <div
-                        className="relative inline-block text-left mt-2"
-                        style={{ display: "none" }}
-                        ref={downloadDropdownRef}
-                    >
-                        {showDownloadDropdown && (
-                            <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow-lg z-50">
-                                {downloadOptions.map((opt) => (
-                                    <Link
-                                        key={opt.label}
-                                        href={opt.href}
-                                        method="get"
-                                        as="button"
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-                                        onClick={() =>
-                                            setShowDownloadDropdown(false)
-                                        }
-                                    >
-                                        <FileText className="h-4 w-4" />
-                                        {opt.label}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
                     <div className="mt-4">
                         <SearchToolbar
                             searchValue={search}
@@ -235,17 +212,15 @@ export default function Index({ sangga, filters }: Props) {
                                     : [],
                             }}
                             onClearFilters={clearFilters}
-                            filterOptions={[
-                                { id: "", label: "Semua" },
-                                { id: "with_logo", label: "Dengan Logo" },
-                                { id: "without_logo", label: "Tanpa Logo" },
-                            ]}
                             onFilterSelect={(id: string) =>
                                 handleTab(id || null)
                             }
                             selectedFilters={activeFilter ? [activeFilter] : []}
-                            sortOptions={[]}
-                            onSortSelect={() => {}}
+                            sortOptions={[
+                                { id: "nama_sangga", label: "Nama Sangga" },
+                                { id: "created_at", label: "Tanggal Dibuat" },
+                            ]}
+                            onSortSelect={(field: string) => handleSort(field)}
                             currentSortField={sortBy}
                             sortDirection={sortDirection}
                         />

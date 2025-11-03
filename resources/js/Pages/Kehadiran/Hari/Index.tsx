@@ -38,6 +38,7 @@ export default function Index({ dates }: Props) {
         "Jumat",
         "Sabtu",
     ];
+    const dayNamesShort = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
     const monthNames = [
         "Januari",
         "Februari",
@@ -53,21 +54,30 @@ export default function Index({ dates }: Props) {
         "Desember",
     ];
 
+    const monthNamesShort = [
+        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+        "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+    ];
+
     // compute previous and next month labels (include year when rolling)
     const prevMonth =
         month === 0
-            ? `${monthNames[11]} ${year - 1}`
-            : `${monthNames[month - 1]} ${year}`;
+            ? `${monthNamesShort[11]} ${year - 1}`
+            : `${monthNamesShort[month - 1]} ${year}`;
     const nextMonth =
         month === 11
-            ? `${monthNames[0]} ${year + 1}`
-            : `${monthNames[month + 1]} ${year}`;
+            ? `${monthNamesShort[0]} ${year + 1}`
+            : `${monthNamesShort[month + 1]} ${year}`;
 
     const getDayTextColor = (dow: number) => {
         if (dow === 5) return "text-emerald-700";
         if (dow === 6 || dow === 0) return "text-red-700";
         return "text-slate-700";
     };
+
+    const screenWidth = window.innerWidth;
+
+    const dayFix = screenWidth < 640 ? dayNamesShort : dayNames;
 
     const calendarDays: DayCell[] = useMemo(() => {
         const firstOfMonth = new Date(year, month, 1);
@@ -154,25 +164,25 @@ export default function Index({ dates }: Props) {
                     {/* Calendar Card */}
                     <div className="bg-white shadow-sm border border-slate-200 overflow-hidden rounded-lg ">
                         {/* Month Navigation */}
-                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-8 py-6 flex items-center justify-between border-b border-slate-200">
-                            <h2 className="text-lg font-semibold text-gray-800 text-start">
+                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-4 space-x-4 py-6 flex items-center justify-between border-b border-slate-200">
+                            <h2 className="text-lg font-semibold text-gray-800 text-start whitespace-nowrap">
                                 {monthNames[month]} {year}
                             </h2>
-                            <div className="flex space-x-4 ">
+                            <div className="flex space-x-4 whitespace-nowrap max-lg:text-sm">
                                 <div
                                     className="inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
                                     onClick={handlePrevMonth}
                                     aria-label="Bulan sebelumnya"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
-                                    <h1>{prevMonth}</h1>
+                                    <h1 className="max-md:hidden">{prevMonth}</h1>
                                 </div>
                                 <div
                                     className="inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
                                     onClick={handleNextMonth}
                                     aria-label="Bulan berikutnya"
                                 >
-                                    <h1>{nextMonth}</h1>
+                                    <h1 className="max-md:hidden">{nextMonth}</h1>
                                     <ChevronRight className="w-5 h-5" />
                                 </div>
                             </div>
@@ -180,7 +190,7 @@ export default function Index({ dates }: Props) {
 
                         {/* Day Names Header */}
                         <div className="grid grid-cols-7 gap-0 bg-slate-100 border-b border-slate-200">
-                            {dayNames.map((day, idx) => (
+                            {dayFix.map((day, idx) => (
                                 <div
                                     key={day}
                                     className={`p-2 text-center font-semibold text-sm border border-slate-200 ${
@@ -231,7 +241,7 @@ export default function Index({ dates }: Props) {
                                             {day.date}
                                         </div>
                                         {day.isToday && (
-                                            <div className="text-xs text-blue-500 font-medium mt-1">
+                                            <div className="text-xs text-blue-500 font-medium mt-1 max-md:hidden">
                                                 Hari ini
                                             </div>
                                         )}

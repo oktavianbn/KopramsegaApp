@@ -21,7 +21,10 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
-            roleDivisi: user.role ?? '',
+            // user.role can be a string or an object (relation). Use the string directly if it's already a string,
+            // otherwise read the name attribute from the role object.
+            roleDivisi:
+                typeof user.role === 'string' ? user.role : user.role ? user.role.name : '',
         });
 
     const submit: FormEventHandler = (e) => {
