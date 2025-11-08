@@ -10,6 +10,7 @@ import {
     AlertCircle,
     TrendingUp,
     Calendar,
+    ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -150,8 +151,8 @@ export default function Detail({
                     <PageHeader
                         title={siswa.nama}
                         subtitle="Rekap Kehadiran / Per Siswa / Detail"
-                        icon={User}
                         backHref="/rekap/siswa"
+                        backIcon={ArrowLeft}
                     />
 
                     {/* Student Profile Card */}
@@ -180,7 +181,7 @@ export default function Detail({
                                             Jenis Kelamin
                                         </p>
                                         <p className="font-semibold text-gray-900">
-                                            {siswa.jenis_kelamin === "L"
+                                            {siswa.jenis_kelamin === "l"
                                                 ? "Laki-laki"
                                                 : "Perempuan"}
                                         </p>

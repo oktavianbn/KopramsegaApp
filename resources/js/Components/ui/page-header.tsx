@@ -80,7 +80,7 @@ export function PageHeader({
                             </div>
                         )}
                         <div className="flex flex-col gap-2">
-                            <h1 className="text-2xl font-bold text-gray-700 whitespace-nowrap">
+                            <h1 className="text-2xl font-bold text-gray-700 sm:whitespace-nowrap">
                                 {title}
                             </h1>
                             {subtitle && (

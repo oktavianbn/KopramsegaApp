@@ -109,6 +109,22 @@ export default function Edit({ siswa, sangga, date, attendances }: Props) {
                         Check all hadir
                     </button>
                     <button
+                        type="button"
+                        onClick={() => {
+                            // set all statuses to empty/unchecked
+                            const copy = data.attendances.map((a: any) => ({
+                                ...a,
+                                status: "",
+                                keterangan: "",
+                            }));
+                            setData("attendances", copy);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                        <ChevronLeft className="w-4 h-4" />
+                        Uncheck all
+                    </button>
+                    <button
                         onClick={submit}
                         className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
