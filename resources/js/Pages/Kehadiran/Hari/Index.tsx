@@ -1,7 +1,15 @@
 import { PageHeader } from "@/Components/ui/page-header";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, router } from "@inertiajs/react";
-import { ArrowLeft, CheckLine, ChevronLeft, ChevronRight, ListCheckIcon, ListChecks, ListChecksIcon } from "lucide-react";
+import {
+    ArrowLeft,
+    CheckLine,
+    ChevronLeft,
+    ChevronRight,
+    ListCheckIcon,
+    ListChecks,
+    ListChecksIcon,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 
 interface Props {
@@ -55,8 +63,18 @@ export default function Index({ dates }: Props) {
     ];
 
     const monthNamesShort = [
-        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-        "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Mei",
+        "Jun",
+        "Jul",
+        "Agu",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Des",
     ];
 
     // compute previous and next month labels (include year when rolling)
@@ -70,7 +88,7 @@ export default function Index({ dates }: Props) {
             : `${monthNamesShort[month + 1]} ${year}`;
 
     const getDayTextColor = (dow: number) => {
-        if (dow === 5) return "text-emerald-700";
+        if (dow === 5) return "text-emerald-900";
         if (dow === 6 || dow === 0) return "text-red-700";
         return "text-slate-700";
     };
@@ -175,14 +193,18 @@ export default function Index({ dates }: Props) {
                                     aria-label="Bulan sebelumnya"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
-                                    <h1 className="max-md:hidden">{prevMonth}</h1>
+                                    <h1 className="max-md:hidden">
+                                        {prevMonth}
+                                    </h1>
                                 </div>
                                 <div
                                     className="inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer"
                                     onClick={handleNextMonth}
                                     aria-label="Bulan berikutnya"
                                 >
-                                    <h1 className="max-md:hidden">{nextMonth}</h1>
+                                    <h1 className="max-md:hidden">
+                                        {nextMonth}
+                                    </h1>
                                     <ChevronRight className="w-5 h-5" />
                                 </div>
                             </div>
@@ -212,16 +234,28 @@ export default function Index({ dates }: Props) {
                                 const disabled =
                                     !day.isCurrentMonth ||
                                     new Date(day.iso) >
-                                        new Date(dates || todayIso);
+                                        new Date(dates || todayIso) ||
+                                    day.dayOfWeek !== 5; // Only enable Friday (5)
+
+                                // Background color based on day of week
+                                const bgColor =
+                                    day.dayOfWeek === 5
+                                        ? "bg-emerald-50 hover:bg-emerald-100"
+                                        : day.dayOfWeek === 6 ||
+                                          day.dayOfWeek === 0
+                                        ? "bg-red-50"
+                                        : "bg-white";
 
                                 return (
                                     <button
                                         key={idx}
                                         onClick={() => handleDayClick(day)}
                                         disabled={disabled}
-                                        className={`aspect-square p-2 max-h-20 w-full border border-slate-200 flex flex-col items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed ${
+                                        className={`aspect-square p-2 max-h-20 w-full border border-slate-200 flex flex-col items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed ${bgColor} ${
                                             !day.isCurrentMonth
                                                 ? "opacity-30"
+                                                : disabled
+                                                ? "opacity-50"
                                                 : ""
                                         } ${
                                             day.isToday

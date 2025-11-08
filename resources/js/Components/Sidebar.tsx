@@ -34,7 +34,7 @@ import {
     Users2,
     UtensilsCrossed,
     Warehouse,
-    X
+    X,
 } from "lucide-react";
 import { useState } from "react";
 import Dropdown from "./Dropdown";
@@ -47,6 +47,19 @@ interface SimpleSidebarProps {
 
 const menuItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" },
+    {
+        icon: ClipboardCheck,
+        label: "Presensi",
+        group: true,
+        children: [
+            { icon: ListChecks, label: "Kehadiran", href: "/kehadiran" },
+            {
+                icon: CalendarDays,
+                label: "Rekap",
+                href: "/rekap/dashboard",
+            },
+        ],
+    },
     { icon: DollarSign, label: "Keuangan", href: "/keuangan" },
     {
         icon: Users,
@@ -89,15 +102,7 @@ const menuItems = [
             { icon: UserLock, label: "Pelanggan", href: "/pelanggan" },
         ],
     },
-    {
-        icon: ClipboardCheck,
-        label: "Presensi",
-        group: true,
-        children: [
-            { icon: ListChecks, label: "Kehadiran", href: "/kehadiran" },
-            { icon: CalendarDays, label: "Rekap", href: "/rekap-absensi" },
-        ],
-    },
+
     {
         icon: Blocks,
         label: "CMS",

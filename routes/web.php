@@ -19,6 +19,7 @@ use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\SanggaController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\KehadiranController;
+use App\Http\Controllers\RekapKehadiranController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -60,7 +61,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('siswa', App\Http\Controllers\SiswaController::class);
 
     // Kehadiran
-    // web.php
+    // Rekap Kehadiran (harus di atas route dinamis)
+    Route::get('/rekap/dashboard', [RekapKehadiranController::class, 'dashboard'])->name('kehadiran.rekap.dashboard');
+    Route::get('/rekap/siswa', [RekapKehadiranController::class, 'rekapSiswa'])->name('kehadiran.rekap.siswa');
+    Route::get('/rekap/siswa/{id}', [RekapKehadiranController::class, 'detailSiswa'])->name('kehadiran.rekap.siswa.detail');
+    Route::get('/rekap/sangga', [RekapKehadiranController::class, 'rekapSangga'])->name('kehadiran.rekap.sangga');
+    Route::get('/rekap/sangga/{id}', [RekapKehadiranController::class, 'detailSangga'])->name('kehadiran.rekap.sangga.detail');
+    Route::get('/rekap/pertemuan', [RekapKehadiranController::class, 'rekapPertemuan'])->name('kehadiran.rekap.pertemuan');
+    Route::get('/rekap/pertemuan/{tanggal}', [RekapKehadiranController::class, 'detailPertemuan'])->name('kehadiran.rekap.pertemuan.detail');
+
+    // Input Kehadiran (route dinamis di bawah)
     Route::get('/kehadiran', [KehadiranController::class, 'pilihHari'])->name('kehadiran.index');
     Route::get('/kehadiran/{hari}', [KehadiranController::class, 'pilihKelompok'])->name('kehadiran.day');
     Route::get('/kehadiran/{hari}/{kelompok}', [KehadiranController::class, 'formKehadiran'])->name('kehadiran.form');
