@@ -30,7 +30,7 @@ export default function Index({ pertemuan, bulan, tahun, total_siswa }: Props) {
 
     const handleFilterChange = (newBulan: number, newTahun: number) => {
         router.get(
-            "/kehadiran/rekap/pertemuan",
+            "/rekap/pertemuan",
             { bulan: newBulan, tahun: newTahun },
             { preserveState: true }
         );
@@ -86,13 +86,13 @@ export default function Index({ pertemuan, bulan, tahun, total_siswa }: Props) {
 
     // Calculate overall stats
     const totalPertemuan = pertemuan.length;
-    const totalHadir = pertemuan.reduce((sum, p) => sum + p.hadir, 0);
-    const totalIzin = pertemuan.reduce((sum, p) => sum + p.izin, 0);
-    const totalAlfa = pertemuan.reduce((sum, p) => sum + p.alfa, 0);
+    const totalHadir = pertemuan.reduce((sum, p) => sum + Number(p.hadir), 0);
+    const totalIzin = pertemuan.reduce((sum, p) => sum + Number(p.izin), 0);
+    const totalAlfa = pertemuan.reduce((sum, p) => sum + Number(p.alfa), 0);
     const avgPersentase =
         totalPertemuan > 0
             ? (
-                  pertemuan.reduce((sum, p) => sum + p.persentase, 0) /
+                  pertemuan.reduce((sum, p) => sum + Number(p.persentase), 0) /
                   totalPertemuan
               ).toFixed(2)
             : 0;
@@ -106,7 +106,7 @@ export default function Index({ pertemuan, bulan, tahun, total_siswa }: Props) {
                         title="Rekap Per Pertemuan"
                         subtitle="Rekap Kehadiran / Per Pertemuan"
                         icon={Calendar}
-                        backHref="/kehadiran/rekap/dashboard"
+                        backHref="/rekap/dashboard"
                     />
 
                     {/* Filter */}
@@ -336,7 +336,7 @@ export default function Index({ pertemuan, bulan, tahun, total_siswa }: Props) {
                                                     <button
                                                         onClick={() =>
                                                             router.visit(
-                                                                `/kehadiran/rekap/pertemuan/${item.tanggal}`
+                                                                `/rekap/pertemuan/${item.tanggal}`
                                                             )
                                                         }
                                                         className="text-sm text-blue-600 hover:text-blue-700 font-medium"

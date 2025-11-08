@@ -90,6 +90,7 @@ class RekapKehadiranController extends Controller
                     : 0;
 
                 return [
+                    'id' => $sangga->id,
                     'nama_sangga' => $sangga->nama_sangga,
                     'total_anggota' => $sangga->siswa_count,
                     'hadir' => $sanggaStats->hadir ?? 0,

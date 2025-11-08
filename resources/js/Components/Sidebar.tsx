@@ -56,7 +56,7 @@ const menuItems = [
             {
                 icon: CalendarDays,
                 label: "Rekap",
-                href: "/kehadiran/rekap/dashboard",
+                href: "/rekap/dashboard",
             },
         ],
     },

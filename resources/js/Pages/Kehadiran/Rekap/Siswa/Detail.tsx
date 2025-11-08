@@ -67,7 +67,7 @@ export default function Detail({
 
     const handleFilterChange = (newBulan: number, newTahun: number) => {
         router.get(
-            `/kehadiran/rekap/siswa/${siswa.id}`,
+            `/rekap/siswa/${siswa.id}`,
             { bulan: newBulan, tahun: newTahun },
             { preserveState: true }
         );
@@ -151,7 +151,7 @@ export default function Detail({
                         title={siswa.nama}
                         subtitle="Rekap Kehadiran / Per Siswa / Detail"
                         icon={User}
-                        backHref="/kehadiran/rekap/siswa"
+                        backHref="/rekap/siswa"
                     />
 
                     {/* Student Profile Card */}

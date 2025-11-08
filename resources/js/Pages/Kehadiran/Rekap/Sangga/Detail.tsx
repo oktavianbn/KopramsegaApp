@@ -59,7 +59,7 @@ export default function Detail({
 
     const handleFilterChange = (newBulan: number, newTahun: number) => {
         router.get(
-            `/kehadiran/rekap/sangga/${sangga.id}`,
+            `/rekap/sangga/${sangga.id}`,
             { bulan: newBulan, tahun: newTahun },
             { preserveState: true }
         );
@@ -124,7 +124,7 @@ export default function Detail({
                         title={sangga.nama_sangga}
                         subtitle="Rekap Kehadiran / Per Sangga / Detail"
                         icon={Users}
-                        backHref="/kehadiran/rekap/sangga"
+                        backHref="/rekap/sangga"
                     />
 
                     {/* Sangga Profile Card */}
@@ -322,7 +322,7 @@ export default function Detail({
                                                     <button
                                                         onClick={() =>
                                                             router.visit(
-                                                                `/kehadiran/rekap/siswa/${item.id}?bulan=${bulan}&tahun=${tahun}`
+                                                                `/rekap/siswa/${item.id}?bulan=${bulan}&tahun=${tahun}`
                                                             )
                                                         }
                                                         className="text-sm text-blue-600 hover:text-blue-700 font-medium"

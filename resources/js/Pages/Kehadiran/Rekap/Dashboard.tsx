@@ -24,6 +24,7 @@ interface Summary {
 }
 
 interface RekapSangga {
+    id: number;
     nama_sangga: string;
     total_anggota: number;
     hadir: number;
@@ -67,7 +68,7 @@ export default function Dashboard({
 
     const handleFilterChange = (newBulan: number, newTahun: number) => {
         router.get(
-            "/kehadiran/rekap/dashboard",
+            "/rekap/dashboard",
             { bulan: newBulan, tahun: newTahun },
             { preserveState: true }
         );
@@ -200,9 +201,7 @@ export default function Dashboard({
                     {/* Quick Links */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <button
-                            onClick={() =>
-                                router.visit("/kehadiran/rekap/siswa")
-                            }
+                            onClick={() => router.visit("/rekap/siswa")}
                             className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow text-left"
                         >
                             <Users className="w-8 h-8 text-blue-600 mb-3" />
@@ -214,9 +213,7 @@ export default function Dashboard({
                             </p>
                         </button>
                         <button
-                            onClick={() =>
-                                router.visit("/kehadiran/rekap/sangga")
-                            }
+                            onClick={() => router.visit("/rekap/sangga")}
                             className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow text-left"
                         >
                             <Users className="w-8 h-8 text-purple-600 mb-3" />
@@ -228,9 +225,7 @@ export default function Dashboard({
                             </p>
                         </button>
                         <button
-                            onClick={() =>
-                                router.visit("/kehadiran/rekap/pertemuan")
-                            }
+                            onClick={() => router.visit("/rekap/pertemuan")}
                             className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow text-left"
                         >
                             <Calendar className="w-8 h-8 text-emerald-600 mb-3" />
@@ -378,9 +373,7 @@ export default function Dashboard({
                                 Rekap Per Sangga
                             </h3>
                             <button
-                                onClick={() =>
-                                    router.visit("/kehadiran/rekap/sangga")
-                                }
+                                onClick={() => router.visit("/rekap/sangga")}
                                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                             >
                                 Lihat Detail →
@@ -423,7 +416,7 @@ export default function Dashboard({
                                             className="hover:bg-gray-50 cursor-pointer"
                                             onClick={() =>
                                                 router.visit(
-                                                    `/kehadiran/rekap/sangga/${item.nama_sangga}`
+                                                    `/rekap/sangga/${item.id}`
                                                 )
                                             }
                                         >

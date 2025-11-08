@@ -63,7 +63,7 @@ export default function Index({
         if (kelas) params.kelas = kelas;
         if (searchTerm) params.search = searchTerm;
 
-        router.get("/kehadiran/rekap/siswa", params, { preserveState: true });
+        router.get("/rekap/siswa", params, { preserveState: true });
     };
 
     const handleSearch = () => {
@@ -133,7 +133,7 @@ export default function Index({
                         title="Rekap Per Siswa"
                         subtitle="Rekap Kehadiran / Per Siswa"
                         icon={Users}
-                        backHref="/kehadiran/rekap/dashboard"
+                        backHref="/rekap/dashboard"
                     />
 
                     {/* Filter */}
@@ -380,7 +380,7 @@ export default function Index({
                                                     <button
                                                         onClick={() =>
                                                             router.visit(
-                                                                `/kehadiran/rekap/siswa/${item.id}?bulan=${filters.bulan}&tahun=${filters.tahun}`
+                                                                `/rekap/siswa/${item.id}?bulan=${filters.bulan}&tahun=${filters.tahun}`
                                                             )
                                                         }
                                                         className="text-sm text-blue-600 hover:text-blue-700 font-medium"

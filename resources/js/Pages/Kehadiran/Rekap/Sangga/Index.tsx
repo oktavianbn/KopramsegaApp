@@ -34,7 +34,7 @@ export default function Index({
 
     const handleFilterChange = (newBulan: number, newTahun: number) => {
         router.get(
-            "/kehadiran/rekap/sangga",
+            "/rekap/sangga",
             { bulan: newBulan, tahun: newTahun },
             { preserveState: true }
         );
@@ -104,7 +104,7 @@ export default function Index({
                         title="Rekap Per Sangga"
                         subtitle="Rekap Kehadiran / Per Sangga"
                         icon={Users}
-                        backHref="/kehadiran/rekap/dashboard"
+                        backHref="/rekap/dashboard"
                     />
 
                     {/* Filter */}
@@ -346,7 +346,7 @@ export default function Index({
                                                 <button
                                                     onClick={() =>
                                                         router.visit(
-                                                            `/kehadiran/rekap/sangga/${item.id}?bulan=${bulan}&tahun=${tahun}`
+                                                            `/rekap/sangga/${item.id}?bulan=${bulan}&tahun=${tahun}`
                                                         )
                                                     }
                                                     className="text-sm text-blue-600 hover:text-blue-700 font-medium"

@@ -62,13 +62,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Kehadiran
     // Rekap Kehadiran (harus di atas route dinamis)
-    Route::get('/kehadiran/rekap/dashboard', [RekapKehadiranController::class, 'dashboard'])->name('kehadiran.rekap.dashboard');
-    Route::get('/kehadiran/rekap/siswa', [RekapKehadiranController::class, 'rekapSiswa'])->name('kehadiran.rekap.siswa');
-    Route::get('/kehadiran/rekap/siswa/{id}', [RekapKehadiranController::class, 'detailSiswa'])->name('kehadiran.rekap.siswa.detail');
-    Route::get('/kehadiran/rekap/sangga', [RekapKehadiranController::class, 'rekapSangga'])->name('kehadiran.rekap.sangga');
-    Route::get('/kehadiran/rekap/sangga/{id}', [RekapKehadiranController::class, 'detailSangga'])->name('kehadiran.rekap.sangga.detail');
-    Route::get('/kehadiran/rekap/pertemuan', [RekapKehadiranController::class, 'rekapPertemuan'])->name('kehadiran.rekap.pertemuan');
-    Route::get('/kehadiran/rekap/pertemuan/{tanggal}', [RekapKehadiranController::class, 'detailPertemuan'])->name('kehadiran.rekap.pertemuan.detail');
+    Route::get('/rekap/dashboard', [RekapKehadiranController::class, 'dashboard'])->name('kehadiran.rekap.dashboard');
+    Route::get('/rekap/siswa', [RekapKehadiranController::class, 'rekapSiswa'])->name('kehadiran.rekap.siswa');
+    Route::get('/rekap/siswa/{id}', [RekapKehadiranController::class, 'detailSiswa'])->name('kehadiran.rekap.siswa.detail');
+    Route::get('/rekap/sangga', [RekapKehadiranController::class, 'rekapSangga'])->name('kehadiran.rekap.sangga');
+    Route::get('/rekap/sangga/{id}', [RekapKehadiranController::class, 'detailSangga'])->name('kehadiran.rekap.sangga.detail');
+    Route::get('/rekap/pertemuan', [RekapKehadiranController::class, 'rekapPertemuan'])->name('kehadiran.rekap.pertemuan');
+    Route::get('/rekap/pertemuan/{tanggal}', [RekapKehadiranController::class, 'detailPertemuan'])->name('kehadiran.rekap.pertemuan.detail');
 
     // Input Kehadiran (route dinamis di bawah)
     Route::get('/kehadiran', [KehadiranController::class, 'pilihHari'])->name('kehadiran.index');

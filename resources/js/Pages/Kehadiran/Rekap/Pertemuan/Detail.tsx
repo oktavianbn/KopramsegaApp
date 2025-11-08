@@ -100,7 +100,7 @@ export default function Detail({
                         title={formatted_date}
                         subtitle={`Rekap Kehadiran / Per Pertemuan / ${day_name}`}
                         icon={Calendar}
-                        backHref="/kehadiran/rekap/pertemuan"
+                        backHref="/rekap/pertemuan"
                     />
 
                     {/* Date Info Card */}
