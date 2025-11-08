@@ -8,6 +8,7 @@ import {
     XCircle,
     AlertCircle,
     Users,
+    ArrowLeft,
 } from "lucide-react";
 
 interface Member {
@@ -99,7 +100,7 @@ export default function Detail({
                     <PageHeader
                         title={formatted_date}
                         subtitle={`Rekap Kehadiran / Per Pertemuan / ${day_name}`}
-                        icon={Calendar}
+                        backIcon={ArrowLeft}
                         backHref="/rekap/pertemuan"
                     />
 

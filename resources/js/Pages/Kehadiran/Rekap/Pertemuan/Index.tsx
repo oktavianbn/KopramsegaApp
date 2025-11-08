@@ -2,7 +2,7 @@ import { PageHeader } from "@/Components/ui/page-header";
 import { FilterBar } from "@/Components/ui/filter-bar";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, router } from "@inertiajs/react";
-import { Calendar, Download, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Download, CheckCircle, XCircle, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 interface Pertemuan {
@@ -105,7 +105,7 @@ export default function Index({ pertemuan, bulan, tahun, total_siswa }: Props) {
                     <PageHeader
                         title="Rekap Per Pertemuan"
                         subtitle="Rekap Kehadiran / Per Pertemuan"
-                        icon={Calendar}
+                        backIcon={ArrowLeft}
                         backHref="/rekap/dashboard"
                     />
 

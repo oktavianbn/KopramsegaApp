@@ -9,6 +9,7 @@ import {
     XCircle,
     AlertCircle,
     TrendingUp,
+    ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -123,7 +124,7 @@ export default function Detail({
                     <PageHeader
                         title={sangga.nama_sangga}
                         subtitle="Rekap Kehadiran / Per Sangga / Detail"
-                        icon={Users}
+                        backIcon={ArrowLeft}
                         backHref="/rekap/sangga"
                     />
 
@@ -219,7 +220,7 @@ export default function Detail({
                     </div>
 
                     {/* Member Stats Table */}
-                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden ">
                         <div className="px-6 py-4 border-b border-gray-200">
                             <h3 className="text-lg font-semibold text-gray-900">
                                 Daftar Anggota

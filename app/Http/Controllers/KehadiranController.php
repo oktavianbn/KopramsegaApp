@@ -91,13 +91,22 @@ class KehadiranController extends Controller
         $data = $request->validate([
             'attendances' => ['required', 'array'],
             'attendances.*.siswa_id' => ['required', 'integer', 'exists:siswa,id'],
-            'attendances.*.status' => ['required', 'in:hadir,izin,alfa'],
+            // allow nullable status; an empty status means "no attendance / delete"
+            'attendances.*.status' => ['nullable', 'in:hadir,izin,alfa'],
             'attendances.*.keterangan' => ['nullable', 'string'],
         ]);
 
         $userId = Auth::id();
 
         foreach ($data['attendances'] as $a) {
+            // If status is empty or null, delete any existing record for that siswa+tanggal
+            if (empty($a['status'])) {
+                Kehadiran::where('siswa_id', $a['siswa_id'])
+                    ->where('tanggal', $hari)
+                    ->delete();
+                continue;
+            }
+
             // upsert: if an attendance for siswa+tanggal exists, update; otherwise create
             Kehadiran::updateOrCreate(
                 ['siswa_id' => $a['siswa_id'], 'tanggal' => $hari],

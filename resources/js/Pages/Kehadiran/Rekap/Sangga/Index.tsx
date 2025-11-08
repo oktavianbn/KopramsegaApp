@@ -2,8 +2,8 @@ import { PageHeader } from "@/Components/ui/page-header";
 import { FilterBar } from "@/Components/ui/filter-bar";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, router } from "@inertiajs/react";
-import { Users, Trophy, Download } from "lucide-react";
-import { useState } from "react";
+import { Users, Trophy, Download, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface Sangga {
     id: number;
@@ -95,6 +95,106 @@ export default function Index({
         "Desember",
     ];
 
+    // active card id for z-index/opacity behavior
+    const [activeId, setActiveId] = useState<number | null>(
+        sanggas && sanggas.length ? sanggas[0].id : null
+    );
+
+    useEffect(() => {
+        if (sanggas && sanggas.length) setActiveId(sanggas[0].id);
+    }, [sanggas]);
+
+    function PodiumCard({
+        item,
+        rank,
+        variantIndex,
+    }: {
+        item: Sangga;
+        rank: number;
+        variantIndex: number;
+    }) {
+        const isActive = activeId === item.id;
+
+        const base =
+            "flex flex-col items-center cursor-pointer transform transition-all duration-300 w-max sm:w-full";
+        const activeClasses = isActive
+            ? "z-50 opacity-100 scale-105 shadow-lg"
+            : "z-10 opacity-60 scale-100";
+
+        // visually lift the center card a bit
+        const liftClass =
+            variantIndex === 1 ? "-translate-y-2 sm:-translate-y-6" : "";
+
+        return (
+            <div
+                onClick={() => setActiveId(item.id)}
+                className={`${base} ${activeClasses} ${liftClass}`}
+            >
+                <div
+                    className={`rounded-lg p-4 w-full text-center mb-2 ${
+                        // background based on rank
+                        rank === 1
+                            ? "bg-yellow-100"
+                            : rank === 2
+                            ? "bg-gray-200"
+                            : "bg-orange-100"
+                    } ${
+                        isActive && rank === 1
+                            ? "border-2 border-yellow-400"
+                            : rank === 2
+                            ? "border-2 border-gray-400"
+                            : "border-2 border-orange-400"
+                    }`}
+                >
+                    <div
+                        className={`${
+                            rank === 1 ? "text-5xl" : "text-4xl"
+                        } mb-2`}
+                    >
+                        {rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🥉"}
+                    </div>
+                    <h4 className="font-bold text-gray-900 mb-1">
+                        {item.nama_sangga}
+                    </h4>
+                    <p
+                        className={`text-${
+                            rank === 1 ? "3xl" : "2xl"
+                        } font-bold ${getStatusColor(item.persentase)}`}
+                    >
+                        {item.persentase}%
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                        {item.total_anggota} anggota
+                    </p>
+                </div>
+
+                <div
+                    className={`flex items-center justify-center ${
+                        rank === 1
+                            ? "h-32 bg-yellow-400"
+                            : rank === 2
+                            ? "h-24 bg-gray-300"
+                            : "h-20 bg-orange-300"
+                    } w-full rounded-t-lg`}
+                >
+                    <span
+                        className={`text-${
+                            rank === 1 ? "3xl" : "2xl"
+                        } font-bold ${
+                            rank === 1
+                                ? "text-yellow-900"
+                                : rank === 2
+                                ? "text-gray-700"
+                                : "text-orange-900"
+                        }`}
+                    >
+                        #{rank}
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <AppLayout>
             <Head title="Rekap Kehadiran Per Sangga" />
@@ -103,7 +203,7 @@ export default function Index({
                     <PageHeader
                         title="Rekap Per Sangga"
                         subtitle="Rekap Kehadiran / Per Sangga"
-                        icon={Users}
+                        backIcon={ArrowLeft}
                         backHref="/rekap/dashboard"
                     />
 
@@ -132,90 +232,37 @@ export default function Index({
                         </p>
                     </div>
 
-                    {/* Podium - Top 3 */}
+                    {/* Podium - Top 3 (responsive + z-index interaction) */}
                     {sanggas.length >= 3 && (
                         <div className="mb-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 shadow-sm p-8">
-                            <div className="flex items-center justify-center gap-2 mb-6">
+                            <div className="flex items-center justify-center gap-2 mb-16">
                                 <Trophy className="w-6 h-6 text-yellow-600" />
                                 <h3 className="text-xl font-bold text-gray-900">
                                     Top 3 Sangga Terbaik
                                 </h3>
                             </div>
-                            <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
-                                {/* Rank 2 */}
-                                <div className="flex flex-col items-center order-1">
-                                    <div className="bg-gray-200 rounded-lg p-4 w-full text-center mb-2">
-                                        <div className="text-4xl mb-2">🥈</div>
-                                        <h4 className="font-bold text-gray-900 mb-1">
-                                            {sanggas[1].nama_sangga}
-                                        </h4>
-                                        <p
-                                            className={`text-2xl font-bold ${getStatusColor(
-                                                sanggas[1].persentase
-                                            )}`}
-                                        >
-                                            {sanggas[1].persentase}%
-                                        </p>
-                                        <p className="text-xs text-gray-600 mt-1">
-                                            {sanggas[1].total_anggota} anggota
-                                        </p>
-                                    </div>
-                                    <div className="h-24 bg-gray-300 w-full rounded-t-lg flex items-center justify-center">
-                                        <span className="text-2xl font-bold text-gray-700">
-                                            #2
-                                        </span>
-                                    </div>
-                                </div>
 
-                                {/* Rank 1 */}
-                                <div className="flex flex-col items-center order-2">
-                                    <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-4 w-full text-center mb-2">
-                                        <div className="text-5xl mb-2">🥇</div>
-                                        <h4 className="font-bold text-gray-900 mb-1">
-                                            {sanggas[0].nama_sangga}
-                                        </h4>
-                                        <p
-                                            className={`text-3xl font-bold ${getStatusColor(
-                                                sanggas[0].persentase
-                                            )}`}
-                                        >
-                                            {sanggas[0].persentase}%
-                                        </p>
-                                        <p className="text-xs text-gray-600 mt-1">
-                                            {sanggas[0].total_anggota} anggota
-                                        </p>
-                                    </div>
-                                    <div className="h-32 bg-yellow-400 w-full rounded-t-lg flex items-center justify-center">
-                                        <span className="text-3xl font-bold text-yellow-900">
-                                            #1
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Rank 3 */}
-                                <div className="flex flex-col items-center order-3">
-                                    <div className="bg-orange-100 rounded-lg p-4 w-full text-center mb-2">
-                                        <div className="text-4xl mb-2">🥉</div>
-                                        <h4 className="font-bold text-gray-900 mb-1">
-                                            {sanggas[2].nama_sangga}
-                                        </h4>
-                                        <p
-                                            className={`text-2xl font-bold ${getStatusColor(
-                                                sanggas[2].persentase
-                                            )}`}
-                                        >
-                                            {sanggas[2].persentase}%
-                                        </p>
-                                        <p className="text-xs text-gray-600 mt-1">
-                                            {sanggas[2].total_anggota} anggota
-                                        </p>
-                                    </div>
-                                    <div className="h-20 bg-orange-300 w-full rounded-t-lg flex items-center justify-center">
-                                        <span className="text-2xl font-bold text-orange-900">
-                                            #3
-                                        </span>
-                                    </div>
-                                </div>
+                            {/* Container: stacked on small, row with overlap on sm+ */}
+                            <div className="flex sm:flex-row items-center sm:items-end justify-center lg:gap-6 max-w-4xl mx-auto">
+                                {/* We'll render in visual order: 2,1,3 so center is champion */}
+                                {[1, 0, 2].map((pos, idx) => {
+                                    const item = sanggas[pos];
+                                    if (!item) return null;
+                                    return (
+                                        <PodiumCard
+                                            key={item.id}
+                                            item={item}
+                                            rank={
+                                                pos === 0
+                                                    ? 1
+                                                    : pos === 1
+                                                    ? 2
+                                                    : 3
+                                            }
+                                            variantIndex={idx}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

@@ -2,7 +2,7 @@ import { PageHeader } from "@/Components/ui/page-header";
 import { FilterBar } from "@/Components/ui/filter-bar";
 import AppLayout from "@/Layouts/AppLayout";
 import { Head, router } from "@inertiajs/react";
-import { Users, Search, Download, ChevronDown } from "lucide-react";
+import { Users, Search, Download, ChevronDown, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 interface Siswa {
@@ -132,8 +132,8 @@ export default function Index({
                     <PageHeader
                         title="Rekap Per Siswa"
                         subtitle="Rekap Kehadiran / Per Siswa"
-                        icon={Users}
                         backHref="/rekap/dashboard"
+                        backIcon={ArrowLeft}
                     />
 
                     {/* Filter */}
@@ -238,7 +238,7 @@ export default function Index({
                                                 }
                                             }}
                                             placeholder="Cari nama siswa..."
-                                            className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="md:w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     </div>
