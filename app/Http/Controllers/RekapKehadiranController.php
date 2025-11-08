@@ -199,7 +199,7 @@ class RekapKehadiranController extends Controller
                 SUM(CASE WHEN kehadiran.status = "izin" THEN 1 ELSE 0 END) as izin,
                 SUM(CASE WHEN kehadiran.status = "alfa" THEN 1 ELSE 0 END) as alfa
             ')
-            ->groupBy('siswa.id');
+            ->groupBy('siswa.id', 'siswa.nis', 'siswa.nta', 'siswa.nama', 'siswa.kelas', 'siswa.jurusan', 'siswa.rombel', 'siswa.jenis_kelamin', 'siswa.sangga_id', 'siswa.created_at', 'siswa.updated_at');
 
         if ($sanggaId) {
             $query->where('siswa.sangga_id', $sanggaId);
