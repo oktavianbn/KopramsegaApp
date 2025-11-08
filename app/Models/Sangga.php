@@ -12,4 +12,9 @@ class Sangga extends Model
         'logo_path',
         'nama_sangga',
     ];
+
+    public function siswa()
+    {
+        return $this->hasMany(Siswa::class);
+    }
 }

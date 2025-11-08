@@ -26,4 +26,9 @@ class Siswa extends Model
     {
         return $this->belongsTo(Sangga::class);
     }
+
+    public function kehadiran()
+    {
+        return $this->hasMany(Kehadiran::class);
+    }
 }
