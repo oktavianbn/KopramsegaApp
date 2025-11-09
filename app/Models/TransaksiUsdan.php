@@ -12,7 +12,8 @@ class TransaksiUsdan extends Model
     protected $table = 'transaksi_usdan';
 
     protected $fillable = [
-        'pelanggan_id',
+        'nama_pelanggan',
+        'nomor_telepon',
         'sesi_penjualan_id',
         'diantar',
         'tujuan',
@@ -26,12 +27,6 @@ class TransaksiUsdan extends Model
         'total_harga' => 'decimal:2',
     ];
 
-    // Relations
-    public function pelanggan()
-    {
-        return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
-    }
-
     public function sesiPenjualan()
     {
         return $this->belongsTo(Sesi::class, 'sesi_penjualan_id');
@@ -42,4 +37,3 @@ class TransaksiUsdan extends Model
         return $this->hasMany(DetailTransaksiUsdan::class, 'transaksi_usdan_id');
     }
 }
-

@@ -20,6 +20,7 @@ use App\Http\Controllers\SanggaController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\KehadiranController;
 use App\Http\Controllers\RekapKehadiranController;
+use App\Http\Controllers\SiswaController;
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
@@ -47,8 +48,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('menu', MenuController::class);
     Route::resource('sesi', SesiController::class);
     Route::patch('sesi/{sesi}/status', [SesiController::class, 'updateStatusSesi'])->name('sesi.updateStatusSesi');
-    Route::resource('transaksi', TransaksiController::class);
-    Route::resource('pelanggan', PelangganController::class);
+
+    // Transaksi routes - only view (index/show), delete, and status update
+    // Route::get('transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
+    Route::get('transaksi/dashboard', [TransaksiController::class, 'dashboard'])->name('transaksi.dashboard');
+    Route::get('transaksi/{transaksi}', [TransaksiController::class, 'show'])->name('transaksi.show');
+    Route::delete('transaksi/{transaksi}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
+    Route::patch('transaksi/{transaksi}/status', [TransaksiController::class, 'updateStatus'])->name('transaksi.updateStatus');
+
+    // Route::resource('pelanggan', PelangganController::class);
 
     // Pelanggan web routes (read, change status, delete)
     Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
@@ -58,7 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // sangga
     Route::resource('sangga', SanggaController::class);
-    Route::resource('siswa', App\Http\Controllers\SiswaController::class);
+    Route::resource('siswa', SiswaController::class);
 
     // Kehadiran
     // Rekap Kehadiran (harus di atas route dinamis)
