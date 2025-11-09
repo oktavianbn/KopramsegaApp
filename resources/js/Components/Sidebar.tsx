@@ -98,8 +98,8 @@ const menuItems = [
         children: [
             { icon: CalendarRange, label: "Sesi Penjualan", href: "/sesi" },
             { icon: UtensilsCrossed, label: "Menu", href: "/menu" },
-            { icon: ConciergeBell, label: "Transaksi", href: "/transaksi" },
-            { icon: UserLock, label: "Pelanggan", href: "/pelanggan" },
+            { icon: ConciergeBell, label: "Transaksi", href: "/transaksi/dashboard" },
+            // { icon: UserLock, label: "Pelanggan", href: "/pelanggan" },
         ],
     },
 
