@@ -112,11 +112,14 @@ cp .env.example .env
 php artisan key:generate
 
 # Migrasi database
-php artisan migrate --seed
+php artisan migrate
 
 # Jalankan server backend dan frontend
 composer run dev
+
+# Membuat akun di localhost/register
 ```
 
 ---
+
 **Copyright © 2025 Simako Project Authors.** **All Rights Reserved.**
