@@ -1,61 +1,122 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SIMAKO — Sistem Manajemen Administrasi Kopramsega
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Status](https://img.shields.io/badge/status-development-yellow)
+![Tech Laravel](https://img.shields.io/badge/Laravel-Backend-red)
+![Tech React](https://img.shields.io/badge/React-Frontend-blue)
+![License](https://img.shields.io/badge/license-pending-lightgrey)
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**SIMAKO** *(**Si**stem **M**anajemen **A**dministrasi **Ko**pramsega)* adalah aplikasi web internal yang dirancang untuk **mendigitalisasi seluruh proses administrasi organisasi Kopramsega**, menggantikan sistem manual agar lebih cepat, akurat, terstruktur serta transparan. Aplikasi ini mencakup berbagai modul penting, mulai dari **pendataan keuangan**, **manajemen inventaris**, **arsip dokumen**, **penjualan**, **perencanaan**, **media informasi**, hingga **pengelolaan pengguna**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Dengan arsitektur modern berbasis **Laravel** sebagai backend, SIMAKO mampu menangani autentikasi, manajemen data, dan logika bisnis secara aman dan terpusat. Sementara itu, **React** digunakan sebagai antarmuka pengguna (frontend) untuk memberikan pengalaman interaktif, responsif, dan mudah digunakan bagi pengurus organisasi.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Setiap modul dirancang untuk **meningkatkan efisiensi kerja pengurus**, mengurangi kesalahan administrasi manual, dan memberikan **visualisasi data yang jelas** agar pengambilan keputusan lebih cepat dan tepat.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🚀 Status Proyek
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- Saat ini proyek berada dalam tahap **pengembangan aktif** dengan beberapa modul utama sudah mulai diimplementasikan.
+- Fitur-fitur tambahan dan penyempurnaan akan terus dilakukan berdasarkan kebutuhan organisasi.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🎯 Tujuan Utama
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Menyajikan data penting organisasi dalam bentuk visual agar pengurus dapat mengambil keputusan lebih cepat dan tepat.
+- Mempercepat serta menertibkan proses pendataan kehadiran untuk mengurangi potensi kesalahan pencatatan manual.
+- Meningkatkan transparansi dan kerapian pencatatan keuangan sehingga laporan lebih mudah dibuat dan diaudit.
+- Menjaga keamanan data melalui pembagian akses dan peran yang jelas pada setiap pengguna.
+- Mengoptimalkan manajemen inventaris agar barang tidak mudah hilang dan seluruh pergerakan tercatat.
+- Meningkatkan efisiensi penyimpanan dokumen sehingga mudah dicari tanpa risiko kerusakan fisik.
+- Mendukung perencanaan kegiatan yang lebih terjadwal dan terdokumentasi dengan baik.
+- Menyimpan dokumentasi kegiatan secara tersusun untuk kebutuhan evaluasi dan publikasi internal.
+- Menjadikan transaksi usaha dana lebih efisien dan transparan dalam pencatatan serta pelaporan.
+- Menyederhanakan pengelolaan konten informasi internal agar tetap konsisten dan terstruktur.
+- Menyediakan pusat data anggota yang valid untuk mendukung seluruh proses administrasi dan transaksi pada unit organisasi.
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🧩 Fitur yang Tersedia / Direncanakan
 
-## Contributing
+| Modul       | Fitur                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| Dashboard   | Statistik dan ringkasan data                                                               |
+| Presensi    | Kehadiran, Rekap                                                                           |
+| Keuangan    | Manajemen dana dan transaksi                                                               |
+| Pengguna    | Role, Manajemen akun user                                                                  |
+| Inventory   | Barang, Stok, Peminjaman                                                                   |
+| Arsip       | Surat, Dokumen                                                                             |
+| Rencana     | Penjadwalan & rencana unit kerja                                                           |
+| Dokumentasi | Media dokumentasi kegiatan                                                                 |
+| Usaha Dana  | Sesi penjualan, Menu, Transaksi ![Status](https://img.shields.io/badge/development-yellow) |
+| CMS         | Kategori, Tag, Posting ![Status](https://img.shields.io/badge/development-yellow)          |
+| Master Data | Data Siswa, Data Sangga                                                                    |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🛠️ Teknologi
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Teknologi                                                                                                      | Fungsi dalam Proyek                                                                           |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Laravel 12** ![Laravel](https://img.shields.io/badge/Laravel-FF2D20?logo=laravel&logoColor=white)            | Mengelola backend, autentikasi, middleware, manajemen user & data administrasi organisasi     |
+| **MySQL 8.0.30** ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white)                | Database utama untuk menyimpan data anggota, inventaris, transaksi dan seluruh entitas sistem |
+| **React** ![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)                       | Membangun antarmuka web modern yang interaktif dan cepat dengan konsep SPA                    |
+| **TypeScript** ![TS](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)           | Menjamin kualitas dan keamanan kode front-end melalui tipe data yang ketat                    |
+| **Inertia.js** ![Inertia.js](https://img.shields.io/badge/Inertia.js-9553E9?logo=inertia&logoColor=white)      | Menjembatani React & Laravel untuk routing SPA tanpa perlu API REST kompleks                  |
+| **Vite** ![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)                           | Membuat proses development cepat (hot reload) dan bundling lebih efisien                      |
+| **Tailwind CSS** ![Tailwind](https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=white) | Mempercepat pembuatan UI responsif berbasis utility-first styling                             |
+| **Shadcn UI** ![shadcn/ui](https://img.shields.io/badge/shadcn/ui-000000?logo=shadcnui&logoColor=white)        | Menyediakan komponen UI siap pakai berkualitas tinggi dan mudah dikustomisasi                 |
+| **Lucide Icons** ![Lucide](https://img.shields.io/badge/Lucide-333?logo=lucide&logoColor=white)                | Menyediakan ikon vektor modern untuk navigasi dan representasi fitur                          |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🖼️ Screenshot UI
 
-## License
+> Tampilan hanya contoh, tidak seluruh tampilan ditampilkan di sini.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Tampilan                       | Gambar                                                                              |
+| ------------------------------ | ----------------------------------------------------------------------------------- |
+| Login                          | ![Screenshot Dark Mode](Image/login.png)                                            |
+| Sidebar                        | ![Screenshot Dark Mode](Image/sidebar.png)                                          |
+| Dashboard                      | _(coming soon)_                                                                     |
+| Penampilan data (Tabel & Card) | ![Screenshot Dark Mode](Image/tabel.png) ![Screenshot Dark Mode](Image/card.png)    |
+| Form Pengisian Data            | ![Screenshot Dark Mode](Image/form.png)                                             |
+| Show Data                      | ![Screenshot Dark Mode](Image/show.png)                                             |
+| Modal                          | ![Screenshot Dark Mode](Image/modal1.png) ![Screenshot Dark Mode](Image/modal2.png) |
+| Profil                         | ![Screenshot Dark Mode](Image/profil.png)                                           |
+
+---
+
+## 📦 Instalasi dan Menjalankan Aplikasi
+
+> Install Laravel, Composer dan Node.js terlebih dahulu  
+> Laravel: https://laravel.com/docs  
+> Composer: https://getcomposer.org  
+> Node.js: https://nodejs.org/en
+
+```bash
+# Clone repository
+git clone https://github.com/oktavianbn/KopramsegaApp.git
+cd KopramsegaApp
+
+# Install backend dependencies
+composer install
+
+# Install frontend dependencies
+npm install
+
+# Copy ENV & generate key
+cp .env.example .env
+php artisan key:generate
+
+# Migrasi database
+php artisan migrate --seed
+
+# Jalankan server backend dan frontend
+composer run dev
+```
+
+---
+**Copyright © 2025 Simako Project Authors.** **All Rights Reserved.**
